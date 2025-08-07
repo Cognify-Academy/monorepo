@@ -5,9 +5,10 @@ const API_BASE_URL =
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const { id } = await params;
     const authHeader = request.headers.get("authorization");
 
     if (!authHeader) {
@@ -28,17 +29,14 @@ export async function PATCH(
     }
 
     // Forward the request to the backend API
-    const response = await fetch(
-      `${API_BASE_URL}/contact/${params.id}/status`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: authHeader,
-        },
-        body: JSON.stringify({ status }),
+    const response = await fetch(`${API_BASE_URL}/contact/${id}/status`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: authHeader,
       },
-    );
+      body: JSON.stringify({ status }),
+    });
 
     if (!response.ok) {
       if (response.status === 401) {

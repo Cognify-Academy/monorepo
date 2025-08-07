@@ -13,14 +13,14 @@ import { getCourse } from "@/services/courses";
 import { notFound } from "next/navigation";
 
 interface PageProps {
-  params: {
+  params: Promise<{
     slug: string;
     lessonId: string;
-  };
+  }>;
 }
 
 export default async function LessonPage({ params }: PageProps) {
-  const { slug, lessonId } = params;
+  const { slug, lessonId } = await params;
   const course = await getCourse(slug);
 
   if (!course) {
