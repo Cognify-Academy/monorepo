@@ -1,5 +1,6 @@
+import { ClockIcon } from "@/icons/clock-icon";
+import { UsersIcon } from "@/icons/users-icon";
 import { Course } from "@/services/courses";
-import { Clock, Users } from "lucide-react";
 import Link from "next/link";
 
 interface CourseCardProps {
@@ -25,7 +26,7 @@ export function CourseCard({ course }: CourseCardProps) {
         <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-1">
-              <Users className="h-4 w-4" />
+              <UsersIcon className="h-4 w-4" />
               <span>
                 {course.instructors.length} instructor
                 {course.instructors.length !== 1 ? "s" : ""}
@@ -34,7 +35,7 @@ export function CourseCard({ course }: CourseCardProps) {
           </div>
 
           <div className="flex items-center space-x-1">
-            <Clock className="h-4 w-4" />
+            <ClockIcon className="h-4 w-4" />
             <span>{new Date(course.createdAt).toLocaleDateString()}</span>
           </div>
         </div>

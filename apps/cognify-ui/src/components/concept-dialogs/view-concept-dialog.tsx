@@ -1,7 +1,9 @@
 "use client";
 
 import { Button } from "@/components/button";
-import { BookOpen, Calendar, CheckCircle } from "lucide-react";
+import { BookOpenIcon } from "@/icons/book-open-icon";
+import { CalendarIcon } from "@/icons/calendar-icon";
+import { CheckmarkIcon } from "@/icons/checkmark-icon";
 import { useEffect, useState } from "react";
 
 interface Concept {
@@ -67,7 +69,7 @@ export function ViewConceptDialog({
       <div className="relative w-full max-w-2xl transform rounded-lg bg-white p-6 shadow-xl transition-all">
         <div className="mb-4 flex items-start justify-between">
           <div className="flex items-center space-x-3">
-            <BookOpen className="h-6 w-6 text-blue-600" />
+            <BookOpenIcon className="h-6 w-6 text-blue-600" />
             <div>
               <h2 className="text-xl font-semibold text-gray-900">
                 {concept.name}
@@ -101,7 +103,7 @@ export function ViewConceptDialog({
 
           <div>
             <div className="mb-2 flex items-center text-sm font-medium text-gray-700">
-              <CheckCircle className="mr-2 h-4 w-4" />
+              <CheckmarkIcon className="mr-2 h-4 w-4" />
               <span>
                 {concept.completedLessons.length} lesson
                 {concept.completedLessons.length !== 1 ? "s" : ""} completed
@@ -124,7 +126,7 @@ export function ViewConceptDialog({
                       </span>
                       {lesson.completedAt && (
                         <div className="flex items-center space-x-1 text-xs text-gray-500">
-                          <Calendar className="h-3 w-3" />
+                          <CalendarIcon className="h-3 w-3" />
                           <span>{formatDate(lesson.completedAt)}</span>
                         </div>
                       )}

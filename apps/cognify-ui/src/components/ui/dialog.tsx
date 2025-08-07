@@ -1,11 +1,11 @@
 "use client";
 
+import { CloseIcon } from "@/icons/close-icon";
 import {
   DialogBackdrop,
   DialogPanel,
   Dialog as HeadlessDialog,
 } from "@headlessui/react";
-import { X } from "lucide-react";
 import type React from "react";
 
 interface DialogProps {

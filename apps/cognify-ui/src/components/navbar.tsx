@@ -2,7 +2,10 @@
 
 import { Button } from "@/components/button";
 import { useAuth } from "@/contexts/auth";
-import { ChevronDown, LogOut, Menu, X } from "lucide-react";
+import { ChevronDownIcon } from "@/icons/chevron-down-icon";
+import { CloseIcon } from "@/icons/close-icon";
+import { LogoutIcon } from "@/icons/logout-icon";
+import { MenuIcon } from "@/icons/menu-icon";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
@@ -99,7 +102,7 @@ export function Navbar() {
                   className="flex items-center text-gray-600 transition-colors hover:text-gray-900"
                 >
                   Instructor
-                  <ChevronDown className="ml-1 h-4 w-4" />
+                  <ChevronDownIcon className="ml-1 h-4 w-4" />
                 </button>
                 {isInstructorMenuOpen && (
                   <div className="absolute left-0 z-10 mt-2 w-48 rounded-md bg-white py-1 shadow-lg">
@@ -129,7 +132,7 @@ export function Navbar() {
                   className="flex items-center text-gray-600 transition-colors hover:text-gray-900"
                 >
                   Admin
-                  <ChevronDown className="ml-1 h-4 w-4" />
+                  <ChevronDownIcon className="ml-1 h-4 w-4" />
                 </button>
                 {isAdminMenuOpen && (
                   <div className="absolute left-0 z-10 mt-2 w-48 rounded-md bg-white py-1 shadow-lg">
@@ -166,7 +169,7 @@ export function Navbar() {
                     alt="User Avatar"
                     className="h-8 w-8 rounded-full border border-gray-200"
                   />
-                  <ChevronDown className="ml-1 h-4 w-4" />
+                  <ChevronDownIcon className="ml-1 h-4 w-4" />
                 </button>
                 {isUserMenuOpen && (
                   <div className="absolute right-0 z-10 mt-2 w-48 rounded-md bg-white py-1 shadow-lg">
@@ -226,9 +229,9 @@ export function Navbar() {
                 className="p-2 text-gray-600 hover:text-gray-900"
               >
                 {isMenuOpen ? (
-                  <X className="h-6 w-6" />
+                  <CloseIcon className="h-6 w-6" />
                 ) : (
-                  <Menu className="h-6 w-6" />
+                  <MenuIcon className="h-6 w-6" />
                 )}
               </button>
             </div>
@@ -320,7 +323,7 @@ export function Navbar() {
                     onClick={handleLogout}
                     className="flex w-full items-center justify-center space-x-2 rounded-lg bg-gray-100 px-3 py-2 text-gray-700 hover:bg-gray-200"
                   >
-                    <LogOut className="h-4 w-4" />
+                    <LogoutIcon className="h-4 w-4" />
                     <span>Sign Out</span>
                   </button>
                 </div>
