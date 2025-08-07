@@ -79,7 +79,7 @@ export function EnrollmentButton({
             <Button>Log in</Button>
           </Link>
           <Link href="/signup">
-            <Button className="border border-gray-300 bg-transparent text-gray-900 hover:bg-gray-50 dark:border-gray-600 dark:text-white dark:hover:bg-gray-800">
+            <Button className="border border-gray-300 text-gray-900 hover:bg-gray-50 dark:border-gray-600 dark:text-white dark:hover:bg-gray-800">
               Sign up
             </Button>
           </Link>
