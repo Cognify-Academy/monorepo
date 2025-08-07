@@ -1,0 +1,1247 @@
+"use client";
+
+import { useAuth } from "@/contexts/auth";
+import { apiClient } from "@/lib/api";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Button } from "./button";
+import { ConceptSelector, type ConceptType } from "./concept-selector";
+import { TextInput } from "./input";
+import { MediaDialog } from "./media-dialog";
+
+export interface Media {
+  id: string;
+  title: string;
+  description: string;
+  mediaType: string;
+  url?: string | null;
+}
+
+export interface Lesson {
+  id: string;
+  title: string;
+  description: string;
+  content: any;
+  order: number;
+  conceptIds: string[];
+  media: Media[];
+}
+
+export interface Section {
+  id: string;
+  title: string;
+  description: string;
+  order: number;
+  conceptIds: string[];
+  lessons: Lesson[];
+}
+
+export interface CourseStructureProps {
+  courseId: string;
+  sections: Section[];
+  onSectionsChange: (sections: Section[]) => void;
+  availableConcepts: ConceptType[];
+  disabled?: boolean;
+}
+
+interface DraggedItem {
+  type: "section" | "lesson";
+  id: string;
+  sectionId?: string;
+  index: number;
+}
+
+export function CourseStructure({
+  courseId,
+  sections,
+  onSectionsChange,
+  availableConcepts,
+  disabled = false,
+}: CourseStructureProps) {
+  const { accessToken } = useAuth();
+
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(
+    new Set(),
+  );
+  const [draggedItem, setDraggedItem] = useState<DraggedItem | null>(null);
+  const draggedItemRef = useRef<DraggedItem | null>(null);
+
+  useEffect(() => {
+    draggedItemRef.current = draggedItem;
+  }, [draggedItem]);
+  const [dragOverSection, setDragOverSection] = useState<string | null>(null);
+  const [dragOverLesson, setDragOverLesson] = useState<{
+    sectionId: string;
+    beforeLessonId?: string;
+  } | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [savingLessons, setSavingLessons] = useState<Set<string>>(new Set());
+  const saveTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  const debouncedSave = useCallback(() => {
+    if (saveTimeout.current) {
+      clearTimeout(saveTimeout.current);
+    }
+    saveTimeout.current = setTimeout(() => {}, 1000);
+  }, []);
+
+  const showError = (message: string) => {
+    setError(message);
+    setTimeout(() => setError(null), 3000);
+  };
+
+  const toggleSection = (sectionId: string) => {
+    const newExpanded = new Set(expandedSections);
+    if (newExpanded.has(sectionId)) {
+      newExpanded.delete(sectionId);
+    } else {
+      newExpanded.add(sectionId);
+    }
+    setExpandedSections(newExpanded);
+  };
+
+  const addSection = async () => {
+    if (!accessToken) {
+      showError("Authentication required");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const newSection = await apiClient.createSection(
+        courseId,
+        {
+          title: "",
+          description: "",
+          conceptIds: [],
+        },
+        accessToken,
+      );
+
+      console.log("New section created:", newSection);
+
+      const sectionWithLessons: Section = {
+        ...newSection,
+        lessons: [],
+      };
+
+      console.log("Section with lessons:", sectionWithLessons);
+
+      onSectionsChange([...sections, sectionWithLessons]);
+      setExpandedSections(new Set([...expandedSections, newSection.id]));
+    } catch (error: any) {
+      showError(error.message || "Failed to create section");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const updateSection = async (
+    sectionId: string,
+    updates: Partial<Section>,
+  ) => {
+    if (!accessToken) {
+      showError("Authentication required");
+      return;
+    }
+
+    const section = sections.find((s) => s.id === sectionId);
+    if (!section) {
+      console.error(
+        "Section not found:",
+        sectionId,
+        "Available sections:",
+        sections.map((s) => s.id),
+      );
+      return;
+    }
+
+    const updatedSections = sections.map((s) =>
+      s.id === sectionId ? { ...s, ...updates } : s,
+    );
+    onSectionsChange(updatedSections);
+
+    const updatedSection = updatedSections.find((s) => s.id === sectionId);
+    if (!updatedSection) return;
+
+    try {
+      await apiClient.updateSection(
+        courseId,
+        sectionId,
+        {
+          title: updatedSection.title,
+          description: updatedSection.description,
+          conceptIds: updatedSection.conceptIds || [],
+        },
+        accessToken,
+      );
+    } catch (error: any) {
+      showError(error.message || "Failed to update section");
+
+      onSectionsChange(sections);
+    }
+  };
+
+  const deleteSection = async (sectionId: string) => {
+    if (!accessToken) {
+      showError("Authentication required");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await apiClient.deleteSection(courseId, sectionId, accessToken);
+      const updatedSections = sections.filter((s) => s.id !== sectionId);
+      onSectionsChange(updatedSections);
+      const newExpanded = new Set(expandedSections);
+      newExpanded.delete(sectionId);
+      setExpandedSections(newExpanded);
+    } catch (error: any) {
+      showError(error.message || "Failed to delete section");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const addLesson = async (sectionId: string) => {
+    if (!accessToken) {
+      showError("Authentication required");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const newLessonData = await apiClient.createLesson(
+        courseId,
+        sectionId,
+        {
+          title: "",
+          description: "",
+          content: null,
+          conceptIds: [],
+        },
+        accessToken,
+      );
+
+      const newLesson: Lesson = {
+        ...newLessonData,
+        media: [],
+      };
+
+      const updatedSections = sections.map((section) => {
+        if (section.id === sectionId) {
+          return {
+            ...section,
+            lessons: [...section.lessons, newLesson],
+          };
+        }
+        return section;
+      });
+      onSectionsChange(updatedSections);
+    } catch (error: any) {
+      showError(error.message || "Failed to create lesson");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const updateLesson = async (
+    sectionId: string,
+    lessonId: string,
+    updates: Partial<Lesson>,
+  ) => {
+    if (!accessToken) {
+      showError("Authentication required");
+      return;
+    }
+
+    const section = sections.find((s) => s.id === sectionId);
+    const lesson = section?.lessons.find((l) => l.id === lessonId);
+    if (!section || !lesson) return;
+
+    const updatedSections = sections.map((s) => {
+      if (s.id === sectionId) {
+        return {
+          ...s,
+          lessons: s.lessons.map((l) =>
+            l.id === lessonId ? { ...l, ...updates } : l,
+          ),
+        };
+      }
+      return s;
+    });
+    onSectionsChange(updatedSections);
+
+    const updatedSection = updatedSections.find((s) => s.id === sectionId);
+    const updatedLesson = updatedSection?.lessons.find(
+      (l) => l.id === lessonId,
+    );
+    if (!updatedLesson) return;
+
+    try {
+      await apiClient.updateLesson(
+        courseId,
+        sectionId,
+        lessonId,
+        {
+          title: updatedLesson.title,
+          description: updatedLesson.description,
+          content: updatedLesson.content,
+          conceptIds: updatedLesson.conceptIds || [],
+        },
+        accessToken,
+      );
+    } catch (error: any) {
+      showError(error.message || "Failed to update lesson");
+
+      onSectionsChange(sections);
+    }
+  };
+
+  const saveLesson = async (sectionId: string, lessonId: string) => {
+    if (!accessToken) {
+      showError("Authentication required");
+      return;
+    }
+
+    const section = sections.find((s) => s.id === sectionId);
+    const lesson = section?.lessons.find((l) => l.id === lessonId);
+    if (!section || !lesson) {
+      showError("Lesson not found");
+      return;
+    }
+
+    setSavingLessons((prev) => new Set([...prev, lessonId]));
+
+    try {
+      await apiClient.updateLesson(
+        courseId,
+        sectionId,
+        lessonId,
+        {
+          title: lesson.title,
+          description: lesson.description,
+          content: lesson.content,
+          conceptIds: lesson.conceptIds || [],
+        },
+        accessToken,
+      );
+    } catch (error: any) {
+      showError(error.message || "Failed to save lesson");
+    } finally {
+      setSavingLessons((prev) => {
+        const next = new Set(prev);
+        next.delete(lessonId);
+        return next;
+      });
+    }
+  };
+
+  const deleteLesson = async (sectionId: string, lessonId: string) => {
+    if (!accessToken) {
+      showError("Authentication required");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await apiClient.deleteLesson(courseId, sectionId, lessonId, accessToken);
+      const updatedSections = sections.map((section) => {
+        if (section.id === sectionId) {
+          return {
+            ...section,
+            lessons: section.lessons.filter((lesson) => lesson.id !== lessonId),
+          };
+        }
+        return section;
+      });
+      onSectionsChange(updatedSections);
+    } catch (error: any) {
+      showError(error.message || "Failed to delete lesson");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSectionDragStart = (e: React.DragEvent, sectionId: string) => {
+    const sectionIndex = sections.findIndex((s) => s.id === sectionId);
+    setDraggedItem({ type: "section", id: sectionId, index: sectionIndex });
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", "section");
+  };
+
+  const handleSectionDragOver = (e: React.DragEvent, sectionId: string) => {
+    e.preventDefault();
+    if (draggedItem?.type === "section" && draggedItem.id !== sectionId) {
+      setDragOverSection(sectionId);
+    } else if (draggedItem?.type === "lesson") {
+      setDragOverSection(sectionId);
+    }
+  };
+
+  const handleSectionDrop = async (
+    e: React.DragEvent,
+    targetSectionId: string,
+  ) => {
+    e.preventDefault();
+    setDragOverSection(null);
+
+    if (!draggedItem || !accessToken) return;
+
+    if (draggedItem.type === "section") {
+      const draggedIndex = draggedItem.index;
+      const targetIndex = sections.findIndex((s) => s.id === targetSectionId);
+
+      if (draggedIndex === targetIndex) return;
+
+      const newSections = [...sections];
+      const [removed] = newSections.splice(draggedIndex, 1);
+      newSections.splice(targetIndex, 0, removed);
+
+      const updatedSections = newSections.map((section, idx) => ({
+        ...section,
+        order: idx,
+      }));
+
+      onSectionsChange(updatedSections);
+
+      try {
+        const sectionsToReorder = updatedSections.filter((section) => {
+          return (
+            section.id &&
+            !section.id.startsWith("section-") &&
+            section.id.length > 10
+          );
+        });
+
+        if (sectionsToReorder.length > 0) {
+          await apiClient.reorderSections(
+            courseId,
+            sectionsToReorder.map((s) => ({ id: s.id, order: s.order })),
+            accessToken,
+          );
+        }
+      } catch (error: any) {
+        console.error("Section reorder error:", error);
+        showError(error.message || "Failed to reorder sections");
+        onSectionsChange(sections);
+      }
+    } else if (draggedItem.type === "lesson") {
+      if (draggedItem.sectionId && draggedItem.sectionId !== targetSectionId) {
+        await moveLessonToSection(
+          draggedItem.id,
+          draggedItem.sectionId!,
+          targetSectionId,
+        );
+      }
+    }
+
+    setDraggedItem(null);
+  };
+
+  const handleLessonDragStart = (
+    e: React.DragEvent,
+    lessonId: string,
+    sectionId: string,
+  ) => {
+    e.stopPropagation();
+    setDraggedItem({
+      type: "lesson",
+      id: lessonId,
+      sectionId,
+      index: 0,
+    });
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", "lesson");
+  };
+
+  const handleLessonsContainerDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleLessonsContainerDrop = async (
+    e: React.DragEvent,
+    sectionId: string,
+  ) => {
+    e.preventDefault();
+    setDragOverLesson(null);
+
+    const currentDraggedItem = draggedItemRef.current;
+    if (
+      !currentDraggedItem ||
+      currentDraggedItem.type !== "lesson" ||
+      !accessToken ||
+      !currentDraggedItem.sectionId
+    ) {
+      return;
+    }
+
+    const draggedLessonId = currentDraggedItem.id;
+    const sourceSectionId = currentDraggedItem.sectionId;
+
+    const target = e.target as HTMLElement;
+    const lessonElement = target.closest("[data-lesson-id]") as HTMLElement;
+
+    if (lessonElement && sourceSectionId === sectionId) {
+      const targetLessonId = lessonElement.getAttribute("data-lesson-id") || "";
+      const rect = lessonElement.getBoundingClientRect();
+      const offset = rect.y + rect.height / 2;
+
+      const beforeLessonId = e.clientY < offset ? targetLessonId : undefined;
+
+      await reorderLessonsInSection(sectionId, draggedLessonId, beforeLessonId);
+    } else if (sourceSectionId !== sectionId) {
+      await moveLessonToSection(draggedLessonId, sourceSectionId, sectionId);
+    } else if (!lessonElement) {
+      await reorderLessonsInSection(sectionId, draggedLessonId, undefined);
+    }
+
+    setDraggedItem(null);
+  };
+
+  const reorderLessonsInSection = async (
+    sectionId: string,
+    draggedLessonId: string,
+    beforeLessonId?: string,
+  ) => {
+    const section = sections.find((s) => s.id === sectionId);
+    if (!section) {
+      return;
+    }
+
+    const draggedLesson = section.lessons.find((l) => l.id === draggedLessonId);
+    if (!draggedLesson) {
+      console.log("❌ Dragged lesson not found:", draggedLessonId);
+      return;
+    }
+
+    const originalOrder = section.lessons.map(
+      (l) => l.title || `Lesson ${l.id}`,
+    );
+
+    let newLessons = section.lessons.filter((l) => l.id !== draggedLessonId);
+
+    const insertIndex = beforeLessonId
+      ? newLessons.findIndex((l) => l.id === beforeLessonId)
+      : newLessons.length;
+
+    newLessons.splice(insertIndex, 0, draggedLesson);
+    newLessons = newLessons.map((lesson, idx) => ({ ...lesson, order: idx }));
+
+    const newOrder = newLessons.map((l) => l.title || `Lesson ${l.id}`);
+
+    const updatedSections = sections.map((s) =>
+      s.id === sectionId ? { ...s, lessons: newLessons } : s,
+    );
+
+    onSectionsChange(updatedSections);
+
+    try {
+      const lessonsToReorder = newLessons.filter((lesson) => {
+        return (
+          lesson.id && !lesson.id.startsWith("lesson-") && lesson.id.length > 10
+        );
+      });
+
+      if (lessonsToReorder.length > 0) {
+        await apiClient.reorderLessons(
+          courseId,
+          lessonsToReorder.map((l) => ({
+            id: l.id,
+            sectionId,
+            order: l.order,
+          })),
+          accessToken!,
+        );
+      }
+    } catch (error: any) {
+      showError(error.message || "Failed to reorder lessons");
+      onSectionsChange(sections);
+    }
+  };
+
+  const moveLessonToSection = async (
+    lessonId: string,
+    sourceSectionId: string,
+    targetSectionId: string,
+    beforeLessonId?: string,
+  ) => {
+    const sourceSection = sections.find((s) => s.id === sourceSectionId);
+    const targetSection = sections.find((s) => s.id === targetSectionId);
+    if (!sourceSection || !targetSection) return;
+
+    const lesson = sourceSection.lessons.find((l) => l.id === lessonId);
+    if (!lesson) return;
+
+    const sourceLessons = sourceSection.lessons.filter(
+      (l) => l.id !== lessonId,
+    );
+
+    let targetLessons = [...targetSection.lessons];
+    const insertIndex = beforeLessonId
+      ? targetLessons.findIndex((l) => l.id === beforeLessonId)
+      : targetLessons.length;
+
+    targetLessons.splice(insertIndex, 0, lesson);
+
+    targetLessons = targetLessons.map((l, idx) => ({ ...l, order: idx }));
+
+    const updatedSections = sections.map((s) => {
+      if (s.id === sourceSectionId) {
+        return {
+          ...s,
+          lessons: sourceLessons.map((l, idx) => ({ ...l, order: idx })),
+        };
+      }
+      if (s.id === targetSectionId) {
+        return { ...s, lessons: targetLessons };
+      }
+      return s;
+    });
+
+    onSectionsChange(updatedSections);
+
+    try {
+      await apiClient.reorderLessons(
+        courseId,
+        [
+          ...sourceLessons.map((l) => ({
+            id: l.id,
+            sectionId: sourceSectionId,
+            order: l.order,
+          })),
+          ...targetLessons.map((l) => ({
+            id: l.id,
+            sectionId: targetSectionId,
+            order: l.order,
+          })),
+        ],
+        accessToken!,
+      );
+    } catch (error: any) {
+      showError(error.message || "Failed to move lesson");
+      onSectionsChange(sections);
+    }
+  };
+
+  return (
+    <div>
+      {error && (
+        <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-800">
+          {error}
+        </div>
+      )}
+
+      <div className="mb-4 flex items-center justify-between">
+        <label className="block text-sm font-medium text-gray-700">
+          Course Structure / Lessons
+        </label>
+        <Button
+          type="button"
+          onClick={addSection}
+          disabled={disabled || isLoading}
+          className="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+        >
+          <svg
+            className="mr-2 h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M12 4v16m8-8H4"
+            />
+          </svg>
+          Add Section
+        </Button>
+      </div>
+
+      <div className="space-y-4">
+        {sections.map((section) => (
+          <SectionEditor
+            key={section.id}
+            courseId={courseId}
+            section={section}
+            availableConcepts={availableConcepts}
+            isExpanded={expandedSections.has(section.id)}
+            onToggle={() => toggleSection(section.id)}
+            onUpdate={(updates) => updateSection(section.id, updates)}
+            onDelete={() => deleteSection(section.id)}
+            onAddLesson={() => addLesson(section.id)}
+            onUpdateLesson={(lessonId, updates) =>
+              updateLesson(section.id, lessonId, updates)
+            }
+            onSaveLesson={(lessonId) => saveLesson(section.id, lessonId)}
+            onDeleteLesson={(lessonId) => deleteLesson(section.id, lessonId)}
+            disabled={disabled || isLoading}
+            savingLessonsSet={savingLessons}
+            onDragStart={(e) => handleSectionDragStart(e, section.id)}
+            onDragOver={(e) => handleSectionDragOver(e, section.id)}
+            onDrop={(e) => handleSectionDrop(e, section.id)}
+            onLessonDragStart={(e, lessonId) =>
+              handleLessonDragStart(e, lessonId, section.id)
+            }
+            onLessonsContainerDragOver={handleLessonsContainerDragOver}
+            onLessonsContainerDrop={handleLessonsContainerDrop}
+            isDraggedOver={dragOverSection === section.id}
+            dragOverLesson={
+              dragOverLesson?.sectionId === section.id
+                ? dragOverLesson.beforeLessonId
+                : undefined
+            }
+          />
+        ))}
+
+        {sections.length === 0 && (
+          <div className="py-8 text-center text-gray-500">
+            <p>No sections added yet. Click "Add Section" to get started.</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+interface SectionEditorProps {
+  courseId: string;
+  section: Section;
+  availableConcepts: ConceptType[];
+  isExpanded: boolean;
+  onToggle: () => void;
+  onUpdate: (updates: Partial<Section>) => void;
+  onDelete: () => void;
+  onAddLesson: () => void;
+  onUpdateLesson: (lessonId: string, updates: Partial<Lesson>) => void;
+  onSaveLesson: (lessonId: string) => void;
+  onDeleteLesson: (lessonId: string) => void;
+  disabled?: boolean;
+  savingLessonsSet?: Set<string>;
+  onDragStart: (e: React.DragEvent) => void;
+  onDragOver: (e: React.DragEvent) => void;
+  onDrop: (e: React.DragEvent) => void;
+  onLessonDragStart: (e: React.DragEvent, lessonId: string) => void;
+  onLessonsContainerDragOver: (e: React.DragEvent, sectionId: string) => void;
+  onLessonsContainerDrop: (e: React.DragEvent, sectionId: string) => void;
+  isDraggedOver: boolean;
+  dragOverLesson?: string;
+}
+
+function SectionEditor({
+  courseId,
+  section,
+  availableConcepts,
+  isExpanded,
+  onToggle,
+  onUpdate,
+  onDelete,
+  onAddLesson,
+  onUpdateLesson,
+  onSaveLesson,
+  onDeleteLesson,
+  disabled = false,
+  savingLessonsSet,
+  onDragStart,
+  onDragOver,
+  onDrop,
+  onLessonDragStart,
+  onLessonsContainerDragOver,
+  onLessonsContainerDrop,
+  isDraggedOver,
+  dragOverLesson,
+}: SectionEditorProps) {
+  return (
+    <div
+      className={`rounded-lg border ${
+        isDraggedOver ? "border-blue-500 bg-blue-50" : "border-gray-200"
+      }`}
+      draggable={!disabled}
+      onDragStart={onDragStart}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+    >
+      <div className="border-b border-gray-200 bg-gray-50 p-4">
+        <div className="flex items-center justify-between">
+          <button
+            type="button"
+            onClick={onToggle}
+            className="flex flex-1 items-center space-x-2 text-left"
+            disabled={disabled}
+          >
+            <svg
+              className={`h-4 w-4 transition-transform ${
+                isExpanded ? "rotate-90" : ""
+              }`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+            <h3 className="text-lg font-medium text-gray-900">
+              {section.title || "Untitled Section"}
+            </h3>
+            <div className="ml-auto flex items-center space-x-2">
+              <span className="text-sm text-gray-500">
+                {section.lessons.length} lessons
+              </span>
+              <svg
+                className="h-4 w-4 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
+                />
+              </svg>
+            </div>
+          </button>
+          <button
+            type="button"
+            onClick={onDelete}
+            disabled={disabled}
+            className="p-1 text-red-600 hover:text-red-800"
+          >
+            <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9zM4 5a2 2 0 012-2h8a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 112 0v4a1 1 0 11-2 0V9zm4 0a1 1 0 112 0v4a1 1 0 11-2 0V9z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {isExpanded && (
+        <div className="space-y-4 p-4">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Section Title
+            </label>
+            <TextInput
+              type="text"
+              value={section.title}
+              onChange={(e) => {
+                console.log(
+                  "Section title onChange:",
+                  e.target.value,
+                  "for section:",
+                  section.id,
+                );
+                onUpdate({ title: e.target.value });
+              }}
+              placeholder="Enter section title"
+              disabled={disabled}
+            />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Section Description
+            </label>
+            <textarea
+              value={section.description}
+              onChange={(e) => onUpdate({ description: e.target.value })}
+              placeholder="Enter section description"
+              rows={2}
+              disabled={disabled}
+              className="mt-1 block w-full rounded-md border border-gray-300 p-3 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Section Concepts
+            </label>
+            <ConceptSelector
+              availableConcepts={availableConcepts}
+              selectedConceptIds={section.conceptIds}
+              onChange={(conceptIds) => onUpdate({ conceptIds })}
+            />
+          </div>
+
+          <div>
+            <div className="mb-2 flex items-center justify-between">
+              <label className="block text-sm font-medium text-gray-700">
+                Lessons
+              </label>
+              <Button
+                type="button"
+                onClick={onAddLesson}
+                disabled={disabled}
+                className="inline-flex items-center rounded border border-transparent bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-200"
+              >
+                <svg
+                  className="mr-1 h-3 w-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+                Add Lesson
+              </Button>
+            </div>
+
+            <div
+              className="min-h-[50px] space-y-2 rounded border border-gray-200 p-2"
+              onDragOver={(e) => onLessonsContainerDragOver(e, section.id)}
+              onDrop={(e) => onLessonsContainerDrop(e, section.id)}
+            >
+              {section.lessons
+                .sort((a, b) => a.order - b.order)
+                .map((lesson, index) => (
+                  <div key={lesson.id} data-lesson-id={lesson.id}>
+                    <LessonEditor
+                      courseId={courseId}
+                      sectionId={section.id}
+                      lesson={lesson}
+                      availableConcepts={availableConcepts}
+                      onUpdate={(updates) => onUpdateLesson(lesson.id, updates)}
+                      onSave={() => onSaveLesson(lesson.id)}
+                      onDelete={() => onDeleteLesson(lesson.id)}
+                      disabled={disabled}
+                      isSaving={savingLessonsSet?.has(lesson.id) || false}
+                      onDragStart={(e) => onLessonDragStart(e, lesson.id)}
+                    />
+                  </div>
+                ))}
+
+              {section.lessons.length === 0 && (
+                <p className="py-4 text-center text-gray-500">
+                  No lessons added yet. Click "Add Lesson" to get started.
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface LessonEditorProps {
+  courseId: string;
+  sectionId: string;
+  lesson: Lesson;
+  availableConcepts: ConceptType[];
+  onUpdate: (updates: Partial<Lesson>) => void;
+  onSave: () => void;
+  onDelete: () => void;
+  disabled?: boolean;
+  isSaving?: boolean;
+  onDragStart: (e: React.DragEvent) => void;
+}
+
+function LessonEditor({
+  courseId,
+  sectionId,
+  lesson,
+  availableConcepts,
+  onUpdate,
+  onSave,
+  onDelete,
+  disabled = false,
+  isSaving = false,
+  onDragStart,
+}: LessonEditorProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isMediaDialogOpen, setIsMediaDialogOpen] = useState(false);
+  const [editingMedia, setEditingMedia] = useState<Media | null>(null);
+  const { accessToken } = useAuth();
+
+  const handleAddMedia = async (newMedia: Omit<Media, "id">) => {
+    if (!accessToken) return;
+    try {
+      const createdMedia = await apiClient.createMedia(
+        {
+          title: newMedia.title,
+          description: newMedia.description,
+          mediaType: newMedia.mediaType,
+          lessonId: lesson.id,
+          url: newMedia.url || "",
+        },
+        accessToken,
+      );
+      onUpdate({ media: [...(lesson.media || []), createdMedia] });
+    } catch (error) {
+      console.error("Failed to create media:", error);
+    }
+  };
+
+  const handleUpdateMedia = async (updatedMedia: Omit<Media, "id">) => {
+    if (!accessToken || !editingMedia) return;
+    try {
+      const returnedMedia = await apiClient.updateMedia(
+        {
+          title: updatedMedia.title,
+          lessonId: lesson.id,
+          mediaId: editingMedia.id,
+          description: updatedMedia.description,
+          mediaType: updatedMedia.mediaType,
+          url: updatedMedia.url || "",
+        },
+        accessToken,
+      );
+      const newMediaList = (lesson.media || []).map((item) =>
+        item.id === editingMedia.id ? returnedMedia : item,
+      );
+      onUpdate({ media: newMediaList });
+    } catch (error) {
+      console.error("Failed to update media:", error);
+    }
+  };
+
+  const handleDeleteMedia = async (mediaId: string) => {
+    if (!accessToken) return;
+    try {
+      await apiClient.deleteMedia(mediaId, accessToken);
+      const newMediaList = (lesson.media || []).filter(
+        (item) => item.id !== mediaId,
+      );
+      onUpdate({ media: newMediaList });
+    } catch (error) {
+      console.error("Failed to delete media:", error);
+    }
+  };
+
+  const openMediaDialog = (media: Media | null = null) => {
+    setEditingMedia(media);
+    setIsMediaDialogOpen(true);
+  };
+
+  return (
+    <div className="rounded border border-gray-200 bg-white">
+      <div className="flex items-center justify-between p-3">
+        <div className="flex flex-1 items-center space-x-2">
+          <div
+            className="h-4 w-4 cursor-move text-gray-400 hover:text-gray-600"
+            draggable={!disabled}
+            onDragStart={onDragStart}
+            title="Drag to reorder"
+          >
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
+              />
+            </svg>
+          </div>
+          <TextInput
+            type="text"
+            value={lesson.title}
+            onChange={(e) => onUpdate({ title: e.target.value })}
+            placeholder="Lesson title"
+            className="flex-1"
+            disabled={disabled}
+            draggable={false}
+            onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
+          />
+        </div>
+        <div className="flex items-center space-x-2">
+          <button
+            type="button"
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="p-1 text-gray-500 hover:text-gray-700"
+          >
+            <svg
+              className={`h-4 w-4 transition-transform ${
+                isExpanded ? "rotate-180" : ""
+              }`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </button>
+          <button
+            type="button"
+            onClick={onDelete}
+            disabled={disabled}
+            className="p-1 text-red-600 hover:text-red-800"
+          >
+            <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9zM4 5a2 2 0 012-2h8a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 112 0v4a1 1 0 11-2 0V9zm4 0a1 1 0 112 0v4a1 1 0 11-2 0V9z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {isExpanded && (
+        <div className="space-y-3 border-t border-gray-200 p-3">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Lesson Description
+            </label>
+            <textarea
+              value={lesson.description}
+              onChange={(e) => onUpdate({ description: e.target.value })}
+              placeholder="Lesson description"
+              rows={2}
+              disabled={disabled}
+              className="w-full rounded-md border border-gray-300 p-2 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              draggable={false}
+              onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
+            />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Lesson Content (Markdown)
+            </label>
+            <textarea
+              value={
+                typeof lesson.content === "string"
+                  ? lesson.content
+                  : JSON.stringify(lesson.content, null, 2) || ""
+              }
+              onChange={(e) => onUpdate({ content: e.target.value })}
+              placeholder="Enter lesson content as Markdown"
+              rows={10}
+              disabled={disabled}
+              className="w-full rounded-md border border-gray-300 p-2 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              draggable={false}
+              onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
+            />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Lesson Concepts
+            </label>
+            <div
+              draggable={false}
+              onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
+            >
+              <ConceptSelector
+                availableConcepts={availableConcepts}
+                selectedConceptIds={lesson.conceptIds}
+                onChange={(conceptIds) => onUpdate({ conceptIds })}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Media
+            </label>
+            <div className="rounded-md border border-gray-300 p-2">
+              {(lesson.media || []).length > 0 ? (
+                <ul className="space-y-2">
+                  {(lesson.media || []).map((mediaItem) => (
+                    <li
+                      key={mediaItem.id}
+                      className="flex items-center justify-between"
+                    >
+                      <span>{mediaItem.title}</span>
+                      <div className="flex space-x-2">
+                        <button onClick={() => openMediaDialog(mediaItem)}>
+                          Edit
+                        </button>
+                        <button onClick={() => handleDeleteMedia(mediaItem.id)}>
+                          Delete
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-gray-500">No media added yet.</p>
+              )}
+              <div className="mt-2">
+                <Button
+                  type="button"
+                  onClick={() => openMediaDialog()}
+                  disabled={disabled}
+                  className="inline-flex items-center rounded border border-transparent bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-200"
+                >
+                  Add Media
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end">
+            <Button
+              type="button"
+              onClick={onSave}
+              disabled={disabled || isSaving}
+              className="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:bg-gray-400"
+            >
+              {isSaving ? (
+                <>
+                  <svg
+                    className="mr-2 h-4 w-4 animate-spin"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    />
+                  </svg>
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <svg
+                    className="mr-2 h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
+                    />
+                  </svg>
+                  Save Lesson
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      )}
+      <MediaDialog
+        isOpen={isMediaDialogOpen}
+        onClose={() => setIsMediaDialogOpen(false)}
+        onSave={editingMedia ? handleUpdateMedia : handleAddMedia}
+        media={editingMedia}
+      />
+    </div>
+  );
+}

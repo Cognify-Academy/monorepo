@@ -1,0 +1,315 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "darwin-arm64", "linux-arm64-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+//// 🧑‍🏫 USERS ////
+model User {
+  id       String @id @default(uuid())
+  email    String @unique
+  username String @unique
+  name     String
+  password String
+
+  roles          UserRole[]
+  enrollments    Enrollment[]
+  coursesCreated Course[]
+  refreshTokens  RefreshToken[]
+  media          Media[]
+  lessonProgress LessonProgress[]
+
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @default(now()) @updatedAt
+  instructor CourseInstructor[]
+
+  @@map("users")
+}
+
+enum Role {
+  INSTRUCTOR
+  STUDENT
+  ADMIN
+}
+
+model UserRole {
+  id     String @id @unique @default(cuid())
+  userId String
+  role   Role
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, role])
+  @@map("user_roles")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  @@map("refresh_tokens")
+}
+
+//// 📚 CURRICULUM ////
+model Course {
+  id          String  @id @default(cuid())
+  title       String
+  slug        String  @unique
+  description String
+  published   Boolean @default(false)
+
+  instructors CourseInstructor[]
+
+  sections       Section[]
+  enrollments    Enrollment[]
+  conceptCourses ConceptCourse[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+
+  @@map("courses")
+}
+
+model CourseInstructor {
+  id       String @id @default(cuid())
+  courseId String
+  userId   String
+
+  course     Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  instructor User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([courseId, userId])
+  @@map("course_instructors")
+}
+
+model Section {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  courseId    String
+  order       Int      @default(0)
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons     Lesson[]
+
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @default(now()) @updatedAt
+  ConceptSection ConceptSection[]
+
+  @@map("sections")
+}
+
+model Lesson {
+  id          String  @id @default(cuid())
+  title       String  @unique
+  description String
+  order       Int     @default(0)
+  sectionId   String
+  section     Section @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  content       Json
+  media         Media[]
+  ConceptLesson ConceptLesson[]
+  lessonProgress LessonProgress[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@map("lessons")
+}
+
+//// 🎓 ENROLLMENT ////
+model Enrollment {
+  id       String @id @default(cuid())
+  userId   String
+  courseId String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, courseId])
+  @@map("enrollments")
+}
+
+model LessonProgress {
+  id         String   @id @default(cuid())
+  userId     String
+  lessonId   String
+  completed  Boolean  @default(false)
+  completedAt DateTime?
+
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([userId, lessonId])
+  @@map("lesson_progress")
+}
+
+//// 📖 CONCEPT META ////
+model Concept {
+  id            String            @id @default(cuid())
+  name          String            @unique
+  slug          String            @unique
+  description   String
+  importance    Int
+  conceptSource ConceptRelation[] @relation("conceptSource")
+  conceptTarget ConceptRelation[] @relation("conceptTarget")
+  courses       ConceptCourse[]
+  sections      ConceptSection[]
+  lessons       ConceptLesson[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@map("concepts")
+}
+
+model ConceptRelation {
+  id              String @id @default(cuid())
+  conceptSourceId String
+  conceptTargetId String
+  description     String
+  weighting       Float?
+
+  conceptSource Concept @relation("conceptSource", fields: [conceptSourceId], references: [id], onDelete: Cascade)
+  conceptTarget Concept @relation("conceptTarget", fields: [conceptTargetId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([conceptSourceId, conceptTargetId], name: "unique_edge")
+  @@map("concept_relations")
+}
+
+model ConceptCourse {
+  id        String @id @default(cuid())
+  courseId  String
+  conceptId String
+
+  concept Concept @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+  course  Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([conceptId, courseId])
+  @@map("concept_courses")
+}
+
+model ConceptSection {
+  id        String  @id @default(cuid())
+  conceptId String
+  sectionId String
+  concept   Concept @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+  section   Section @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([conceptId, sectionId])
+  @@map("concept_sections")
+}
+
+model ConceptLesson {
+  id        String  @id @default(cuid())
+  conceptId String
+  lessonId  String
+  concept   Concept @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+  lesson    Lesson  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([conceptId, lessonId])
+  @@map("concept_lessons")
+}
+
+//// 🎥 MEDIA ////
+enum Audience {
+  BEGINNERS
+  INTERMEDIATE
+  ADVANCED
+}
+
+model Media {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  mediaType   String
+  content     String?
+  url         String?
+  notes       String?
+  transcript  String?
+  audience    Audience @default(BEGINNERS)
+  lessonId    String?
+  userId      String
+  metadata    Json?
+  lesson      Lesson?  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@map("media")
+}
+
+//// KANBAN ////
+enum Column {
+  BACKLOG // “backlog”
+  TODO // “todo”
+  IN_PROGRESS // “in progress”
+  COMPLETE // “complete”
+}
+
+model Card {
+  id     String @id @default(cuid())
+  title  String
+  column Column
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@map("cards")
+}
+
+//// 📞 CONTACT ////
+model Contact {
+  id        String @id @default(cuid())
+  name      String
+  email     String
+  subject   String
+  message   String
+  status    ContactStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@map("contacts")
+}
+
+enum ContactStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  ARCHIVED
+}

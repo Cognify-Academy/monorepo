@@ -1,0 +1,829 @@
+import { Elysia, error, NotFoundError, t } from "elysia";
+import AuthService from "../auth/service";
+import {
+  createCourse,
+  createLesson,
+  createSection,
+  deleteLesson,
+  getCourse,
+  getCourses,
+  updateCourse,
+  updateLesson,
+  updateSection,
+  updateCourseSectionOrder,
+  updateCourseLessonOrder,
+  deleteSection,
+  createMedia,
+  updateMedia,
+  getMedia,
+  getAllMedia,
+  deleteMedia,
+} from "./model";
+
+interface Instructor {
+  id: string;
+}
+
+interface Course {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  published: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  userId: string;
+  instructors: Instructor[];
+  conceptIds: string[];
+}
+
+interface MappedCourse {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  published: boolean;
+  createdAt: string;
+  updatedAt: string;
+  userId: string;
+  instructors: { id: string }[];
+  conceptIds: string[];
+}
+
+export default new Elysia({ prefix: "/instructor/courses" })
+  .use(AuthService)
+  .get(
+    "/",
+    async ({
+      Auth: { hasRole, user },
+    }: {
+      Auth: {
+        hasRole: (role: string) => boolean;
+        user: { id: string } | null;
+      };
+    }) => {
+      if (!hasRole("INSTRUCTOR") || !user?.id)
+        return error(403, { error: "Forbidden" });
+      const courses = await getCourses(user.id);
+
+      return courses.map(
+        (course: Course): MappedCourse => ({
+          ...course,
+          createdAt: course.createdAt.toISOString(),
+          updatedAt: course.updatedAt.toISOString(),
+          instructors: course.instructors.map((instructor: Instructor) => ({
+            id: instructor.id,
+          })),
+        }),
+      );
+    },
+    {
+      detail: { tags: ["Instructor Courses"] },
+      headers: t.Object({
+        authorization: t.String({ description: "Authorization token" }),
+      }),
+      response: {
+        200: t.Array(
+          t.Object({
+            id: t.String(),
+            title: t.String(),
+            slug: t.String(),
+            description: t.String(),
+            published: t.Boolean(),
+            createdAt: t.String(),
+            updatedAt: t.String(),
+            userId: t.String(),
+            instructors: t.Array(
+              t.Object({
+                id: t.String(),
+              }),
+            ),
+            conceptIds: t.Array(t.String()),
+          }),
+        ),
+        403: t.Object({
+          error: t.String(),
+        }),
+      },
+    },
+  )
+  .post(
+    "/",
+    async ({
+      Auth: { hasRole, user },
+      body,
+    }: {
+      body: {
+        title: string;
+        description: string;
+        conceptIds: string[];
+        published?: boolean;
+      };
+      Auth: {
+        hasRole: (role: string) => boolean;
+        user: { id: string };
+      };
+    }) => {
+      if (!hasRole("INSTRUCTOR")) return error(403, "Forbidden");
+      return createCourse({ ...body, userId: user.id });
+    },
+    {
+      detail: { tags: ["Instructor Courses"] },
+      body: t.Object({
+        title: t.String(),
+        description: t.String(),
+        conceptIds: t.Array(t.String()),
+        published: t.Optional(t.Boolean()),
+      }),
+      headers: t.Object({
+        authorization: t.String({ description: "Authorization token" }),
+      }),
+    },
+  )
+  .patch(
+    "/:courseId",
+    async ({
+      Auth: { hasRole, user },
+      body,
+      params,
+    }: {
+      body: {
+        title?: string;
+        description?: string;
+        conceptIds?: string[];
+        published?: boolean;
+      };
+      Auth: {
+        hasRole: (role: string) => boolean;
+        user: { id: string };
+      };
+      params: {
+        courseId: string;
+      };
+    }) => {
+      if (!hasRole("INSTRUCTOR")) return error(403, "Forbidden");
+      const payload: {
+        id: string;
+        userId: string;
+        title?: string;
+        description?: string;
+        conceptIds?: string[];
+        published?: boolean;
+      } = { id: params.courseId, userId: user.id };
+      if (body.title) payload.title = body.title;
+      if (body.description) payload.description = body.description;
+      if (body.conceptIds) payload.conceptIds = body.conceptIds;
+      if (body.published) payload.published = body.published;
+      return await updateCourse(payload);
+    },
+    {
+      detail: { tags: ["Instructor Courses"] },
+      body: t.Object({
+        title: t.String(),
+        description: t.String(),
+        conceptIds: t.Array(t.String()),
+        published: t.Optional(t.Boolean()),
+      }),
+      headers: t.Object({
+        authorization: t.String({ description: "Authorization token" }),
+      }),
+      params: t.Object({
+        courseId: t.String(),
+      }),
+    },
+  )
+  .group("/media", (app) =>
+    app
+      .use(AuthService)
+      .post(
+        "/",
+        async ({
+          Auth: { hasRole, user },
+          body,
+        }: {
+          body: {
+            title: string;
+            description: string;
+            mediaType: string;
+            content?: string;
+            url?: string;
+            notes?: string;
+            transcript?: string;
+            lessonId: string;
+            metadata?: any;
+          };
+          Auth: {
+            hasRole: (role: string) => boolean;
+            user: { id: string };
+          };
+        }) => {
+          console.log("Creating media", body);
+          if (!hasRole("INSTRUCTOR")) return error(403, "Forbidden");
+          return createMedia({ ...body, userId: user.id });
+        },
+        {
+          detail: { tags: ["Instructor Media"] },
+          body: t.Object({
+            title: t.String(),
+            description: t.String(),
+            mediaType: t.String(),
+            content: t.Optional(t.String()),
+            url: t.Optional(t.String()),
+            notes: t.Optional(t.String()),
+            transcript: t.Optional(t.String()),
+            lessonId: t.String(),
+            metadata: t.Optional(t.Any()),
+          }),
+          headers: t.Object({
+            authorization: t.String({ description: "Authorization token" }),
+          }),
+        },
+      )
+      .patch(
+        "/:mediaId",
+        async ({
+          Auth: { hasRole, user },
+          body,
+          params,
+        }: {
+          body: {
+            title?: string;
+            description?: string;
+            mediaType?: string;
+            content?: string;
+            url?: string;
+            notes?: string;
+            transcript?: string;
+            metadata?: any;
+          };
+          Auth: {
+            hasRole: (role: string) => boolean;
+            user: { id: string };
+          };
+          params: {
+            mediaId: string;
+          };
+        }) => {
+          if (!hasRole("INSTRUCTOR")) return error(403, "Forbidden");
+          return await updateMedia({
+            id: params.mediaId,
+            userId: user.id,
+            ...body,
+          });
+        },
+        {
+          detail: { tags: ["Instructor Media"] },
+          body: t.Object({
+            title: t.Optional(t.String()),
+            description: t.Optional(t.String()),
+            mediaType: t.Optional(t.String()),
+            content: t.Optional(t.String()),
+            url: t.Optional(t.String()),
+            notes: t.Optional(t.String()),
+            transcript: t.Optional(t.String()),
+            metadata: t.Optional(t.Any()),
+          }),
+          headers: t.Object({
+            authorization: t.String({ description: "Authorization token" }),
+          }),
+          params: t.Object({
+            mediaId: t.String(),
+          }),
+        },
+      )
+      .get(
+        "/:mediaId",
+        async ({
+          Auth: { hasRole },
+          params,
+        }: {
+          Auth: {
+            hasRole: (role: string) => boolean;
+          };
+          params: {
+            mediaId: string;
+          };
+        }) => {
+          if (!hasRole("INSTRUCTOR") && !hasRole("STUDENT")) {
+            return error(403, { error: "Forbidden" });
+          }
+          const media = await getMedia(params.mediaId);
+          if (!media) {
+            throw new NotFoundError("Media not found");
+          }
+          return {
+            ...media,
+            createdAt: media.createdAt.toISOString(),
+            updatedAt: media.updatedAt.toISOString(),
+          };
+        },
+        {
+          detail: { tags: ["Instructor Media"] },
+          params: t.Object({
+            mediaId: t.String(),
+          }),
+          headers: t.Object({
+            authorization: t.String({ description: "Authorization token" }),
+          }),
+          response: {
+            200: t.Object({
+              id: t.String(),
+              title: t.String(),
+              description: t.String(),
+              mediaType: t.String(),
+              content: t.Nullable(t.String()),
+              url: t.Nullable(t.String()),
+              notes: t.Nullable(t.String()),
+              transcript: t.Nullable(t.String()),
+              lessonId: t.Nullable(t.String()),
+              metadata: t.Nullable(t.Any()),
+              createdAt: t.String(),
+              updatedAt: t.String(),
+            }),
+            403: t.Object({
+              error: t.String(),
+            }),
+            404: t.Object({
+              error: t.String(),
+            }),
+          },
+        },
+      )
+      .get(
+        "/",
+        async ({
+          Auth: { hasRole },
+          query,
+        }: {
+          Auth: {
+            hasRole: (role: string) => boolean;
+          };
+          query: {
+            lessonId?: string;
+          };
+        }) => {
+          if (
+            !query.lessonId ||
+            (!hasRole("INSTRUCTOR") && !hasRole("STUDENT"))
+          ) {
+            return error(403, { error: "Forbidden" });
+          }
+          const medias = await getAllMedia(query.lessonId);
+          return medias.map((media) => ({
+            ...media,
+            createdAt: media.createdAt.toISOString(),
+            updatedAt: media.updatedAt.toISOString(),
+          }));
+        },
+        {
+          detail: { tags: ["Instructor Media"] },
+          query: t.Object({
+            lessonId: t.Optional(t.String()),
+          }),
+          headers: t.Object({
+            authorization: t.String({ description: "Authorization token" }),
+          }),
+          response: {
+            200: t.Array(
+              t.Object({
+                id: t.String(),
+                title: t.String(),
+                description: t.String(),
+                mediaType: t.String(),
+                content: t.Nullable(t.String()),
+                url: t.Nullable(t.String()),
+                notes: t.Nullable(t.String()),
+                transcript: t.Nullable(t.String()),
+                lessonId: t.Nullable(t.String()),
+                metadata: t.Nullable(t.Any()),
+                createdAt: t.String(),
+                updatedAt: t.String(),
+              }),
+            ),
+            403: t.Object({
+              error: t.String(),
+            }),
+          },
+        },
+      )
+      .delete(
+        "/:mediaId",
+        async ({
+          Auth: { hasRole, user },
+          params,
+        }: {
+          Auth: {
+            hasRole: (role: string) => boolean;
+            user: { id: string };
+          };
+          params: {
+            mediaId: string;
+          };
+        }) => {
+          if (!hasRole("INSTRUCTOR")) return error(403, "Forbidden");
+          return await deleteMedia({
+            id: params.mediaId,
+            userId: user.id,
+          });
+        },
+        {
+          detail: { tags: ["Instructor Media"] },
+          params: t.Object({
+            mediaId: t.String(),
+          }),
+          headers: t.Object({
+            authorization: t.String({ description: "Authorization token" }),
+          }),
+        },
+      ),
+  )
+  .get(
+    "/:identifier",
+    async ({ params }) => {
+      const course = await getCourse(params.identifier);
+
+      if (!course) {
+        throw new NotFoundError("Course not found");
+      }
+
+      return {
+        ...course,
+        createdAt: course.createdAt.toISOString(),
+        updatedAt: course.updatedAt.toISOString(),
+      };
+    },
+    {
+      detail: { tags: ["Instructor Courses"] },
+      params: t.Object({
+        identifier: t.String({ description: "The course ID or slug" }),
+      }),
+      response: {
+        200: t.Object({
+          id: t.String(),
+          title: t.String(),
+          slug: t.String(),
+          description: t.String(),
+          published: t.Boolean(),
+          createdAt: t.String(),
+          updatedAt: t.String(),
+          userId: t.String(),
+          conceptIds: t.Array(t.String()),
+          sections: t.Array(
+            t.Object({
+              id: t.String(),
+              title: t.String(),
+              description: t.String(),
+              order: t.Number(),
+              conceptIds: t.Array(t.String()),
+              lessons: t.Array(
+                t.Object({
+                  id: t.String(),
+                  title: t.String(),
+                  description: t.String(),
+                  content: t.Any(),
+                  order: t.Number(),
+                  conceptIds: t.Array(t.String()),
+                  media: t.Array(
+                    t.Object({
+                      id: t.String(),
+                      title: t.String(),
+                      description: t.String(),
+                      mediaType: t.String(),
+                      content: t.Nullable(t.String()),
+                      url: t.Nullable(t.String()),
+                      notes: t.Nullable(t.String()),
+                      transcript: t.Nullable(t.String()),
+                      metadata: t.Nullable(t.Any()),
+                      createdAt: t.String(),
+                      updatedAt: t.String(),
+                    }),
+                  ),
+                }),
+              ),
+            }),
+          ),
+        }),
+        404: t.Object({
+          error: t.String(),
+        }),
+      },
+    },
+  )
+  .post(
+    "/:courseId/sections",
+    async ({
+      Auth: { hasRole, user },
+      body,
+      params,
+    }: {
+      body: {
+        title: string;
+        description: string;
+        content: any;
+        conceptIds: string[];
+      };
+      Auth: {
+        hasRole: (role: string) => boolean;
+        user: { id: string };
+      };
+      params: {
+        courseId: string;
+      };
+    }) => {
+      if (!hasRole("INSTRUCTOR")) return error(403, "Forbidden");
+      try {
+        const section = createSection({
+          ...body,
+          id: params.courseId,
+          userId: user.id,
+        });
+        return section;
+      } catch (err) {
+        return error(403, "Not authorized");
+      }
+    },
+    {
+      detail: { tags: ["Instructor Courses"] },
+      body: t.Object({
+        title: t.String(),
+        description: t.String(),
+        conceptIds: t.Array(t.String()),
+      }),
+      params: t.Object({
+        courseId: t.String(),
+      }),
+      headers: t.Object({
+        authorization: t.String({ description: "Authorization token" }),
+      }),
+    },
+  )
+  .patch(
+    "/:courseId/sections/order",
+    async ({
+      params,
+      body,
+      Auth: { hasRole, user },
+    }: {
+      params: { courseId: string };
+      body: { order: { id: string; order: number }[] };
+      Auth: {
+        hasRole: (role: string) => boolean;
+        user: { id: string };
+      };
+    }) => {
+      if (!hasRole("INSTRUCTOR")) return error(403, "Forbidden");
+      const { order } = body;
+      return await updateCourseSectionOrder({
+        userId: user.id,
+        id: params.courseId,
+        order,
+      });
+    },
+    {
+      detail: { tags: ["Instructor Courses"] },
+      body: t.Object({
+        order: t.Array(
+          t.Object({
+            id: t.String(),
+            order: t.Number(),
+          }),
+        ),
+      }),
+      headers: t.Object({
+        authorization: t.String({ description: "Authorization token" }),
+      }),
+      params: t.Object({
+        courseId: t.String(),
+      }),
+    },
+  )
+  .patch(
+    "/:courseId/sections/:sectionId",
+    async ({
+      Auth: { hasRole, user },
+      body,
+      params,
+    }: {
+      body: {
+        title?: string;
+        description?: string;
+        conceptIds?: string[];
+      };
+      Auth: {
+        hasRole: (role: string) => boolean;
+        user: { id: string };
+      };
+      params: {
+        sectionId: string;
+      };
+    }) => {
+      if (!hasRole("INSTRUCTOR")) return error(403, "Forbidden");
+      const payload: {
+        id: string;
+        userId: string;
+        title?: string;
+        description?: string;
+        conceptIds?: string[];
+      } = { id: params.sectionId, userId: user.id };
+      if (body.title !== undefined) payload.title = body.title;
+      if (body.description !== undefined)
+        payload.description = body.description;
+      if (body.conceptIds !== undefined) payload.conceptIds = body.conceptIds;
+      return await updateSection(payload);
+    },
+    {
+      detail: { tags: ["Instructor Courses"] },
+      body: t.Object({
+        title: t.String(),
+        description: t.String(),
+        conceptIds: t.Array(t.String()),
+      }),
+      headers: t.Object({
+        authorization: t.String({ description: "Authorization token" }),
+      }),
+    },
+  )
+  .delete(
+    "/:courseId/sections/:sectionId",
+    async ({
+      params,
+      Auth: { hasRole, user },
+    }: {
+      params: { sectionId: string };
+      Auth: {
+        hasRole: (role: string) => boolean;
+        user: { id: string };
+      };
+    }) => {
+      if (!hasRole("INSTRUCTOR")) return error(403, "Forbidden");
+      return await deleteSection({ id: params.sectionId, userId: user.id });
+    },
+    {
+      detail: { tags: ["Instructor Courses"] },
+      params: t.Object({
+        courseId: t.String(),
+        sectionId: t.String(),
+      }),
+    },
+  )
+  .post(
+    "/:courseId/sections/:sectionId/lessons",
+    async ({
+      Auth: { hasRole, user },
+      body,
+      params,
+    }: {
+      body: {
+        title: string;
+        description: string;
+        content: string;
+        conceptIds: string[];
+      };
+      Auth: {
+        hasRole: (role: string) => boolean;
+        user: { id: string };
+      };
+      params: {
+        sectionId: string;
+      };
+    }) => {
+      if (!hasRole("INSTRUCTOR")) return error(403, "Forbidden");
+      return await createLesson({
+        sectionId: params.sectionId,
+        title: body.title,
+        description: body.description,
+        content: body.content,
+        conceptIds: body.conceptIds,
+        userId: user.id,
+      });
+    },
+    {
+      detail: { tags: ["Instructor Courses"] },
+    },
+  )
+  .patch(
+    "/:courseId/lessons/order",
+    async ({
+      params,
+      body,
+      Auth: { hasRole, user },
+    }: {
+      params: { courseId: string };
+      body: { ordering: { id: string; sectionId: string; order: number }[] };
+      Auth: {
+        hasRole: (role: string) => boolean;
+        user: { id: string };
+      };
+    }) => {
+      if (!hasRole("INSTRUCTOR")) return error(403, "Forbidden");
+      const { ordering } = body;
+      return await updateCourseLessonOrder({
+        userId: user.id,
+        courseId: params.courseId,
+        ordering,
+      });
+    },
+    {
+      detail: { tags: ["Instructor Courses"] },
+      body: t.Object({
+        ordering: t.Array(
+          t.Object({
+            id: t.String(),
+            sectionId: t.String(),
+            order: t.Number(),
+          }),
+        ),
+      }),
+      headers: t.Object({
+        authorization: t.String({ description: "Authorization token" }),
+      }),
+      params: t.Object({
+        courseId: t.String(),
+      }),
+    },
+  )
+  .patch(
+    "/:courseId/sections/:sectionId/lessons/:lessonId",
+    async ({
+      Auth: { hasRole, user },
+      body,
+      params,
+    }: {
+      body: {
+        title?: string;
+        description?: string;
+        content?: string;
+        conceptIds?: string[];
+      };
+      Auth: {
+        hasRole: (role: string) => boolean;
+        user: { id: string };
+      };
+      params: {
+        sectionId: string;
+        lessonId: string;
+      };
+    }) => {
+      if (!hasRole("INSTRUCTOR")) return error(403, "Forbidden");
+
+      return await updateLesson({
+        lessonId: params.lessonId,
+        sectionId: params.sectionId,
+        updates: {
+          ...(body.title && { title: body.title }),
+          ...(body.description && { description: body.description }),
+          ...(body.content && { content: body.content }),
+          ...(body.conceptIds && { conceptIds: body.conceptIds }),
+        },
+        userId: user.id,
+      });
+    },
+    {
+      detail: { tags: ["Instructor Courses"] },
+      body: t.Object({
+        title: t.Optional(t.String()),
+        description: t.Optional(t.String()),
+        content: t.Optional(t.String()),
+        conceptIds: t.Optional(t.Array(t.String())),
+      }),
+      params: t.Object({
+        courseId: t.String(),
+        sectionId: t.String(),
+        lessonId: t.String(),
+      }),
+      headers: t.Object({
+        authorization: t.String({ description: "Authorization token" }),
+      }),
+    },
+  )
+  .delete(
+    "/:courseId/sections/:sectionId/lessons/:lessonId",
+    async ({
+      params,
+      Auth: { hasRole, user },
+    }: {
+      params: { lessonId: string; sectionId: string };
+      Auth: {
+        hasRole: (role: string) => boolean;
+        user: { id: string };
+      };
+    }) => {
+      if (!hasRole("INSTRUCTOR")) return error(403, "Forbidden");
+      return await deleteLesson({
+        id: params.lessonId,
+        sectionId: params.sectionId,
+        userId: user.id,
+      });
+    },
+    {
+      detail: { tags: ["Instructor Courses"] },
+      params: t.Object({
+        courseId: t.String(),
+        sectionId: t.String(),
+        lessonId: t.String(),
+      }),
+      headers: t.Object({
+        authorization: t.String({ description: "Authorization token" }),
+      }),
+    },
+  );
