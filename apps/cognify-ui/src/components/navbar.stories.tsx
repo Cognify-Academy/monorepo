@@ -288,7 +288,7 @@ const NavbarWrapper: any = ({ authState }: any) => {
                     </button>
                   </a>
                   <a href="/signup">
-                    <button className="inline-flex items-center rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50">
+                    <button className="inline-flex items-center rounded-md border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50">
                       Sign up
                     </button>
                   </a>
@@ -452,7 +452,7 @@ const NavbarWrapper: any = ({ authState }: any) => {
                       </button>
                     </a>
                     <a href="/signup" onClick={() => setIsMenuOpen(false)}>
-                      <button className="inline-flex w-full items-center justify-center rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50">
+                      <button className="inline-flex w-full items-center justify-center rounded-md border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50">
                         Sign up
                       </button>
                     </a>

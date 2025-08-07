@@ -74,8 +74,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const response = await apiClient.refresh();
       decodeTokenAndSetUser(response.token);
     } catch (error) {
-      setUser(null);
-      setAccessToken(null);
+      // If it's a 401 error (no refresh token), this is normal for new users
+      // Don't treat it as an error, just set user to null
+      if (error instanceof ApiError && error.status === 401) {
+        setUser(null);
+        setAccessToken(null);
+      } else {
+        console.error("Auth check error:", error);
+        setUser(null);
+        setAccessToken(null);
+      }
     } finally {
       setIsLoading(false);
     }

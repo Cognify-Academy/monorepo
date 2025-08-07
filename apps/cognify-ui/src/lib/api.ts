@@ -31,13 +31,6 @@ class ApiClient {
     const isAuthEndpoint = endpoint.startsWith("/api/auth/");
     const url = isAuthEndpoint ? endpoint : `${this.baseUrl}${endpoint}`;
 
-    console.log("API Request:", {
-      endpoint,
-      isAuthEndpoint,
-      url,
-      baseUrl: this.baseUrl,
-    });
-
     const config: RequestInit = {
       headers: {
         "Content-Type": "application/json",
@@ -52,11 +45,6 @@ class ApiClient {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("API Error:", {
-          status: response.status,
-          statusText: response.statusText,
-          errorText,
-        });
         throw new ApiError(errorText || "Request failed", response.status);
       }
 
@@ -67,7 +55,6 @@ class ApiClient {
         return (await response.text()) as unknown as T;
       }
     } catch (error) {
-      console.error("API Network Error:", error);
       if (error instanceof ApiError) {
         throw error;
       }

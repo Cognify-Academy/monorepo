@@ -213,7 +213,7 @@ export function Navbar() {
                   <Button>Log in</Button>
                 </Link>
                 <Link href="/signup">
-                  <Button className="border border-gray-300 bg-transparent text-gray-900 hover:bg-gray-50">
+                  <Button className="border border-gray-300 text-gray-900 hover:bg-gray-50">
                     Sign up
                   </Button>
                 </Link>
@@ -333,7 +333,7 @@ export function Navbar() {
                     <Button className="w-full">Log in</Button>
                   </Link>
                   <Link href="/signup" onClick={closeAllMenus}>
-                    <Button className="w-full border border-gray-300 bg-transparent text-gray-900 hover:bg-gray-50">
+                    <Button className="w-full border border-gray-300 text-gray-900 hover:bg-gray-50">
                       Sign up
                     </Button>
                   </Link>
