@@ -7,10 +7,7 @@ export default function Footer() {
     { href: "/knowledge-graphs", label: "Knowledge Graphs" },
   ];
 
-  const companyLinks = [
-    { href: "/about", label: "About" },
-    { href: "/blog", label: "Blog" },
-  ];
+  const companyLinks = [{ href: "/about", label: "About" }];
 
   const supportLinks = [{ href: "/contact", label: "Contact" }];
 

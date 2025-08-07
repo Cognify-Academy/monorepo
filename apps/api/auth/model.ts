@@ -29,26 +29,54 @@ export async function signup({
   password: string;
 }) {
   console.log("Signing up user", username);
-  const password = await bcrypt.hash(rawPassword, 10);
-  const user = await prisma.user.create({
-    data: { name, username, email, password },
-  });
-  await prisma.userRole.create({
-    data: { userId: user.id, role: "STUDENT" },
-  });
-  console.log(`Signup: created user ${user.id}`);
-  const token = jwt.sign(
-    { id: user.id, username, roles: ["STUDENT"] },
-    JWT_SECRET as string,
-    {
-      expiresIn: "1hr",
-    },
-  );
-  console.debug("Signup: created token");
-  return new Response(JSON.stringify({ token }), {
-    headers: { "Content-Type": "application/json" },
-    status: 200,
-  });
+
+  try {
+    const password = await bcrypt.hash(rawPassword, 10);
+    const user = await prisma.user.create({
+      data: { name, username, email, password },
+    });
+    await prisma.userRole.create({
+      data: { userId: user.id, role: "STUDENT" },
+    });
+    console.log(`Signup: created user ${user.id}`);
+    const token = jwt.sign(
+      { id: user.id, username, roles: ["STUDENT"] },
+      JWT_SECRET,
+      {
+        expiresIn: "1hr",
+      },
+    );
+    console.debug("Signup: created token");
+    return new Response(JSON.stringify({ token }), {
+      headers: { "Content-Type": "application/json" },
+      status: 200,
+    });
+  } catch (error: any) {
+    console.error("Signup error:", error);
+
+    // Handle unique constraint violations
+    if (error.code === "P2002") {
+      const field = error.meta?.target?.[0];
+      let message = "User already exists";
+
+      if (field === "email") {
+        message = "Email already registered";
+      } else if (field === "username") {
+        message = "Username already taken";
+      }
+
+      return new Response(JSON.stringify({ error: message }), {
+        status: 409, // Conflict
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Handle other errors
+    return new Response(JSON.stringify({ error: "Failed to create user" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 }
 
 export async function login({
