@@ -3,10 +3,10 @@ import "./mission-animation.css";
 
 export default function MissionAnimation() {
   // Use refs to get direct access to the DOM elements of your nodes
-  const coreConceptRef = useRef(null);
-  const relatedIdeaRefs = useRef([]);
+  const coreConceptRef = useRef<any>(null);
+  const relatedIdeaRefs = useRef<any[]>([]);
 
-  const [lineCoordinates, setLineCoordinates] = useState([]);
+  const [lineCoordinates, setLineCoordinates] = useState<any[]>([]);
 
   // Node data with initial positioning classes (Tailwind)
   const relatedIdeasData = [
@@ -36,8 +36,8 @@ export default function MissionAnimation() {
   const updateLines = useCallback(() => {
     if (!coreConceptRef.current) return;
 
-    const newLines = [];
-    const coreRect = coreConceptRef.current.getBoundingClientRect();
+    const newLines: any[] = [];
+    const coreRect = (coreConceptRef.current as any).getBoundingClientRect();
     // Get the center of the core concept node relative to the SVG container
     // You'll need to adjust these for the parent container's offset later
     const coreX = coreRect.left + coreRect.width / 2;
@@ -46,7 +46,7 @@ export default function MissionAnimation() {
     relatedIdeasData.forEach((_, index) => {
       const relatedRef = relatedIdeaRefs.current[index];
       if (relatedRef) {
-        const relatedRect = relatedRef.getBoundingClientRect();
+        const relatedRect = (relatedRef as any).getBoundingClientRect();
         const relatedX = relatedRect.left + relatedRect.width / 2;
         const relatedY = relatedRect.top + relatedRect.height / 2;
 
@@ -61,7 +61,7 @@ export default function MissionAnimation() {
         // Get the SVG element's position
         const svgElement = document.querySelector(
           ".mission-animation-container svg",
-        );
+        ) as any;
         const svgRect = svgElement.getBoundingClientRect();
 
         newLines.push({
@@ -78,7 +78,7 @@ export default function MissionAnimation() {
   // Use useEffect to run updateLines on mount and when component re-renders
   // And use requestAnimationFrame for smooth animation updates
   useEffect(() => {
-    let animationFrameId;
+    let animationFrameId: any;
 
     const animate = () => {
       updateLines();
@@ -104,7 +104,7 @@ export default function MissionAnimation() {
       {relatedIdeasData.map(({ label, className, delay }, index) => (
         <div
           key={label}
-          ref={(el) => (relatedIdeaRefs.current[index] = el)} // Attach refs to related ideas
+          ref={(el: any) => (relatedIdeaRefs.current[index] = el)} // Attach refs to related ideas
           className={`pulse-animation float-animation absolute z-0 flex h-16 w-16 items-center justify-center rounded-full text-center text-xs text-white shadow ${className}`}
           style={{ animationDelay: delay }}
         >

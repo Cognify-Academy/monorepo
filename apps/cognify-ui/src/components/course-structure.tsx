@@ -82,7 +82,7 @@ export function CourseStructure({
     if (saveTimeout.current) {
       clearTimeout(saveTimeout.current);
     }
-    saveTimeout.current = setTimeout(() => {}, 1000);
+    saveTimeout.current = setTimeout(() => {}, 1000) as any;
   }, []);
 
   const showError = (message: string) => {

@@ -6,12 +6,12 @@ import {
   DialogPanel,
   Dialog as HeadlessDialog,
 } from "@headlessui/react";
-import type React from "react";
+import React from "react";
 
 interface DialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  children: React.ReactNode;
+  children: any;
 }
 
 export function Dialog({ open, onOpenChange, children }: DialogProps) {
@@ -36,15 +36,15 @@ export function DialogContent({
   children,
 }: {
   className?: string;
-  children: React.ReactNode;
+  children: any;
 }) {
   return <div className={className}>{children}</div>;
 }
 
-export function DialogHeader({ children }: { children: React.ReactNode }) {
+export function DialogHeader({ children }: { children: any }) {
   return <div className="mb-4">{children}</div>;
 }
 
-export function DialogTitle({ children }: { children: React.ReactNode }) {
+export function DialogTitle({ children }: { children: any }) {
   return <h2 className="text-lg font-semibold text-gray-900">{children}</h2>;
 }

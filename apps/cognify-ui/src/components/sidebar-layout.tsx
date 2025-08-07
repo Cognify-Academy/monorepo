@@ -1,7 +1,6 @@
 "use client";
 
 import { IconButton } from "@/components/icon-button";
-import type { Module } from "@/data/lessons";
 import { SidebarIcon } from "@/icons/sidebar-icon";
 import {
   CloseButton,
@@ -14,6 +13,17 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type React from "react";
 import { createContext, useContext, useState } from "react";
+
+interface Lesson {
+  id: string;
+  title: string;
+}
+
+interface Module {
+  id: string;
+  title: string;
+  lessons: Lesson[];
+}
 // Removed Navbar import as it's not needed for sidebar layout
 
 export const SidebarContext = createContext<{

@@ -1,6 +1,6 @@
 import { clsx } from "clsx";
 import Link, { type LinkProps } from "next/link";
-import type React from "react";
+import React from "react";
 
 export function Breadcrumbs(props: React.ComponentProps<"nav">) {
   return (
@@ -29,7 +29,7 @@ export function Breadcrumb({
   className,
 }: {
   href?: LinkProps["href"];
-  children: React.ReactNode;
+  children: any;
   className?: string;
 }) {
   if (href) {

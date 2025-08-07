@@ -1,8 +1,10 @@
-import type React from "react";
+import React from "react";
 
-export function Logo() {
+export function Logo({ className }: React.ComponentProps<"div">) {
   return (
-    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
+    <div
+      className={`flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 ${className || ""}`}
+    >
       <svg
         className="h-5 w-5 text-white"
         fill="none"

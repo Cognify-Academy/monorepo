@@ -39,9 +39,7 @@ const useMockAuth = (): AuthContextType => {
 };
 
 // Wrapper component that provides mock auth context
-const NavbarWrapper: React.FC<{ authState: StoryAuthState }> = ({
-  authState,
-}) => {
+const NavbarWrapper: any = ({ authState }: any) => {
   const mockAuthValue: AuthContextType = {
     isAuthenticated: authState.isAuthenticated,
     user: authState.user,

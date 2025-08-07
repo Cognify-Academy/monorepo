@@ -8,7 +8,7 @@ import {
   MenuProps,
 } from "@headlessui/react";
 import Link from "next/link";
-import type React from "react";
+import React from "react";
 
 export function Dropdown(props: MenuProps) {
   return <Menu {...props} />;
@@ -36,7 +36,7 @@ export function DropdownItem({
   children,
 }: {
   href: string;
-  children: React.ReactNode;
+  children: any;
 }) {
   return (
     <MenuItem>

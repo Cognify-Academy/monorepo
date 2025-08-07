@@ -85,19 +85,19 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
       let id = generateId(getTextContent(children));
       return <h4 id={id}>{children}</h4>;
     },
-    img: ({ alt, ...props }) => {
+    img: ({ alt, ...props }: any) => {
       let schemePlaceholder = encodeURIComponent("{scheme}");
       let width, height;
-      if (IMAGE_DIMENSION_REGEX.test(alt)) {
+      if (alt && IMAGE_DIMENSION_REGEX.test(alt)) {
         [width, height] = alt.split("|")[1].split("x").map(Number);
         alt = alt.split("|")[0];
       }
-      if (props.src.includes(schemePlaceholder)) {
+      if (props.src && props.src.includes(schemePlaceholder)) {
         return (
           <>
             <Image
               {...props}
-              alt={alt}
+              alt={alt || ""}
               width={width}
               height={height}
               src={props.src.replace(schemePlaceholder, "light")}
@@ -105,7 +105,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
             />
             <Image
               {...props}
-              alt={alt}
+              alt={alt || ""}
               width={width}
               height={height}
               src={props.src.replace(schemePlaceholder, "dark")}
@@ -114,10 +114,13 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
           </>
         );
       } else {
-        return <Image {...props} alt={alt} width={width} height={height} />;
+        if (!props.src) return null;
+        return (
+          <Image {...props} alt={alt || ""} width={width} height={height} />
+        );
       }
     },
-    async pre(props) {
+    async pre(props: any) {
       let child = React.Children.only(props.children);
       if (!child) return null;
       let { children: code, className } = child.props;

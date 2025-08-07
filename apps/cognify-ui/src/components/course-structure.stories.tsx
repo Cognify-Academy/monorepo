@@ -21,7 +21,7 @@ const mockConcepts: ConceptType[] = [
 ];
 
 // Mock sections data with conceptIds
-const mockSections: Section[] = [
+const mockSections: any[] = [
   {
     id: "section-1",
     title: "Getting Started",
@@ -36,6 +36,7 @@ const mockSections: Section[] = [
         content: null,
         order: 0,
         conceptIds: ["1"],
+        media: [],
       },
       {
         id: "lesson-1-2",
@@ -44,6 +45,7 @@ const mockSections: Section[] = [
         content: null,
         order: 1,
         conceptIds: ["1", "7"],
+        media: [],
       },
     ],
   },
@@ -60,7 +62,8 @@ const mockSections: Section[] = [
         description: "Fundamental concepts you need to know",
         content: null,
         order: 0,
-        conceptIds: ["2"],
+        conceptIds: ["1"],
+        media: [],
       },
       {
         id: "lesson-2-2",
@@ -69,6 +72,7 @@ const mockSections: Section[] = [
         content: null,
         order: 1,
         conceptIds: ["3", "4"],
+        media: [],
       },
       {
         id: "lesson-2-3",
@@ -77,6 +81,7 @@ const mockSections: Section[] = [
         content: null,
         order: 2,
         conceptIds: ["3", "5"],
+        media: [],
       },
     ],
   },
@@ -94,6 +99,7 @@ const mockSections: Section[] = [
         content: null,
         order: 0,
         conceptIds: ["8", "6"],
+        media: [],
       },
     ],
   },
@@ -286,6 +292,7 @@ export const NewSections: Story = {
             content: null,
             order: 0,
             conceptIds: [],
+            media: [],
           },
         ],
       },
@@ -324,7 +331,8 @@ export const LargeCourse: Story = {
             description: "Making your applications faster and more efficient",
             content: null,
             order: 0,
-            conceptIds: ["5"],
+            conceptIds: ["1"],
+            media: [],
           },
           {
             id: "lesson-4-2",
@@ -341,7 +349,8 @@ export const LargeCourse: Story = {
             description: "Comprehensive testing approaches",
             content: null,
             order: 2,
-            conceptIds: ["6"],
+            conceptIds: ["1"],
+            media: [],
           },
           {
             id: "lesson-4-4",
@@ -349,7 +358,8 @@ export const LargeCourse: Story = {
             description: "Getting your application to production",
             content: null,
             order: 3,
-            conceptIds: ["8"],
+            conceptIds: ["1"],
+            media: [],
           },
         ],
       },
@@ -382,7 +392,8 @@ export const LargeCourse: Story = {
             description: "Peer review and instructor feedback",
             content: null,
             order: 2,
-            conceptIds: ["6"],
+            conceptIds: ["1"],
+            media: [],
           },
         ],
       },

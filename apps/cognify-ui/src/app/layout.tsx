@@ -2,7 +2,7 @@ import { AuthProvider } from "@/contexts/auth";
 import { clsx } from "clsx";
 import { GeistMono } from "geist/font/mono";
 import localFont from "next/font/local";
-import type React from "react";
+import React from "react";
 import "./globals.css";
 
 const InterVariable = localFont({
@@ -13,11 +13,7 @@ const InterVariable = localFont({
   ],
 });
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: any }) {
   return (
     <html
       lang="en"
