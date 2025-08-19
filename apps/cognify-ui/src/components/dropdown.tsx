@@ -36,7 +36,14 @@ export function DropdownItem({
   children,
 }: {
   href: string;
-  children: React.ReactNode;
+  children:
+    | string
+    | number
+    | boolean
+    | null
+    | undefined
+    | JSX.Element
+    | JSX.Element[];
 }) {
   return (
     <MenuItem>

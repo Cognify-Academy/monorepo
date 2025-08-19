@@ -149,13 +149,17 @@ type Story = StoryObj<typeof CourseStructure>;
 const CourseStructureWithState = (args: {
   sections?: Section[];
   availableConcepts?: ConceptType[];
+  courseId: string;
+  onSectionsChange?: (sections: Section[]) => void;
 }) => {
   const [sections, setSections] = useState<Section[]>(args.sections || []);
 
   return (
     <CourseStructure
       {...args}
+      courseId={args.courseId}
       sections={sections}
+      availableConcepts={args.availableConcepts || []}
       onSectionsChange={(newSections) => {
         setSections(newSections);
         args.onSectionsChange?.(newSections);
@@ -345,6 +349,7 @@ export const LargeCourse: Story = {
             content: null,
             order: 1,
             conceptIds: ["5", "8"],
+            media: [],
           },
           {
             id: "lesson-4-3",
@@ -380,6 +385,7 @@ export const LargeCourse: Story = {
             content: null,
             order: 0,
             conceptIds: ["3", "5"],
+            media: [],
           },
           {
             id: "lesson-5-2",
@@ -388,6 +394,7 @@ export const LargeCourse: Story = {
             content: null,
             order: 1,
             conceptIds: ["1", "2", "4", "8"],
+            media: [],
           },
           {
             id: "lesson-5-3",

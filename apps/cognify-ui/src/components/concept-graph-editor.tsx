@@ -17,6 +17,7 @@ import {
   useNodesState,
   useReactFlow,
   type Edge,
+  type EdgeChange,
   type Node,
   type OnConnect,
 } from "@xyflow/react";
@@ -61,11 +62,6 @@ interface GraphData {
 
 interface LayoutOptions {
   direction: string;
-}
-
-interface EdgeChange {
-  type: string;
-  item: Edge;
 }
 
 function generateNode(concept: Concept, index: number) {
@@ -199,7 +195,9 @@ const getLayoutedElements = (
   edges: Edge[],
   options: LayoutOptions,
 ) => {
-  const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({} as Record<string, never>));
+  const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(
+    () => ({}) as Record<string, never>,
+  );
   g.setGraph({ rankdir: options.direction });
 
   edges.forEach((edge) => g.setEdge(edge.source, edge.target));
@@ -217,15 +215,14 @@ const getLayoutedElements = (
 
   return {
     nodes: nodes.map((node) => {
-        const position = g.node(node.id);
-        // We are shifting the dagre node position (anchor=center center) to the top left
-        // so it matches the React Flow node anchor point (top left).
-        const x = position.x - (node.measured?.width ?? 0) / 2;
-        const y = position.y - (node.measured?.height ?? 0) / 2;
+      const position = g.node(node.id);
+      // We are shifting the dagre node position (anchor=center center) to the top left
+      // so it matches the React Flow node anchor point (top left).
+      const x = position.x - (node.measured?.width ?? 0) / 2;
+      const y = position.y - (node.measured?.height ?? 0) / 2;
 
-        return { ...node, position: { x, y }, data: node.data || {} };
-      },
-    ),
+      return { ...node, position: { x, y }, data: node.data || {} };
+    }),
     edges,
   };
 };
@@ -240,7 +237,9 @@ function LayoutFlow() {
   const [isAddDialogOpen, setAddDialogOpen] = useState(false);
   const [selectedEdge, setSelectedEdge] = useState<IdeaEdge | null>(null);
   const [isEdgeDialogOpen, setIsEdgeDialogOpen] = useState(false);
-  const [importances, setImportances] = useState<Record<string, unknown>>({});
+  const [importances, setImportances] = useState<
+    Record<string, { code: number; category: string; description: string }>
+  >({});
   const { accessToken } = useAuth();
 
   useEffect(() => {
@@ -326,15 +325,12 @@ function LayoutFlow() {
   const handleEdgesChange = (changes: EdgeChange[]) => {
     changes.forEach(async (change: EdgeChange) => {
       if (change.type === "remove") {
-        await fetch(
-          `${getApiUrl()}/api/v1/concepts/relation/${change.item.id}/`,
-          {
-            method: "DELETE",
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
+        await fetch(`${getApiUrl()}/api/v1/concepts/relation/${change.id}/`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
           },
-        );
+        });
       }
     });
 
@@ -385,13 +381,10 @@ function LayoutFlow() {
     }
   };
 
-  const onNodeDoubleClick = useCallback(
-    (_: React.MouseEvent, node: Node) => {
-      setSelectedNode(node);
-      setEditDialogOpen(true);
-    },
-    [],
-  );
+  const onNodeDoubleClick = useCallback((_: React.MouseEvent, node: Node) => {
+    setSelectedNode(node);
+    setEditDialogOpen(true);
+  }, []);
 
   const handleAddNode = async (
     name: string,

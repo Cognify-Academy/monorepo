@@ -120,9 +120,9 @@ export default function MissionAnimation() {
       {relatedIdeasData.map(({ label, className, delay }, index) => (
         <div
           key={label}
-          ref={(el: HTMLDivElement | null) =>
-            (relatedIdeaRefs.current[index] = el)
-          } // Attach refs to related ideas
+          ref={(el: HTMLDivElement | null) => {
+            relatedIdeaRefs.current[index] = el;
+          }} // Attach refs to related ideas
           className={`pulse-animation float-animation absolute z-0 flex h-16 w-16 items-center justify-center rounded-full text-center text-xs text-white shadow ${className}`}
           style={{ animationDelay: delay }}
         >

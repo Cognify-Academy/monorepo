@@ -13,11 +13,8 @@ const InterVariable = localFont({
   ],
 });
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default function RootLayout({ children }: { children: any }) {
   return (
     <html
       lang="en"
