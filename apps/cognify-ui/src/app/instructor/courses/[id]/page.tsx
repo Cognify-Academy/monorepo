@@ -65,11 +65,13 @@ export default function EditCoursePage({
           ...courseData,
           sections: courseData.sections.map((section) => ({
             ...section,
-            conceptIds: (section as any).conceptIds || [],
+            conceptIds: (section as unknown as Section).conceptIds || [],
             lessons: section.lessons.map((lesson) => ({
               ...lesson,
-              conceptIds: (lesson as any).conceptIds || [],
-              media: (lesson as any).media || [],
+              conceptIds:
+                (lesson as unknown as { conceptIds?: string[] }).conceptIds ||
+                [],
+              media: (lesson as unknown as { media?: unknown[] }).media || [],
             })),
           })),
         };
@@ -105,9 +107,13 @@ export default function EditCoursePage({
         accessToken,
       );
       setCourse((prev) => (prev ? { ...prev, ...updatedCourse } : null));
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to update course:", error);
-      setError(error.message || "Failed to update course. Please try again.");
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Failed to update course. Please try again.",
+      );
     } finally {
       setIsLoading(false);
     }

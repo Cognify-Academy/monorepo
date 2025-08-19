@@ -24,7 +24,7 @@ export interface CourseDetail extends Omit<Course, "instructors"> {
       id: string;
       title: string;
       description: string;
-      content: any;
+      content: string | null;
       order: number;
       conceptIds: string[];
       media: Array<{
@@ -36,7 +36,7 @@ export interface CourseDetail extends Omit<Course, "instructors"> {
         url?: string;
         notes?: string;
         transcript?: string;
-        metadata?: any;
+        metadata?: Record<string, unknown>;
         createdAt: string;
         updatedAt: string;
       }>;

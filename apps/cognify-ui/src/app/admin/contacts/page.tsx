@@ -5,7 +5,7 @@ import Footer from "@/components/footer";
 import { Navbar } from "@/components/navbar";
 import { useAuth } from "@/contexts/auth";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface Contact {
   id: string;
@@ -27,23 +27,7 @@ export default function AdminContactsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    if (!isLoading) {
-      if (!isAuthenticated) {
-        router.push("/login");
-        return;
-      }
-
-      if (!hasRole("ADMIN")) {
-        router.push("/");
-        return;
-      }
-
-      fetchContacts();
-    }
-  }, [isAuthenticated, hasRole, isLoading, router]);
-
-  const fetchContacts = async () => {
+  const fetchContacts = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -69,7 +53,18 @@ export default function AdminContactsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [accessToken, router]);
+
+  useEffect(() => {
+    if (isAuthenticated && !isLoading) {
+      if (!hasRole("ADMIN")) {
+        router.push("/");
+        return;
+      }
+
+      fetchContacts();
+    }
+  }, [isAuthenticated, hasRole, isLoading, router, fetchContacts]);
 
   const updateContactStatus = async (id: string, status: Contact["status"]) => {
     try {

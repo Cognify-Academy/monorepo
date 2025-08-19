@@ -17,6 +17,14 @@ interface EnrolledCourse {
   estimatedTimeLeft: string;
 }
 
+interface Course {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  conceptIds?: string[];
+}
+
 interface EnrolledCoursesProps {
   title?: string;
   subtitle?: string;
@@ -45,7 +53,10 @@ const enrolledIcons = [
   "M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z",
 ];
 
-function transformEnrolledCourse(course: any, index: number): EnrolledCourse {
+function transformEnrolledCourse(
+  course: Course,
+  index: number,
+): EnrolledCourse {
   const colorIndex = index % enrolledColors.length;
   const iconIndex = index % enrolledIcons.length;
 
@@ -211,7 +222,7 @@ export function EnrolledCourses({
               No enrolled courses yet
             </h3>
             <p className="mb-4 text-gray-600">
-              You haven't enrolled in any courses yet. Start your learning
+              You haven&apos;t enrolled in any courses yet. Start your learning
               journey!
             </p>
             <Link

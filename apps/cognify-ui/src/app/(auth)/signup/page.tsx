@@ -56,6 +56,7 @@ export default function SignupPage() {
       router.push("/"); // Redirect to home page to show logged-in dashboard
     } catch (error) {
       // Error is handled by the auth context
+      console.error("Signup error:", error);
     }
   };
 

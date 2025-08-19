@@ -18,7 +18,7 @@ export default function Page() {
       <form action="/" className="mt-6">
         <OTPInput maxLength={6} />
         <p className="mt-6 text-center text-sm/7 text-gray-600 dark:text-gray-400">
-          Didn't receive a code?{" "}
+          Didn&apos;t receive a code?{" "}
           <button
             type="button"
             className="font-semibold text-gray-950 underline decoration-gray-950/25 underline-offset-2 hover:decoration-gray-950/50 dark:text-white dark:decoration-white/25 dark:hover:decoration-white/50"

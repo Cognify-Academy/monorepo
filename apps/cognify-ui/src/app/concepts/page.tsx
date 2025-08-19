@@ -5,7 +5,7 @@ import Footer from "@/components/footer";
 import { Navbar } from "@/components/navbar";
 import { useAuth } from "@/contexts/auth";
 import { apiClient } from "@/lib/api";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface Concept {
   id: string;
@@ -42,13 +42,7 @@ export default function MyConceptsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (isAuthenticated && accessToken && !authLoading) {
-      fetchConcepts();
-    }
-  }, [isAuthenticated, accessToken, authLoading]);
-
-  const fetchConcepts = async () => {
+  const fetchConcepts = useCallback(async () => {
     if (!accessToken) return;
 
     setIsLoading(true);
@@ -64,7 +58,13 @@ export default function MyConceptsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [accessToken]);
+
+  useEffect(() => {
+    if (isAuthenticated && accessToken && !authLoading) {
+      fetchConcepts();
+    }
+  }, [isAuthenticated, accessToken, authLoading, fetchConcepts]);
 
   if (authLoading) {
     return (
@@ -129,8 +129,8 @@ export default function MyConceptsPage() {
                 </h3>
                 <div className="mt-2 text-sm text-blue-700">
                   <p>
-                    Complete some lessons to see the concepts you've learned
-                    here.
+                    Complete some lessons to see the concepts you&apos;ve
+                    learned here.
                   </p>
                 </div>
               </div>

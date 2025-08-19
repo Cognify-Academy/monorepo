@@ -1,43 +1,59 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "./mission-animation.css";
+
+interface LineCoordinate {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+}
+
+interface RelatedIdeaData {
+  label: string;
+  className: string;
+  delay: string;
+}
 
 export default function MissionAnimation() {
   // Use refs to get direct access to the DOM elements of your nodes
-  const coreConceptRef = useRef<any>(null);
-  const relatedIdeaRefs = useRef<any[]>([]);
+  const coreConceptRef = useRef<HTMLDivElement>(null);
+  const relatedIdeaRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  const [lineCoordinates, setLineCoordinates] = useState<any[]>([]);
+  const [lineCoordinates, setLineCoordinates] = useState<LineCoordinate[]>([]);
 
   // Node data with initial positioning classes (Tailwind)
-  const relatedIdeasData = [
-    {
-      label: "Related Idea 1",
-      className: "bg-green-500 top-10 left-10",
-      delay: "0.5s",
-    },
-    {
-      label: "Related Idea 2",
-      className: "bg-purple-500 top-20 right-10",
-      delay: "1s",
-    },
-    {
-      label: "Related Idea 3",
-      className: "bg-yellow-500 bottom-10 left-20",
-      delay: "1.5s",
-    },
-    {
-      label: "Related Idea 4",
-      className: "bg-red-500 bottom-20 right-20",
-      delay: "2s",
-    },
-  ];
+  const relatedIdeasData = useMemo<RelatedIdeaData[]>(
+    () => [
+      {
+        label: "Related Idea 1",
+        className: "bg-green-500 top-10 left-10",
+        delay: "0.5s",
+      },
+      {
+        label: "Related Idea 2",
+        className: "bg-purple-500 top-20 right-10",
+        delay: "1s",
+      },
+      {
+        label: "Related Idea 3",
+        className: "bg-yellow-500 bottom-10 left-20",
+        delay: "1.5s",
+      },
+      {
+        label: "Related Idea 4",
+        className: "bg-red-500 bottom-20 right-20",
+        delay: "2s",
+      },
+    ],
+    [],
+  );
 
   // This function calculates line coordinates based on node positions
   const updateLines = useCallback(() => {
     if (!coreConceptRef.current) return;
 
-    const newLines: any[] = [];
-    const coreRect = (coreConceptRef.current as any).getBoundingClientRect();
+    const newLines: LineCoordinate[] = [];
+    const coreRect = coreConceptRef.current.getBoundingClientRect();
     // Get the center of the core concept node relative to the SVG container
     // You'll need to adjust these for the parent container's offset later
     const coreX = coreRect.left + coreRect.width / 2;
@@ -46,7 +62,7 @@ export default function MissionAnimation() {
     relatedIdeasData.forEach((_, index) => {
       const relatedRef = relatedIdeaRefs.current[index];
       if (relatedRef) {
-        const relatedRect = (relatedRef as any).getBoundingClientRect();
+        const relatedRect = relatedRef.getBoundingClientRect();
         const relatedX = relatedRect.left + relatedRect.width / 2;
         const relatedY = relatedRect.top + relatedRect.height / 2;
 
@@ -61,7 +77,7 @@ export default function MissionAnimation() {
         // Get the SVG element's position
         const svgElement = document.querySelector(
           ".mission-animation-container svg",
-        ) as any;
+        ) as SVGElement;
         const svgRect = svgElement.getBoundingClientRect();
 
         newLines.push({
@@ -78,7 +94,7 @@ export default function MissionAnimation() {
   // Use useEffect to run updateLines on mount and when component re-renders
   // And use requestAnimationFrame for smooth animation updates
   useEffect(() => {
-    let animationFrameId: any;
+    let animationFrameId: number;
 
     const animate = () => {
       updateLines();
@@ -104,7 +120,9 @@ export default function MissionAnimation() {
       {relatedIdeasData.map(({ label, className, delay }, index) => (
         <div
           key={label}
-          ref={(el: any) => (relatedIdeaRefs.current[index] = el)} // Attach refs to related ideas
+          ref={(el: HTMLDivElement | null) =>
+            (relatedIdeaRefs.current[index] = el)
+          } // Attach refs to related ideas
           className={`pulse-animation float-animation absolute z-0 flex h-16 w-16 items-center justify-center rounded-full text-center text-xs text-white shadow ${className}`}
           style={{ animationDelay: delay }}
         >

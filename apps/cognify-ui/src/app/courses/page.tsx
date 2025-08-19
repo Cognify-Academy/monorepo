@@ -10,11 +10,19 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+interface Course {
+  id: string;
+  title: string;
+  description: string;
+  slug: string;
+  published: boolean;
+}
+
 export default function PublicCoursesPage() {
-  const { isAuthenticated, accessToken, user } = useAuth();
+  const { isAuthenticated, accessToken } = useAuth();
   const router = useRouter();
-  const [courses, setCourses] = useState<any[]>([]);
-  const [enrolledCourses, setEnrolledCourses] = useState<any[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [enrolledCourses, setEnrolledCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [enrolling, setEnrolling] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -73,9 +81,11 @@ export default function PublicCoursesPage() {
       setEnrolledCourses(enrolledData);
 
       router.push(`/courses/${course.slug}`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Enrollment failed:", error);
-      setError(error.message || "Failed to enroll in course");
+      setError(
+        error instanceof Error ? error.message : "Failed to enroll in course",
+      );
     } finally {
       setEnrolling(null);
     }
@@ -140,7 +150,7 @@ export default function PublicCoursesPage() {
               No courses available yet
             </h3>
             <p className="text-gray-600">
-              We're working on adding more courses. Check back soon!
+              We&apos;re working on adding more courses. Check back soon!
             </p>
           </div>
         ) : (

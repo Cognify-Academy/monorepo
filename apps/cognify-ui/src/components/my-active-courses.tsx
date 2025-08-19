@@ -2,7 +2,8 @@
 
 import { useAuth } from "@/contexts/auth";
 import { apiClient } from "@/lib/api";
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
 
 interface Course {
   id: string;
@@ -136,18 +137,7 @@ export function MyActiveCourses({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (
-      context === "instructor" &&
-      isAuthenticated &&
-      hasRole("INSTRUCTOR") &&
-      accessToken
-    ) {
-      fetchInstructorCourses();
-    }
-  }, [context, isAuthenticated, accessToken, hasRole]);
-
-  const fetchInstructorCourses = async () => {
+  const fetchInstructorCourses = useCallback(async () => {
     if (!accessToken) return;
 
     setIsLoading(true);
@@ -167,7 +157,18 @@ export function MyActiveCourses({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [accessToken]);
+
+  useEffect(() => {
+    if (
+      context === "instructor" &&
+      isAuthenticated &&
+      accessToken &&
+      hasRole("INSTRUCTOR")
+    ) {
+      fetchInstructorCourses();
+    }
+  }, [context, isAuthenticated, accessToken, hasRole, fetchInstructorCourses]);
 
   const getProgressPercentage = (completed: number, total: number) => {
     return Math.round((completed / total) * 100);
@@ -260,12 +261,12 @@ export function MyActiveCourses({
                 : "No courses available."}
             </p>
             {context === "instructor" && (
-              <a
+              <Link
                 href="/instructor/courses/new"
                 className="mt-4 inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
               >
                 Create your first course
-              </a>
+              </Link>
             )}
           </div>
         ) : (

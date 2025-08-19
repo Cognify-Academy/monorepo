@@ -1,7 +1,9 @@
 import { Navbar } from "@/components/navbar";
 import type { Meta, StoryObj } from "@storybook/react";
 import { expect, userEvent, within } from "@storybook/test";
-import React, { createContext, ReactNode, useContext } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import React, { createContext, useContext } from "react";
 
 interface User {
   id: string;
@@ -39,7 +41,7 @@ const useMockAuth = (): AuthContextType => {
 };
 
 // Wrapper component that provides mock auth context
-const NavbarWrapper: any = ({ authState }: any) => {
+const NavbarWrapper = ({ authState }: { authState: StoryAuthState }) => {
   const mockAuthValue: AuthContextType = {
     isAuthenticated: authState.isAuthenticated,
     user: authState.user,
@@ -127,44 +129,44 @@ const NavbarWrapper: any = ({ authState }: any) => {
                   />
                 </svg>
               </div>
-              <a href="/" className="text-xl font-semibold text-gray-900">
+              <Link href="/" className="text-xl font-semibold text-gray-900">
                 Cognify Academy
-              </a>
+              </Link>
             </div>
 
             <div className="hidden space-x-8 md:flex">
-              <a
+              <Link
                 href="/"
                 className="font-medium text-gray-900 transition-colors"
               >
                 Home
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/courses"
                 className="text-gray-600 transition-colors hover:text-gray-900"
               >
                 {isAuthenticated ? "My Courses" : "Courses"}
-              </a>
+              </Link>
               {isAuthenticated && (
-                <a
+                <Link
                   href="/browse"
                   className="text-gray-600 transition-colors hover:text-gray-900"
                 >
                   Browse All
-                </a>
+                </Link>
               )}
 
-              {isAuthenticated && hasRole("INSTRUCTOR") && (
+              {hasRole("INSTRUCTOR") && (
                 <div className="relative" ref={instructorMenuRef}>
                   <button
                     onClick={() =>
                       setIsInstructorMenuOpen(!isInstructorMenuOpen)
                     }
-                    className="flex items-center text-gray-600 transition-colors hover:text-gray-900"
+                    className="flex items-center space-x-1 text-gray-600 transition-colors hover:text-gray-900"
                   >
-                    Instructor
+                    <span>Instructor</span>
                     <svg
-                      className="ml-1 h-4 w-4"
+                      className="h-4 w-4"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -178,21 +180,19 @@ const NavbarWrapper: any = ({ authState }: any) => {
                     </svg>
                   </button>
                   {isInstructorMenuOpen && (
-                    <div className="absolute left-0 z-10 mt-2 w-48 rounded-md bg-white py-1 shadow-lg">
-                      <a
+                    <div className="ring-opacity-5 absolute top-full right-0 z-50 mt-2 w-48 rounded-md bg-white py-2 shadow-lg ring-1 ring-black">
+                      <Link
                         href="/instructor/courses/new"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        onClick={() => setIsInstructorMenuOpen(false)}
                       >
-                        Create course
-                      </a>
-                      <a
+                        Create Course
+                      </Link>
+                      <Link
                         href="/instructor/courses"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        onClick={() => setIsInstructorMenuOpen(false)}
                       >
-                        My courses
-                      </a>
+                        My Courses
+                      </Link>
                     </div>
                   )}
                 </div>
@@ -243,10 +243,12 @@ const NavbarWrapper: any = ({ authState }: any) => {
                     className="flex items-center text-gray-600 transition-colors hover:text-gray-900"
                   >
                     <span className="mr-2">{user?.name || user?.username}</span>
-                    <img
-                      src={`https://api.dicebear.com/7.x/initials/svg?seed=${user?.name || user?.username}`}
-                      alt="User Avatar"
-                      className="h-8 w-8 rounded-full border border-gray-200"
+                    <Image
+                      className="h-8 w-8 rounded-full"
+                      src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                      alt=""
+                      width={32}
+                      height={32}
                     />
                     <svg
                       className="ml-1 h-4 w-4"
@@ -264,13 +266,13 @@ const NavbarWrapper: any = ({ authState }: any) => {
                   </button>
                   {isUserMenuOpen && (
                     <div className="absolute right-0 z-10 mt-2 w-48 rounded-md bg-white py-1 shadow-lg">
-                      <a
+                      <Link
                         href="/profile"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         onClick={() => setIsUserMenuOpen(false)}
                       >
                         Profile
-                      </a>
+                      </Link>
                       <button
                         onClick={handleLogout}
                         className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
@@ -282,16 +284,16 @@ const NavbarWrapper: any = ({ authState }: any) => {
                 </div>
               ) : (
                 <div className="hidden items-center space-x-3 md:flex">
-                  <a href="/login">
+                  <Link href="/login">
                     <button className="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500">
                       Log in
                     </button>
-                  </a>
-                  <a href="/signup">
+                  </Link>
+                  <Link href="/signup">
                     <button className="inline-flex items-center rounded-md border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50">
                       Sign up
                     </button>
-                  </a>
+                  </Link>
                 </div>
               )}
 
@@ -344,28 +346,28 @@ const NavbarWrapper: any = ({ authState }: any) => {
           {isMenuOpen && (
             <div className="border-t border-gray-100 pt-4 pb-4 md:hidden">
               <div className="space-y-3">
-                <a
+                <Link
                   href="/"
                   className="block px-3 py-2 text-base font-medium text-gray-900"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Home
-                </a>
-                <a
+                </Link>
+                <Link
                   href="/courses"
                   className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Courses
-                </a>
+                </Link>
                 {isAuthenticated && (
-                  <a
+                  <Link
                     href="/browse"
                     className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Browse All
-                  </a>
+                  </Link>
                 )}
 
                 {isAuthenticated && hasRole("INSTRUCTOR") && (
@@ -373,20 +375,20 @@ const NavbarWrapper: any = ({ authState }: any) => {
                     <div className="px-3 py-2 text-xs font-semibold tracking-wide text-gray-500 uppercase">
                       Instructor
                     </div>
-                    <a
+                    <Link
                       href="/instructor/courses/new"
                       className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       Create course
-                    </a>
-                    <a
+                    </Link>
+                    <Link
                       href="/instructor/courses"
                       className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       My courses
-                    </a>
+                    </Link>
                   </>
                 )}
 
@@ -408,22 +410,24 @@ const NavbarWrapper: any = ({ authState }: any) => {
                 {isAuthenticated ? (
                   <div className="space-y-3 border-t border-gray-100 pt-3">
                     <div className="flex items-center space-x-2 px-3 py-2">
-                      <img
-                        src={`https://api.dicebear.com/7.x/initials/svg?seed=${user?.name || user?.username}`}
-                        alt="User Avatar"
-                        className="h-8 w-8 rounded-full border border-gray-200"
+                      <Image
+                        className="h-8 w-8 rounded-full"
+                        src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                        alt=""
+                        width={32}
+                        height={32}
                       />
                       <span className="text-sm text-gray-700">
                         {user?.name || user?.username}
                       </span>
                     </div>
-                    <a
+                    <Link
                       href="/profile"
                       className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       Profile
-                    </a>
+                    </Link>
                     <button
                       onClick={handleLogout}
                       className="flex w-full items-center justify-center space-x-2 rounded-lg bg-gray-100 px-3 py-2 text-gray-700 hover:bg-gray-200"
@@ -446,16 +450,16 @@ const NavbarWrapper: any = ({ authState }: any) => {
                   </div>
                 ) : (
                   <div className="space-y-3 border-t border-gray-100 pt-3">
-                    <a href="/login" onClick={() => setIsMenuOpen(false)}>
+                    <Link href="/login" onClick={() => setIsMenuOpen(false)}>
                       <button className="inline-flex w-full items-center justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500">
                         Log in
                       </button>
-                    </a>
-                    <a href="/signup" onClick={() => setIsMenuOpen(false)}>
+                    </Link>
+                    <Link href="/signup" onClick={() => setIsMenuOpen(false)}>
                       <button className="inline-flex w-full items-center justify-center rounded-md border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50">
                         Sign up
                       </button>
-                    </a>
+                    </Link>
                   </div>
                 )}
               </div>

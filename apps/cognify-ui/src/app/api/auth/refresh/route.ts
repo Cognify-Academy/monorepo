@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       let errorData;
       try {
         errorData = await response.json();
-      } catch (parseError) {
+      } catch {
         const errorText = await response.text();
         console.error("Non-JSON error response:", errorText);
         errorData = { error: errorText || "Refresh failed" };

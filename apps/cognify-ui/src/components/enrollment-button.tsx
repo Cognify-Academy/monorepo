@@ -17,9 +17,8 @@ export function EnrollmentButton({
   courseIdentifier,
   courseName,
   courseId,
-  firstLessonId,
 }: EnrollmentButtonProps) {
-  const { isAuthenticated, user, accessToken } = useAuth();
+  const { isAuthenticated, accessToken } = useAuth();
   const [isEnrolling, setIsEnrolling] = useState(false);
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -61,6 +60,7 @@ export function EnrollmentButton({
         setErrorMessage(result.message);
       }
     } catch (error) {
+      console.error("Enrollment error:", error);
       setEnrollmentStatus("failed");
       setErrorMessage("Failed to enroll in course. Please try again.");
     } finally {
@@ -123,13 +123,7 @@ export function EnrollmentButton({
               You are enrolled in {courseName}
             </p>
           </div>
-          <Link
-            href={
-              firstLessonId
-                ? `/courses/${courseIdentifier}/lessons/${firstLessonId}`
-                : `/courses/${courseIdentifier}`
-            }
-          >
+          <Link href="/courses/enrolled">
             <Button className="bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600">
               Continue Learning
             </Button>

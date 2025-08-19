@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/button";
 import { BookOpenIcon } from "@/icons/book-open-icon";
 import { CalendarIcon } from "@/icons/calendar-icon";
 import { CheckmarkIcon } from "@/icons/checkmark-icon";

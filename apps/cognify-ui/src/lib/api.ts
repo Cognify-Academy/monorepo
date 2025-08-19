@@ -131,7 +131,7 @@ class ApiClient {
           id: string;
           title: string;
           description: string;
-          content: any;
+          content: string | null;
           order: number;
           conceptIds: string[];
           media: Array<{
@@ -143,7 +143,7 @@ class ApiClient {
             url?: string;
             notes?: string;
             transcript?: string;
-            metadata?: any;
+            metadata?: Record<string, unknown>;
             createdAt: string;
             updatedAt: string;
           }>;
@@ -162,7 +162,10 @@ class ApiClient {
   }
 
   async createEnrollment(courseId: string, token: string) {
-    return this.makeAuthenticatedRequest<{ message: string; enrollment: any }>(
+    return this.makeAuthenticatedRequest<{
+      message: string;
+      enrollment: Record<string, unknown>;
+    }>(
       "/api/v1/enrollments",
       {
         method: "POST",
@@ -299,7 +302,7 @@ class ApiClient {
           id: string;
           title: string;
           description: string;
-          content: any;
+          content: string | null;
           order: number;
           media: Array<{
             id: string;
@@ -310,7 +313,7 @@ class ApiClient {
             url?: string;
             notes?: string;
             transcript?: string;
-            metadata?: any;
+            metadata?: Record<string, unknown>;
             createdAt: string;
             updatedAt: string;
           }>;
@@ -422,7 +425,7 @@ class ApiClient {
     data: {
       title: string;
       description: string;
-      content?: any;
+      content?: string | null;
       conceptIds: string[];
     },
     token: string,
@@ -431,7 +434,7 @@ class ApiClient {
       id: string;
       title: string;
       description: string;
-      content: any;
+      content: string | null;
       order: number;
       conceptIds: string[];
     }>(
@@ -451,7 +454,7 @@ class ApiClient {
     data: {
       title: string;
       description: string;
-      content?: any;
+      content?: string | null;
       conceptIds: string[];
     },
     token: string,
@@ -460,7 +463,7 @@ class ApiClient {
       id: string;
       title: string;
       description: string;
-      content: any;
+      content: string | null;
       order: number;
       conceptIds: string[];
     }>(

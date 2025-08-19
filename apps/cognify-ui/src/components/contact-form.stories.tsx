@@ -75,16 +75,6 @@ export const WithBothCallbacks: Story = {
   },
 };
 
-// Mock the fetch function for testing
-const mockFetch = (response: unknown, shouldFail = false) => {
-  return ((global as any).fetch = () =>
-    Promise.resolve({
-      ok: !shouldFail,
-      json: () => Promise.resolve(response),
-      text: () => Promise.resolve(JSON.stringify(response)),
-    }));
-};
-
 // Story for testing form validation
 export const WithValidationErrors: Story = {
   args: {},

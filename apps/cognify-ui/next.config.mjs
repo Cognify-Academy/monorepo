@@ -13,8 +13,21 @@ const nextConfig = {
   pageExtensions: ["ts", "tsx", "js", "jsx", "md", "mdx"],
   images: {
     remotePatterns: [
-      new URL("https://assets.tailwindcss.com/templates/compass/**"),
+      {
+        protocol: "https",
+        hostname: "api.dicebear.com",
+        port: "",
+        pathname: "/7.x/**",
+      },
+      {
+        protocol: "https",
+        hostname: "assets.tailwindcss.com",
+        port: "",
+        pathname: "/templates/compass/**",
+      },
     ],
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 };
 

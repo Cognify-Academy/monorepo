@@ -13,6 +13,14 @@ interface ComingSoonCourse {
   estimatedDuration: string;
 }
 
+interface Course {
+  id: string;
+  title: string;
+  description: string;
+  conceptIds?: string[];
+  published: boolean;
+}
+
 interface ComingSoonCoursesProps {
   title?: string;
   subtitle?: string;
@@ -42,7 +50,7 @@ const comingSoonIcons = [
 ];
 
 function transformComingSoonCourse(
-  course: any,
+  course: Course,
   index: number,
 ): ComingSoonCourse {
   const colorIndex = index % comingSoonColors.length;

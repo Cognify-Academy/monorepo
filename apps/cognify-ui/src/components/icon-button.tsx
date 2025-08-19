@@ -2,7 +2,11 @@ import { Button } from "@headlessui/react";
 import { clsx } from "clsx";
 import React from "react";
 
-export function IconButton({ className, ...props }: any) {
+interface IconButtonProps extends React.ComponentProps<typeof Button> {
+  className?: string;
+}
+
+export function IconButton({ className, ...props }: IconButtonProps) {
   return (
     <Button
       type="button"

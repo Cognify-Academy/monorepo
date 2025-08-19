@@ -10,6 +10,8 @@ import { Navbar } from "@/components/navbar";
 import { SidebarLayoutContent } from "@/components/sidebar-layout";
 import { Video } from "@/components/video-player";
 import { getCourse } from "@/services/courses";
+import Image from "next/image";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 interface PageProps {
@@ -34,10 +36,6 @@ export default async function LessonPage({ params }: PageProps) {
   if (!lesson) {
     notFound();
   }
-
-  const section = course.sections.find((s) =>
-    s.lessons.some((l) => l.id === lessonId),
-  );
 
   const allLessons = course.sections.flatMap((s) => s.lessons);
   const currentIndex = allLessons.findIndex((l) => l.id === lessonId);
@@ -94,9 +92,11 @@ export default async function LessonPage({ params }: PageProps) {
 
                   {mediaItem.mediaType === "image" && mediaItem.url && (
                     <div className="relative">
-                      <img
+                      <Image
                         src={mediaItem.url}
                         alt={mediaItem.title}
+                        width={800}
+                        height={600}
                         className="w-full rounded-lg"
                       />
                     </div>
@@ -143,12 +143,12 @@ export default async function LessonPage({ params }: PageProps) {
                 <div className="flex min-w-0 flex-1 gap-x-4">
                   <div className="min-w-0 flex-1">
                     <p className="text-sm leading-6 font-medium text-gray-900 dark:text-white">
-                      <a
+                      <Link
                         href={`/courses/${slug}/lessons/${nextLesson.id}`}
                         className="hover:underline"
                       >
                         Next: {nextLesson.title}
-                      </a>
+                      </Link>
                     </p>
                     {nextLesson.description && (
                       <p className="mt-1 text-sm leading-5 text-gray-500 dark:text-gray-400">
@@ -179,9 +179,9 @@ export default async function LessonPage({ params }: PageProps) {
                 <div className="flex min-w-0 flex-1 gap-x-4">
                   <div className="min-w-0 flex-1">
                     <p className="text-sm leading-6 font-medium text-gray-900 dark:text-white">
-                      <a href="/courses" className="hover:underline">
+                      <Link href="/courses" className="hover:underline">
                         Back to Courses
-                      </a>
+                      </Link>
                     </p>
                     <p className="mt-1 text-sm leading-5 text-gray-500 dark:text-gray-400">
                       Explore more courses and continue your learning journey.

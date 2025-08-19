@@ -1,6 +1,5 @@
 "use client";
 
-import { CloseIcon } from "@/icons/close-icon";
 import {
   DialogBackdrop,
   DialogPanel,
@@ -11,7 +10,7 @@ import React from "react";
 interface DialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  children: any;
+  children: React.ReactNode;
 }
 
 export function Dialog({ open, onOpenChange, children }: DialogProps) {
@@ -36,15 +35,15 @@ export function DialogContent({
   children,
 }: {
   className?: string;
-  children: any;
+  children: React.ReactNode;
 }) {
   return <div className={className}>{children}</div>;
 }
 
-export function DialogHeader({ children }: { children: any }) {
+export function DialogHeader({ children }: { children: React.ReactNode }) {
   return <div className="mb-4">{children}</div>;
 }
 
-export function DialogTitle({ children }: { children: any }) {
+export function DialogTitle({ children }: { children: React.ReactNode }) {
   return <h2 className="text-lg font-semibold text-gray-900">{children}</h2>;
 }

@@ -26,11 +26,12 @@ export default function KnowledgeGraphsPage() {
               Connecting the Dots of Knowledge
             </h2>
             <p className="mb-4 text-lg text-gray-700">
-              Imagine a vast network where every piece of information isn't just
-              stored, but connected to other related pieces. That's a Knowledge
-              Graph. It's a structured way to represent knowledge, using
-              entities (like "Machine Learning" or "Python") and the
-              relationships between them (like "Machine Learning uses Python").
+              Imagine a vast network where every piece of information isn&apos;t
+              just stored, but connected to other related pieces. That&apos;s a
+              Knowledge Graph. It&apos;s a structured way to represent
+              knowledge, using entities (like &quot;Machine Learning&quot; or
+              &quot;Python&quot;) and the relationships between them (like
+              &quot;Machine Learning uses Python&quot;).
             </p>
             <p className="text-lg text-gray-700">
               Unlike traditional databases, which are often rigid, knowledge

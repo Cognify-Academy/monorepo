@@ -36,7 +36,7 @@ export function DropdownItem({
   children,
 }: {
   href: string;
-  children: any;
+  children: React.ReactNode;
 }) {
   return (
     <MenuItem>

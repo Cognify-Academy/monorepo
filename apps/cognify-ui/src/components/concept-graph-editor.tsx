@@ -28,6 +28,23 @@ import "@xyflow/react/dist/style.css";
 const getApiUrl = () =>
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
 
+interface Concept {
+  id: string;
+  importance: number;
+  name: string;
+  description: string;
+  conceptSource?: ConceptRelation[];
+  conceptTarget?: ConceptRelation[];
+}
+
+interface ConceptRelation {
+  id: string;
+  conceptSourceId: string;
+  conceptTargetId: string;
+  description?: string;
+  weighting?: number;
+}
+
 interface IdeaEdge extends Edge {
   data?: {
     label?: string;
@@ -37,10 +54,21 @@ interface IdeaEdge extends Edge {
   weighting?: number;
 }
 
-function generateNode(
-  concept: { id: any; importance: number; name: any; description: any },
-  index: number,
-) {
+interface GraphData {
+  nodes: Node[];
+  edges: Edge[];
+}
+
+interface LayoutOptions {
+  direction: string;
+}
+
+interface EdgeChange {
+  type: string;
+  item: Edge;
+}
+
+function generateNode(concept: Concept, index: number) {
   return {
     id: concept.id,
     type: "default",
@@ -61,7 +89,7 @@ function generateNode(
   };
 }
 
-function extractEdgesFromConcepts(concepts: any[]): Edge[] {
+function extractEdgesFromConcepts(concepts: Concept[]): Edge[] {
   const edges: Edge[] = [];
   const processedEdges = new Set(); // To avoid duplicate edges
 
@@ -75,49 +103,53 @@ function extractEdgesFromConcepts(concepts: any[]): Edge[] {
 
     // Process outgoing edges (where this concept is the source)
     if (concept.conceptSource && Array.isArray(concept.conceptSource)) {
-      concept.conceptSource.forEach((relation: any, relationIndex: number) => {
-        const edgeId = String(relation.id);
-        if (!processedEdges.has(edgeId)) {
-          console.log(
-            `  Processing conceptSource relation ${relationIndex}:`,
-            relation,
-          );
-          edges.push({
-            id: edgeId,
-            source: String(relation.conceptSourceId),
-            target: String(relation.conceptTargetId),
-            data: {
-              label: relation.description || "",
-              weighting: relation.weighting || 0.5,
-            },
-          });
-          processedEdges.add(edgeId);
-        }
-      });
+      concept.conceptSource.forEach(
+        (relation: ConceptRelation, relationIndex: number) => {
+          const edgeId = String(relation.id);
+          if (!processedEdges.has(edgeId)) {
+            console.log(
+              `  Processing conceptSource relation ${relationIndex}:`,
+              relation,
+            );
+            edges.push({
+              id: edgeId,
+              source: String(relation.conceptSourceId),
+              target: String(relation.conceptTargetId),
+              data: {
+                label: relation.description || "",
+                weighting: relation.weighting || 0.5,
+              },
+            });
+            processedEdges.add(edgeId);
+          }
+        },
+      );
     }
 
     // Process incoming edges (where this concept is the target)
     // Note: We still need to process these in case some edges are only in conceptTarget
     if (concept.conceptTarget && Array.isArray(concept.conceptTarget)) {
-      concept.conceptTarget.forEach((relation: any, relationIndex: number) => {
-        const edgeId = String(relation.id);
-        if (!processedEdges.has(edgeId)) {
-          console.log(
-            `  Processing conceptTarget relation ${relationIndex}:`,
-            relation,
-          );
-          edges.push({
-            id: edgeId,
-            source: String(relation.conceptSourceId),
-            target: String(relation.conceptTargetId),
-            data: {
-              label: relation.description || "",
-              weighting: relation.weighting || 0.5,
-            },
-          });
-          processedEdges.add(edgeId);
-        }
-      });
+      concept.conceptTarget.forEach(
+        (relation: ConceptRelation, relationIndex: number) => {
+          const edgeId = String(relation.id);
+          if (!processedEdges.has(edgeId)) {
+            console.log(
+              `  Processing conceptTarget relation ${relationIndex}:`,
+              relation,
+            );
+            edges.push({
+              id: edgeId,
+              source: String(relation.conceptSourceId),
+              target: String(relation.conceptTargetId),
+              data: {
+                label: relation.description || "",
+                weighting: relation.weighting || 0.5,
+              },
+            });
+            processedEdges.add(edgeId);
+          }
+        },
+      );
     }
   });
 
@@ -125,10 +157,9 @@ function extractEdgesFromConcepts(concepts: any[]): Edge[] {
   return edges;
 }
 
-async function fetchNodesAndConceptsFromAPI(token: string | null): Promise<{
-  nodes: any[];
-  edges: Edge[];
-}> {
+async function fetchNodesAndConceptsFromAPI(
+  token: string | null,
+): Promise<GraphData> {
   try {
     const response = await fetch(`${getApiUrl()}/api/v1/concepts/`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -164,19 +195,14 @@ async function fetchNodesAndConceptsFromAPI(token: string | null): Promise<{
 }
 
 const getLayoutedElements = (
-  nodes: any[],
-  edges: any[],
-  options: { direction: any },
+  nodes: Node[],
+  edges: Edge[],
+  options: LayoutOptions,
 ) => {
-  const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
+  const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({} as Record<string, never>));
   g.setGraph({ rankdir: options.direction });
 
-  edges.forEach(
-    (edge: {
-      source: Dagre.Edge;
-      target: string | { [key: string]: any } | undefined;
-    }) => g.setEdge(edge.source, edge.target),
-  );
+  edges.forEach((edge) => g.setEdge(edge.source, edge.target));
   nodes.forEach((node: string | Dagre.Label) => {
     if (typeof node !== "string") {
       g.setNode(node.id, {
@@ -190,12 +216,7 @@ const getLayoutedElements = (
   Dagre.layout(g);
 
   return {
-    nodes: nodes.map(
-      (node: {
-        data: {};
-        id: string | Dagre.Label;
-        measured: { width: any; height: any };
-      }) => {
+    nodes: nodes.map((node) => {
         const position = g.node(node.id);
         // We are shifting the dagre node position (anchor=center center) to the top left
         // so it matches the React Flow node anchor point (top left).
@@ -219,7 +240,7 @@ function LayoutFlow() {
   const [isAddDialogOpen, setAddDialogOpen] = useState(false);
   const [selectedEdge, setSelectedEdge] = useState<IdeaEdge | null>(null);
   const [isEdgeDialogOpen, setIsEdgeDialogOpen] = useState(false);
-  const [importances, setImportances] = useState({});
+  const [importances, setImportances] = useState<Record<string, unknown>>({});
   const { accessToken } = useAuth();
 
   useEffect(() => {
@@ -278,7 +299,7 @@ function LayoutFlow() {
     );
   };
 
-  const onEdgeClick = (_: any, edge: Edge) => {
+  const onEdgeClick = (_: React.MouseEvent, edge: Edge) => {
     setSelectedEdge(edge as IdeaEdge);
     setIsEdgeDialogOpen(true);
   };
@@ -302,15 +323,18 @@ function LayoutFlow() {
     setEdges((edges) => addEdge(connection, edges));
   };
 
-  const handleEdgesChange = (changes: any[]) => {
-    changes.forEach(async (change: { type: string; id: any }) => {
+  const handleEdgesChange = (changes: EdgeChange[]) => {
+    changes.forEach(async (change: EdgeChange) => {
       if (change.type === "remove") {
-        await fetch(`${getApiUrl()}/api/v1/concepts/relation/${change.id}/`, {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
+        await fetch(
+          `${getApiUrl()}/api/v1/concepts/relation/${change.item.id}/`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
           },
-        });
+        );
       }
     });
 
@@ -362,7 +386,7 @@ function LayoutFlow() {
   };
 
   const onNodeDoubleClick = useCallback(
-    (_: any, node: SetStateAction<Node | null>) => {
+    (_: React.MouseEvent, node: Node) => {
       setSelectedNode(node);
       setEditDialogOpen(true);
     },
@@ -416,22 +440,19 @@ function LayoutFlow() {
   };
 
   const onLayout = useCallback(
-    (direction: any) => {
-      const layouted = getLayoutedElements(nodes, edges, { direction });
-
+    (direction: string) => {
+      const { nodes: layoutedNodes, edges: layoutedEdges } =
+        getLayoutedElements(nodes, edges, { direction });
       setNodes(
-        layouted.nodes.map((node) => ({
+        layoutedNodes.map((node) => ({
           ...node,
           id: String(node.id),
         })),
       );
-      setEdges([...layouted.edges]);
-
-      window.requestAnimationFrame(() => {
-        fitView();
-      });
+      setEdges([...layoutedEdges]);
+      window.requestAnimationFrame(() => fitView());
     },
-    [nodes, edges],
+    [nodes, edges, fitView, setNodes, setEdges],
   );
 
   return (

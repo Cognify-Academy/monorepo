@@ -29,7 +29,7 @@ export function Breadcrumb({
   className,
 }: {
   href?: LinkProps["href"];
-  children: any;
+  children: React.ReactNode;
   className?: string;
 }) {
   if (href) {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/contexts/auth";
+import Link from "next/link";
 import Footer from "./footer";
 import { MyActiveCourses } from "./my-active-courses";
 import { Navbar } from "./navbar";
@@ -10,10 +11,8 @@ export function LoggedInDashboard() {
 
   return (
     <div className="bg-gray-50 text-gray-800">
-      {/* Navigation */}
       <Navbar />
 
-      {/* Welcome Section */}
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
         <div className="text-center">
           <h1 className="mb-6 text-5xl leading-tight font-bold text-gray-900 md:text-6xl">
@@ -24,29 +23,32 @@ export function LoggedInDashboard() {
             knowledge graph.
           </p>
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <button className="transform rounded-lg bg-blue-600 px-8 py-4 text-lg font-semibold text-white transition-all hover:scale-105 hover:bg-blue-700">
-              Continue Learning
-            </button>
-            <button className="flex items-center rounded-lg px-8 py-4 text-lg font-semibold text-gray-600 transition-colors hover:text-gray-900">
-              <svg
-                className="mr-2 h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h1m4 0h1m-6-8h1m4 0h1M9 16h6M9 8h6"
-                />
-              </svg>
-              See Your Progress
-            </button>
+            <Link href="/courses/enrolled">
+              <button className="transform rounded-lg bg-blue-600 px-8 py-4 text-lg font-semibold text-white transition-all hover:scale-105 hover:bg-blue-700">
+                Continue Learning
+              </button>
+            </Link>
+            <Link href="/concepts">
+              <button className="flex items-center rounded-lg px-8 py-4 text-lg font-semibold text-gray-600 transition-colors hover:text-gray-900">
+                <svg
+                  className="mr-2 h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h1m4 0h1m-6-8h1m4 0h1M9 16h6M9 8h6"
+                  />
+                </svg>
+                See Your Progress
+              </button>
+            </Link>
           </div>
         </div>
 
-        {/* Knowledge Graph Visualization */}
         <div className="relative mt-20">
           <div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-lg">
             <div className="relative h-64 overflow-hidden">
@@ -120,7 +122,6 @@ export function LoggedInDashboard() {
         </div>
       </section>
 
-      {/* Courses Section */}
       <MyActiveCourses />
 
       <Footer />

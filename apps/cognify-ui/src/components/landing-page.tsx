@@ -203,7 +203,7 @@ export function LandingPage() {
               </h3>
               <p className="text-gray-600">
                 Move beyond memorization to true comprehension by understanding
-                the 'why' behind every concept.
+                the &apos;why&apos; behind every concept.
               </p>
             </div>
           </div>

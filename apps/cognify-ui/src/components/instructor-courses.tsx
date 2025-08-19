@@ -228,8 +228,8 @@ export function InstructorCourses({
               No courses created yet
             </h3>
             <p className="mb-4 text-gray-600">
-              You haven't created any courses yet. Start by creating your first
-              course!
+              You haven&apos;t created any courses yet. Start by creating your
+              first course!
             </p>
             <Link
               href="/instructor/courses/new"

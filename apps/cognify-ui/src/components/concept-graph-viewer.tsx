@@ -118,20 +118,15 @@ function extractEdgesFromConcepts(concepts: Concept[]): Edge[] {
 }
 
 const getLayoutedElements = (
-  nodes: any[],
-  edges: any[],
-  options: { direction: any },
+  nodes: Node[],
+  edges: Edge[],
+  options: { direction: string },
 ) => {
   const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
   g.setGraph({ rankdir: options.direction });
 
-  edges.forEach(
-    (edge: {
-      source: Dagre.Edge;
-      target: string | { [key: string]: any } | undefined;
-    }) => g.setEdge(edge.source, edge.target),
-  );
-  nodes.forEach((node: string | Dagre.Label) => {
+  edges.forEach((edge: Edge) => g.setEdge(edge.source, edge.target));
+  nodes.forEach((node: Node) => {
     if (typeof node !== "string") {
       g.setNode(node.id, {
         ...node,
@@ -144,21 +139,15 @@ const getLayoutedElements = (
   Dagre.layout(g);
 
   return {
-    nodes: nodes.map(
-      (node: {
-        data: {};
-        id: string | Dagre.Label;
-        measured: { width: any; height: any };
-      }) => {
-        const position = g.node(node.id);
-        // We are shifting the dagre node position (anchor=center center) to the top left
-        // so it matches the React Flow node anchor point (top left).
-        const x = position.x - (node.measured?.width ?? 0) / 2;
-        const y = position.y - (node.measured?.height ?? 0) / 2;
+    nodes: nodes.map((node: Node) => {
+      const position = g.node(node.id);
+      // We are shifting the dagre node position (anchor=center center) to the top left
+      // so it matches the React Flow node anchor point (top left).
+      const x = position.x - (node.measured?.width ?? 0) / 2;
+      const y = position.y - (node.measured?.height ?? 0) / 2;
 
-        return { ...node, position: { x, y }, data: node.data || {} };
-      },
-    ),
+      return { ...node, position: { x, y }, data: node.data || { label: "" } };
+    }),
     edges,
   };
 };
@@ -203,7 +192,7 @@ function LayoutFlow({ concepts }: { concepts: Concept[] }) {
   );
 
   const onNodeClick = useCallback(
-    (_: any, node: Node) => {
+    (_: React.MouseEvent, node: Node) => {
       const concept = concepts.find((c) => c.id === node.id);
       if (concept) {
         setSelectedConcept(concept);

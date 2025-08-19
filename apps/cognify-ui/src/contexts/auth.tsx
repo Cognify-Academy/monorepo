@@ -1,7 +1,7 @@
 "use client";
 
 import { apiClient, ApiError } from "@/lib/api";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 
 interface User {
   id: string;
@@ -64,11 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return user?.roles?.includes(role) || false;
   };
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await apiClient.refresh();
@@ -87,7 +83,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
 
   const login = async (handle: string, password: string) => {
     try {
@@ -134,6 +134,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await apiClient.logout();
     } catch (error) {
+      console.error("Logout error:", error);
     } finally {
       setUser(null);
       setAccessToken(null);

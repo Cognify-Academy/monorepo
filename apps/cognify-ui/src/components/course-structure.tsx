@@ -20,7 +20,7 @@ export interface Lesson {
   id: string;
   title: string;
   description: string;
-  content: any;
+  content: string | null;
   order: number;
   conceptIds: string[];
   media: Media[];
@@ -82,7 +82,9 @@ export function CourseStructure({
     if (saveTimeout.current) {
       clearTimeout(saveTimeout.current);
     }
-    saveTimeout.current = setTimeout(() => {}, 1000) as any;
+    saveTimeout.current = setTimeout(() => {
+      // Debounced save logic can be added here
+    }, 1000) as NodeJS.Timeout;
   }, []);
 
   const showError = (message: string) => {
@@ -129,8 +131,9 @@ export function CourseStructure({
 
       onSectionsChange([...sections, sectionWithLessons]);
       setExpandedSections(new Set([...expandedSections, newSection.id]));
-    } catch (error: any) {
-      showError(error.message || "Failed to create section");
+    } catch (error: unknown) {
+      console.error("Failed to create section:", error);
+      showError("Failed to create section");
     } finally {
       setIsLoading(false);
     }
@@ -175,8 +178,9 @@ export function CourseStructure({
         },
         accessToken,
       );
-    } catch (error: any) {
-      showError(error.message || "Failed to update section");
+    } catch (error: unknown) {
+      console.error("Failed to update section:", error);
+      showError("Failed to update section");
 
       onSectionsChange(sections);
     }
@@ -196,8 +200,9 @@ export function CourseStructure({
       const newExpanded = new Set(expandedSections);
       newExpanded.delete(sectionId);
       setExpandedSections(newExpanded);
-    } catch (error: any) {
-      showError(error.message || "Failed to delete section");
+    } catch (error: unknown) {
+      console.error("Failed to delete section:", error);
+      showError("Failed to delete section");
     } finally {
       setIsLoading(false);
     }
@@ -238,8 +243,9 @@ export function CourseStructure({
         return section;
       });
       onSectionsChange(updatedSections);
-    } catch (error: any) {
-      showError(error.message || "Failed to create lesson");
+    } catch (error: unknown) {
+      console.error("Failed to create lesson:", error);
+      showError("Failed to create lesson");
     } finally {
       setIsLoading(false);
     }
@@ -291,8 +297,8 @@ export function CourseStructure({
         },
         accessToken,
       );
-    } catch (error: any) {
-      showError(error.message || "Failed to update lesson");
+    } catch (error: unknown) {
+      showError("Failed to update lesson");
 
       onSectionsChange(sections);
     }
@@ -326,8 +332,8 @@ export function CourseStructure({
         },
         accessToken,
       );
-    } catch (error: any) {
-      showError(error.message || "Failed to save lesson");
+    } catch (error: unknown) {
+      showError("Failed to save lesson");
     } finally {
       setSavingLessons((prev) => {
         const next = new Set(prev);
@@ -356,8 +362,8 @@ export function CourseStructure({
         return section;
       });
       onSectionsChange(updatedSections);
-    } catch (error: any) {
-      showError(error.message || "Failed to delete lesson");
+    } catch (error: unknown) {
+      showError("Failed to delete lesson");
     } finally {
       setIsLoading(false);
     }
@@ -421,9 +427,9 @@ export function CourseStructure({
             accessToken,
           );
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Section reorder error:", error);
-        showError(error.message || "Failed to reorder sections");
+        showError("Failed to reorder sections");
         onSectionsChange(sections);
       }
     } else if (draggedItem.type === "lesson") {
@@ -504,58 +510,51 @@ export function CourseStructure({
     draggedLessonId: string,
     beforeLessonId?: string,
   ) => {
-    const section = sections.find((s) => s.id === sectionId);
-    if (!section) {
-      return;
-    }
-
-    const draggedLesson = section.lessons.find((l) => l.id === draggedLessonId);
-    if (!draggedLesson) {
-      console.log("❌ Dragged lesson not found:", draggedLessonId);
-      return;
-    }
-
-    const originalOrder = section.lessons.map(
-      (l) => l.title || `Lesson ${l.id}`,
-    );
-
-    let newLessons = section.lessons.filter((l) => l.id !== draggedLessonId);
-
-    const insertIndex = beforeLessonId
-      ? newLessons.findIndex((l) => l.id === beforeLessonId)
-      : newLessons.length;
-
-    newLessons.splice(insertIndex, 0, draggedLesson);
-    newLessons = newLessons.map((lesson, idx) => ({ ...lesson, order: idx }));
-
-    const newOrder = newLessons.map((l) => l.title || `Lesson ${l.id}`);
-
-    const updatedSections = sections.map((s) =>
-      s.id === sectionId ? { ...s, lessons: newLessons } : s,
-    );
-
-    onSectionsChange(updatedSections);
+    if (!accessToken) return;
 
     try {
-      const lessonsToReorder = newLessons.filter((lesson) => {
-        return (
-          lesson.id && !lesson.id.startsWith("lesson-") && lesson.id.length > 10
-        );
-      });
+      const section = sections.find((s) => s.id === sectionId);
+      if (!section) return;
 
-      if (lessonsToReorder.length > 0) {
-        await apiClient.reorderLessons(
-          courseId,
-          lessonsToReorder.map((l) => ({
-            id: l.id,
-            sectionId,
-            order: l.order,
-          })),
-          accessToken!,
+      const draggedLesson = section.lessons.find(
+        (l) => l.id === draggedLessonId,
+      );
+      if (!draggedLesson) return;
+
+      const newLessons = [...section.lessons];
+      const draggedIndex = newLessons.findIndex(
+        (l) => l.id === draggedLessonId,
+      );
+      newLessons.splice(draggedIndex, 1);
+
+      if (beforeLessonId) {
+        const beforeIndex = newLessons.findIndex(
+          (l) => l.id === beforeLessonId,
         );
+        newLessons.splice(beforeIndex, 0, draggedLesson);
+      } else {
+        newLessons.push(draggedLesson);
       }
-    } catch (error: any) {
-      showError(error.message || "Failed to reorder lessons");
+
+      const updatedSection = { ...section, lessons: newLessons };
+      const updatedSections = sections.map((s) =>
+        s.id === sectionId ? updatedSection : s,
+      );
+
+      onSectionsChange(updatedSections);
+
+      await apiClient.reorderLessons(
+        courseId,
+        newLessons.map((lesson, index) => ({
+          id: lesson.id,
+          sectionId,
+          order: index,
+        })),
+        accessToken,
+      );
+    } catch (error: unknown) {
+      console.error("Lesson reorder error:", error);
+      showError("Failed to reorder lessons");
       onSectionsChange(sections);
     }
   };
@@ -566,60 +565,59 @@ export function CourseStructure({
     targetSectionId: string,
     beforeLessonId?: string,
   ) => {
-    const sourceSection = sections.find((s) => s.id === sourceSectionId);
-    const targetSection = sections.find((s) => s.id === targetSectionId);
-    if (!sourceSection || !targetSection) return;
-
-    const lesson = sourceSection.lessons.find((l) => l.id === lessonId);
-    if (!lesson) return;
-
-    const sourceLessons = sourceSection.lessons.filter(
-      (l) => l.id !== lessonId,
-    );
-
-    let targetLessons = [...targetSection.lessons];
-    const insertIndex = beforeLessonId
-      ? targetLessons.findIndex((l) => l.id === beforeLessonId)
-      : targetLessons.length;
-
-    targetLessons.splice(insertIndex, 0, lesson);
-
-    targetLessons = targetLessons.map((l, idx) => ({ ...l, order: idx }));
-
-    const updatedSections = sections.map((s) => {
-      if (s.id === sourceSectionId) {
-        return {
-          ...s,
-          lessons: sourceLessons.map((l, idx) => ({ ...l, order: idx })),
-        };
-      }
-      if (s.id === targetSectionId) {
-        return { ...s, lessons: targetLessons };
-      }
-      return s;
-    });
-
-    onSectionsChange(updatedSections);
+    if (!accessToken) return;
 
     try {
+      const sourceSection = sections.find((s) => s.id === sourceSectionId);
+      const targetSection = sections.find((s) => s.id === targetSectionId);
+      if (!sourceSection || !targetSection) return;
+
+      const lesson = sourceSection.lessons.find((l) => l.id === lessonId);
+      if (!lesson) return;
+
+      const newSourceLessons = sourceSection.lessons.filter(
+        (l) => l.id !== lessonId,
+      );
+      const newTargetLessons = [...targetSection.lessons];
+
+      if (beforeLessonId) {
+        const beforeIndex = newTargetLessons.findIndex(
+          (l) => l.id === beforeLessonId,
+        );
+        newTargetLessons.splice(beforeIndex, 0, lesson);
+      } else {
+        newTargetLessons.push(lesson);
+      }
+
+      const updatedSourceSection = {
+        ...sourceSection,
+        lessons: newSourceLessons,
+      };
+      const updatedTargetSection = {
+        ...targetSection,
+        lessons: newTargetLessons,
+      };
+
+      const updatedSections = sections.map((s) => {
+        if (s.id === sourceSectionId) return updatedSourceSection;
+        if (s.id === targetSectionId) return updatedTargetSection;
+        return s;
+      });
+
+      onSectionsChange(updatedSections);
+
       await apiClient.reorderLessons(
         courseId,
-        [
-          ...sourceLessons.map((l) => ({
-            id: l.id,
-            sectionId: sourceSectionId,
-            order: l.order,
-          })),
-          ...targetLessons.map((l) => ({
-            id: l.id,
-            sectionId: targetSectionId,
-            order: l.order,
-          })),
-        ],
+        newTargetLessons.map((lesson, index) => ({
+          id: lesson.id,
+          sectionId: targetSectionId,
+          order: index,
+        })),
         accessToken!,
       );
-    } catch (error: any) {
-      showError(error.message || "Failed to move lesson");
+    } catch (error: unknown) {
+      console.error("Move lesson error:", error);
+      showError("Failed to move lesson");
       onSectionsChange(sections);
     }
   };
@@ -684,20 +682,22 @@ export function CourseStructure({
             onLessonDragStart={(e, lessonId) =>
               handleLessonDragStart(e, lessonId, section.id)
             }
-            onLessonsContainerDragOver={handleLessonsContainerDragOver}
-            onLessonsContainerDrop={handleLessonsContainerDrop}
-            isDraggedOver={dragOverSection === section.id}
-            dragOverLesson={
-              dragOverLesson?.sectionId === section.id
-                ? dragOverLesson.beforeLessonId
-                : undefined
+            onLessonsContainerDragOver={(e) =>
+              handleLessonsContainerDragOver(e)
             }
+            onLessonsContainerDrop={(e) =>
+              handleLessonsContainerDrop(e, section.id)
+            }
+            isDraggedOver={dragOverSection === section.id}
           />
         ))}
 
         {sections.length === 0 && (
           <div className="py-8 text-center text-gray-500">
-            <p>No sections added yet. Click "Add Section" to get started.</p>
+            <p>
+              No sections added yet. Click &quot;Add Section&quot; to get
+              started.
+            </p>
           </div>
         )}
       </div>
@@ -723,10 +723,9 @@ interface SectionEditorProps {
   onDragOver: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent) => void;
   onLessonDragStart: (e: React.DragEvent, lessonId: string) => void;
-  onLessonsContainerDragOver: (e: React.DragEvent, sectionId: string) => void;
-  onLessonsContainerDrop: (e: React.DragEvent, sectionId: string) => void;
+  onLessonsContainerDragOver: (e: React.DragEvent) => void;
+  onLessonsContainerDrop: (e: React.DragEvent) => void;
   isDraggedOver: boolean;
-  dragOverLesson?: string;
 }
 
 function SectionEditor({
@@ -750,7 +749,6 @@ function SectionEditor({
   onLessonsContainerDragOver,
   onLessonsContainerDrop,
   isDraggedOver,
-  dragOverLesson,
 }: SectionEditorProps) {
   return (
     <div
@@ -902,8 +900,8 @@ function SectionEditor({
 
             <div
               className="min-h-[50px] space-y-2 rounded border border-gray-200 p-2"
-              onDragOver={(e) => onLessonsContainerDragOver(e, section.id)}
-              onDrop={(e) => onLessonsContainerDrop(e, section.id)}
+              onDragOver={(e) => onLessonsContainerDragOver(e)}
+              onDrop={(e) => onLessonsContainerDrop(e)}
             >
               {section.lessons
                 .sort((a, b) => a.order - b.order)
@@ -926,7 +924,8 @@ function SectionEditor({
 
               {section.lessons.length === 0 && (
                 <p className="py-4 text-center text-gray-500">
-                  No lessons added yet. Click "Add Lesson" to get started.
+                  No lessons added yet. Click &quot;Add Lesson&quot; to get
+                  started.
                 </p>
               )}
             </div>

@@ -21,7 +21,7 @@ const mockConcepts: ConceptType[] = [
 ];
 
 // Mock sections data with conceptIds
-const mockSections: any[] = [
+const mockSections: Section[] = [
   {
     id: "section-1",
     title: "Getting Started",
@@ -146,7 +146,10 @@ export default meta;
 type Story = StoryObj<typeof CourseStructure>;
 
 // Story component wrapper to handle state for interactive demos
-const CourseStructureWithState = (args: any) => {
+const CourseStructureWithState = (args: {
+  sections?: Section[];
+  availableConcepts?: ConceptType[];
+}) => {
   const [sections, setSections] = useState<Section[]>(args.sections || []);
 
   return (

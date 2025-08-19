@@ -60,9 +60,13 @@ export default function NewCoursePage() {
       const createdCourse = await apiClient.createCourse(data, accessToken);
       // Redirect to the course edit page
       router.push(`/instructor/courses/${createdCourse.id}`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to create course:", error);
-      setError(error.message || "Failed to create course. Please try again.");
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Failed to create course. Please try again.",
+      );
     } finally {
       setIsLoading(false);
     }

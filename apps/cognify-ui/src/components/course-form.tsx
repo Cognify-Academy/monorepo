@@ -57,17 +57,19 @@ export function CourseForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     try {
       await onSubmit(formData);
-    } catch (error) {}
+    } catch (error) {
+      console.error("Form submission error:", error);
+    }
   };
 
-  const handleChange = (field: keyof CourseFormData, value: any) => {
+  const handleChange = (
+    field: keyof CourseFormData,
+    value: string | boolean | string[],
+  ) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,

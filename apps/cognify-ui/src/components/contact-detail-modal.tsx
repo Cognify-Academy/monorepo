@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-
 interface Contact {
   id: string;
   name: string;

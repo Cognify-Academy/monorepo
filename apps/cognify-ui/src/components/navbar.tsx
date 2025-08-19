@@ -6,6 +6,7 @@ import { ChevronDownIcon } from "@/icons/chevron-down-icon";
 import { CloseIcon } from "@/icons/close-icon";
 import { LogoutIcon } from "@/icons/logout-icon";
 import { MenuIcon } from "@/icons/menu-icon";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
@@ -164,9 +165,12 @@ export function Navbar() {
                   className="flex items-center text-gray-600 transition-colors hover:text-gray-900"
                 >
                   <span className="mr-2">{user?.name || user?.username}</span>
-                  <img
+                  <Image
                     src={`https://api.dicebear.com/7.x/initials/svg?seed=${user?.name || user?.username}`}
                     alt="User Avatar"
+                    width={32}
+                    height={32}
+                    unoptimized
                     className="h-8 w-8 rounded-full border border-gray-200"
                   />
                   <ChevronDownIcon className="ml-1 h-4 w-4" />
@@ -296,9 +300,11 @@ export function Navbar() {
               {isAuthenticated ? (
                 <div className="space-y-3 border-t border-gray-100 pt-3">
                   <div className="flex items-center space-x-2 px-3 py-2">
-                    <img
+                    <Image
                       src={`https://api.dicebear.com/7.x/initials/svg?seed=${user?.name || user?.username}`}
                       alt="User Avatar"
+                      width={32}
+                      height={32}
                       className="h-8 w-8 rounded-full border border-gray-200"
                     />
                     <span className="text-sm text-gray-700">
