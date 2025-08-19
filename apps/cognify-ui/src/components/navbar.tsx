@@ -64,7 +64,7 @@ export function Navbar() {
   };
 
   return (
-    <nav className="border-b border-gray-100 bg-white shadow-sm">
+    <nav className="relative z-50 border-b border-gray-100 bg-white shadow-sm">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center space-x-2">
@@ -88,6 +88,7 @@ export function Navbar() {
             </Link>
           </div>
 
+          {/* Desktop navigation - hidden on mobile */}
           <div className="hidden space-x-8 md:flex">
             <Link
               href="/courses"
@@ -157,88 +158,91 @@ export function Navbar() {
             )}
           </div>
 
+          {/* Right side - user menu and mobile button */}
           <div className="flex items-center space-x-4">
-            {isAuthenticated ? (
-              <div className="relative" ref={userMenuRef}>
-                <button
-                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center text-gray-600 transition-colors hover:text-gray-900"
-                >
-                  <span className="mr-2">{user?.name || user?.username}</span>
-                  <Image
-                    src={`https://api.dicebear.com/7.x/initials/svg?seed=${user?.name || user?.username}`}
-                    alt="User Avatar"
-                    width={32}
-                    height={32}
-                    unoptimized
-                    className="h-8 w-8 rounded-full border border-gray-200"
-                  />
-                  <ChevronDownIcon className="ml-1 h-4 w-4" />
-                </button>
-                {isUserMenuOpen && (
-                  <div className="absolute right-0 z-10 mt-2 w-48 rounded-md bg-white py-1 shadow-lg">
-                    <Link
-                      href="/profile"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={() => setIsUserMenuOpen(false)}
-                    >
-                      Profile
-                    </Link>
-                    {isAuthenticated && (
+            {/* Desktop user menu - hidden on mobile */}
+            <div className="hidden md:block">
+              {isAuthenticated ? (
+                <div className="relative" ref={userMenuRef}>
+                  <button
+                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                    className="flex items-center text-gray-600 transition-colors hover:text-gray-900"
+                  >
+                    <span className="mr-2">{user?.name || user?.username}</span>
+                    <Image
+                      src={`https://api.dicebear.com/7.x/initials/svg?seed=${user?.name || user?.username}`}
+                      alt="User Avatar"
+                      width={32}
+                      height={32}
+                      unoptimized
+                      className="h-8 w-8 rounded-full border border-gray-200"
+                    />
+                    <ChevronDownIcon className="ml-1 h-4 w-4" />
+                  </button>
+                  {isUserMenuOpen && (
+                    <div className="absolute right-0 z-10 mt-2 w-48 rounded-md bg-white py-1 shadow-lg">
                       <Link
-                        href="/courses/enrolled"
+                        href="/profile"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         onClick={() => setIsUserMenuOpen(false)}
                       >
-                        My Courses
+                        Profile
                       </Link>
-                    )}
-                    {isAuthenticated && (
-                      <Link
-                        href="/concepts"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        onClick={() => setIsUserMenuOpen(false)}
+                      {isAuthenticated && (
+                        <Link
+                          href="/courses/enrolled"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          My Courses
+                        </Link>
+                      )}
+                      {isAuthenticated && (
+                        <Link
+                          href="/concepts"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          My Concepts
+                        </Link>
+                      )}
+                      <button
+                        onClick={handleLogout}
+                        className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
                       >
-                        My Concepts
-                      </Link>
-                    )}
-                    <button
-                      onClick={handleLogout}
-                      className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      Sign Out
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="hidden items-center space-x-3 md:flex">
-                <Link href="/login">
-                  <Button>Log in</Button>
-                </Link>
-                <Link href="/signup">
-                  <Button className="border border-gray-300 text-gray-900 hover:bg-gray-50">
-                    Sign up
-                  </Button>
-                </Link>
-              </div>
-            )}
-
-            <div className="md:hidden">
-              <button
-                onClick={() => {
-                  setIsMenuOpen(!isMenuOpen);
-                  closeAllMenus();
-                }}
-                className="p-2 text-gray-600 hover:text-gray-900"
-              >
-                {isMenuOpen ? (
-                  <CloseIcon className="h-6 w-6" />
-                ) : (
-                  <MenuIcon className="h-6 w-6" />
-                )}
-              </button>
+                        Sign Out
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center space-x-3">
+                  <Link href="/login">
+                    <Button>Log in</Button>
+                  </Link>
+                  <Link href="/signup">
+                    <Button className="border border-gray-300 text-gray-900 hover:bg-gray-50">
+                      Sign up
+                    </Button>
+                  </Link>
+                </div>
+              )}
             </div>
+
+            {/* Mobile menu button - always visible on mobile */}
+            <button
+              onClick={() => {
+                setIsMenuOpen(!isMenuOpen);
+              }}
+              className="rounded-md p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 md:hidden"
+              aria-label="Toggle mobile menu"
+            >
+              {isMenuOpen ? (
+                <CloseIcon className="h-6 w-6" />
+              ) : (
+                <MenuIcon className="h-6 w-6" />
+              )}
+            </button>
           </div>
         </div>
 

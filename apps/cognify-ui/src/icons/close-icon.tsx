@@ -12,7 +12,12 @@ export function CloseIcon({
       className={clsx(className, "h-4 shrink-0")}
       {...props}
     >
-      <path d="M5 5L11 11M11 5L5 11" strokeLinecap="square" />
+      <path
+        d="M5 5L11 11M11 5L5 11"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }

@@ -9,9 +9,24 @@ export function MenuIcon({ className, ...props }: React.ComponentProps<"svg">) {
       className={clsx(className, "h-4 shrink-0")}
       {...props}
     >
-      <circle cx="8" cy="3" r="1" />
-      <circle cx="8" cy="8" r="1" />
-      <circle cx="8" cy="13" r="1" />
+      <path
+        d="M2 4h12"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <path
+        d="M2 8h12"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <path
+        d="M2 12h12"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
