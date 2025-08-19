@@ -6,6 +6,7 @@ import {
 } from "@/components/breadcrumbs";
 import Footer from "@/components/footer";
 import { LessonPageClient } from "@/components/lesson-page-client";
+import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { Navbar } from "@/components/navbar";
 import { SidebarLayoutContent } from "@/components/sidebar-layout";
 import { Video } from "@/components/video-player";
@@ -135,12 +136,16 @@ export default async function LessonPage({ params }: PageProps) {
           )}
 
           <LessonPageClient lessonId={lessonId}>
-            <div className="prose dark:prose-invert mt-8">
-              <div className="whitespace-pre-wrap">
-                {typeof lesson.content === "string"
-                  ? lesson.content
-                  : JSON.stringify(lesson.content, null, 2)}
-              </div>
+            <div className="mt-8">
+              {typeof lesson.content === "string" ? (
+                <MarkdownRenderer content={lesson.content} />
+              ) : (
+                <div className="prose dark:prose-invert">
+                  <pre className="whitespace-pre-wrap">
+                    {JSON.stringify(lesson.content, null, 2)}
+                  </pre>
+                </div>
+              )}
             </div>
           </LessonPageClient>
 
