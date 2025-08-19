@@ -86,7 +86,14 @@ export default async function LessonPage({ params }: PageProps) {
                   {mediaItem.mediaType === "video" && mediaItem.url && (
                     <Video
                       src={mediaItem.url}
-                      poster={mediaItem.metadata?.thumbnail}
+                      poster={
+                        mediaItem.metadata &&
+                        typeof mediaItem.metadata === "object" &&
+                        "thumbnail" in mediaItem.metadata &&
+                        typeof mediaItem.metadata.thumbnail === "string"
+                          ? mediaItem.metadata.thumbnail
+                          : undefined
+                      }
                     />
                   )}
 
