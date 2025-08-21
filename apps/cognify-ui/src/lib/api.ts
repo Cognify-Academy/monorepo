@@ -298,12 +298,14 @@ class ApiClient {
         title: string;
         description: string;
         order: number;
+        conceptIds: string[];
         lessons: Array<{
           id: string;
           title: string;
           description: string;
           content: string | null;
           order: number;
+          conceptIds: string[];
           media: Array<{
             id: string;
             title: string;

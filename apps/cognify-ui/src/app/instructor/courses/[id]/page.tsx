@@ -65,11 +65,11 @@ export default function EditCoursePage({
           ...courseData,
           sections: courseData.sections.map((section) => ({
             ...section,
-            conceptIds: [],
+            conceptIds: section.conceptIds || [],
             lessons: section.lessons.map((lesson) => ({
               ...lesson,
-              conceptIds: [],
-              media: [],
+              conceptIds: lesson.conceptIds || [],
+              media: lesson.media || [],
             })),
           })),
         };
