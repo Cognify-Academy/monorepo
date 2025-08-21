@@ -93,13 +93,15 @@ export default function PublicCoursesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Navbar />
-        <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <main className="mx-auto max-w-7xl bg-gray-50 px-4 py-12 text-gray-800 sm:px-6 lg:px-8 dark:bg-gray-900 dark:text-gray-200">
           <div className="flex items-center justify-center">
             <div className="text-center">
               <div className="mx-auto h-32 w-32 animate-spin rounded-full border-b-2 border-blue-600"></div>
-              <p className="mt-4 text-gray-600">Loading courses...</p>
+              <p className="mt-4 text-gray-600 dark:text-gray-400">
+                Loading courses...
+              </p>
             </div>
           </div>
         </main>
@@ -109,31 +111,31 @@ export default function PublicCoursesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
 
-      <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 dark:bg-gray-900">
         <div className="mb-12 text-center">
-          <h1 className="mb-4 text-4xl font-bold text-gray-900">
+          <h1 className="mb-4 text-4xl font-bold text-gray-900 dark:text-white">
             Available Courses
           </h1>
-          <p className="mx-auto max-w-3xl text-xl text-gray-600">
+          <p className="mx-auto max-w-3xl text-xl text-gray-600 dark:text-gray-400">
             Explore our knowledge graph-based courses. Sign up to start your
             learning journey.
           </p>
         </div>
 
         {error && (
-          <div className="mb-6 rounded-lg bg-red-50 p-4 text-center">
-            <p className="text-red-600">{error}</p>
+          <div className="mb-6 rounded-lg bg-red-50 p-4 text-center dark:bg-red-900/20">
+            <p className="text-red-600 dark:text-red-400">{error}</p>
           </div>
         )}
 
         {courses.length === 0 ? (
           <div className="py-12 text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800">
               <svg
-                className="h-6 w-6 text-gray-400"
+                className="h-6 w-6 text-gray-400 dark:text-gray-500"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -146,10 +148,10 @@ export default function PublicCoursesPage() {
                 />
               </svg>
             </div>
-            <h3 className="mb-2 text-lg font-semibold text-gray-900">
+            <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
               No courses available yet
             </h3>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-400">
               We&apos;re working on adding more courses. Check back soon!
             </p>
           </div>
@@ -160,24 +162,26 @@ export default function PublicCoursesPage() {
                 key={course.id}
                 className={`rounded-lg border p-6 shadow-sm transition-shadow hover:shadow-md ${
                   course.published
-                    ? "border-gray-100 bg-white"
-                    : "border-yellow-200 bg-yellow-50"
+                    ? "border-gray-100 bg-white dark:border-gray-700 dark:bg-gray-800"
+                    : "border-yellow-200 bg-yellow-50 dark:border-yellow-700 dark:bg-yellow-900/20"
                 }`}
               >
                 <div className="mb-3 flex items-start justify-between">
-                  <h3 className="text-xl font-semibold text-gray-900">
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                     {course.title}
                   </h3>
                   {!course.published && (
-                    <span className="ml-2 rounded-full bg-yellow-100 px-2 py-1 text-xs font-medium text-yellow-800">
+                    <span className="ml-2 rounded-full bg-yellow-100 px-2 py-1 text-xs font-medium text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200">
                       Draft
                     </span>
                   )}
                 </div>
-                <p className="mb-4 text-gray-600">{course.description}</p>
+                <p className="mb-4 text-gray-600 dark:text-gray-400">
+                  {course.description}
+                </p>
                 <div className="flex items-center justify-between">
-                  <div className="text-sm text-gray-500">
-                    <span className="rounded-full bg-gray-100 px-2 py-1">
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    <span className="rounded-full bg-gray-100 px-2 py-1 dark:bg-gray-700">
                       Course
                     </span>
                   </div>
@@ -185,7 +189,7 @@ export default function PublicCoursesPage() {
                     isEnrolledInCourse(course.id) ? (
                       <Link
                         href={`/courses/${course.slug}`}
-                        className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-green-700"
+                        className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
                       >
                         Resume Course
                       </Link>
@@ -193,7 +197,7 @@ export default function PublicCoursesPage() {
                       <button
                         onClick={() => handleEnroll(course.id)}
                         disabled={enrolling === course.id}
-                        className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400"
+                        className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400 dark:bg-blue-500 dark:hover:bg-blue-600 dark:disabled:bg-blue-400"
                       >
                         {enrolling === course.id
                           ? "Enrolling..."
@@ -201,7 +205,7 @@ export default function PublicCoursesPage() {
                       </button>
                     )
                   ) : (
-                    <span className="rounded-lg bg-gray-300 px-4 py-2 text-sm font-semibold text-gray-500">
+                    <span className="rounded-lg bg-gray-300 px-4 py-2 text-sm font-semibold text-gray-500 dark:bg-gray-600 dark:text-gray-400">
                       Coming Soon
                     </span>
                   )}

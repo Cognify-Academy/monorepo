@@ -101,15 +101,21 @@ export function ComingSoonCourses({
 
   if (isLoading) {
     return (
-      <section className={`bg-gray-50 py-20 ${className}`}>
+      <section className={`bg-gray-50 py-20 dark:bg-gray-800 ${className}`}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-16 text-center">
-            <h2 className="mb-4 text-3xl font-bold text-gray-900">{title}</h2>
-            <p className="text-lg text-gray-600">{subtitle}</p>
+            <h2 className="mb-4 text-3xl font-bold text-gray-900 dark:text-white">
+              {title}
+            </h2>
+            <p className="text-lg text-gray-600 dark:text-gray-400">
+              {subtitle}
+            </p>
           </div>
           <div className="text-center">
             <div className="mx-auto h-16 w-16 animate-spin rounded-full border-b-2 border-blue-600"></div>
-            <p className="mt-4 text-gray-600">Loading coming soon courses...</p>
+            <p className="mt-4 text-gray-600 dark:text-gray-400">
+              Loading coming soon courses...
+            </p>
           </div>
         </div>
       </section>
@@ -118,17 +124,23 @@ export function ComingSoonCourses({
 
   if (error) {
     return (
-      <section className={`bg-gray-50 py-20 ${className}`}>
+      <section className={`bg-gray-50 py-20 dark:bg-gray-800 ${className}`}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-16 text-center">
-            <h2 className="mb-4 text-3xl font-bold text-gray-900">{title}</h2>
-            <p className="text-lg text-gray-600">{subtitle}</p>
+            <h2 className="mb-4 text-3xl font-bold text-gray-900 dark:text-white">
+              {title}
+            </h2>
+            <p className="text-lg text-gray-600 dark:text-gray-400">
+              {subtitle}
+            </p>
           </div>
-          <div className="rounded-md border border-red-200 bg-red-50 p-4">
+          <div className="rounded-md border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
             <div className="flex">
               <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800">Error</h3>
-                <div className="mt-2 text-sm text-red-700">
+                <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
+                  Error
+                </h3>
+                <div className="mt-2 text-sm text-red-700 dark:text-red-300">
                   <p>{error}</p>
                 </div>
               </div>
@@ -140,15 +152,17 @@ export function ComingSoonCourses({
   }
 
   return (
-    <section className={`bg-gray-50 py-20 ${className}`}>
+    <section className={`bg-gray-50 py-20 dark:bg-gray-800 ${className}`}>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-16 text-center">
-          <h2 className="mb-4 text-3xl font-bold text-gray-900">{title}</h2>
-          <p className="text-lg text-gray-600">{subtitle}</p>
+          <h2 className="mb-4 text-3xl font-bold text-gray-900 dark:text-white">
+            {title}
+          </h2>
+          <p className="text-lg text-gray-600 dark:text-gray-400">{subtitle}</p>
         </div>
         {courses.length === 0 ? (
           <div className="text-center">
-            <p className="text-lg text-gray-600">
+            <p className="text-lg text-gray-600 dark:text-gray-400">
               No courses coming soon at the moment. Check back later!
             </p>
           </div>
@@ -157,7 +171,7 @@ export function ComingSoonCourses({
             {courses.map((course) => (
               <div
                 key={course.id}
-                className="rounded-lg border border-gray-100 bg-white p-6 shadow-sm"
+                className="rounded-lg border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-900"
               >
                 <div
                   className={`mb-4 flex h-10 w-10 items-center justify-center rounded-lg ${course.iconColor}`}
@@ -176,20 +190,20 @@ export function ComingSoonCourses({
                     />
                   </svg>
                 </div>
-                <h3 className="mb-2 text-lg font-semibold text-gray-900">
+                <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
                   {course.title}
                 </h3>
-                <p className="mb-4 text-sm text-gray-600">
+                <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
                   {course.description}
                 </p>
-                <div className="flex items-center text-sm text-gray-500">
-                  <span className="mr-2 rounded-full bg-gray-100 px-2 py-1">
+                <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                  <span className="mr-2 rounded-full bg-gray-100 px-2 py-1 dark:bg-gray-700">
                     {course.conceptCount} concepts
                   </span>
                   <span>{course.estimatedDuration}</span>
                 </div>
                 <div className="mt-4">
-                  <span className="rounded-lg bg-gray-300 px-4 py-2 text-sm font-semibold text-gray-500">
+                  <span className="rounded-lg bg-gray-300 px-4 py-2 text-sm font-semibold text-gray-500 dark:bg-gray-600 dark:text-gray-400">
                     Coming Soon
                   </span>
                 </div>

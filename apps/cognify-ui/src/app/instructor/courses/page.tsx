@@ -1,5 +1,6 @@
 "use client";
 
+import Footer from "@/components/footer";
 import { MyActiveCourses } from "@/components/my-active-courses";
 import { Navbar } from "@/components/navbar";
 import { useAuth } from "@/contexts/auth";
@@ -18,10 +19,10 @@ export default function InstructorCoursesPage() {
 
   if (authLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
           <div className="mx-auto h-32 w-32 animate-spin rounded-full border-b-2 border-blue-600"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
         </div>
       </div>
     );
@@ -32,9 +33,10 @@ export default function InstructorCoursesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800">
+    <div className="min-h-screen bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
       <Navbar />
       <MyActiveCourses context="instructor" />
+      <Footer />
     </div>
   );
 }

@@ -21,12 +21,12 @@ export default function RootLayout({ children }: { children: any }) {
       className={clsx(
         GeistMono.variable,
         InterVariable.variable,
-        "scroll-pt-16 font-sans antialiased dark:bg-gray-950",
+        "scroll-pt-16 font-sans antialiased",
       )}
     >
-      <body>
+      <body className="bg-white dark:bg-gray-950">
         <AuthProvider>
-          <div className="isolate">{children}</div>
+          <div className="isolate bg-white dark:bg-gray-950">{children}</div>
         </AuthProvider>
       </body>
     </html>

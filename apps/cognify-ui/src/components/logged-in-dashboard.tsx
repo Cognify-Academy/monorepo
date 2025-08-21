@@ -10,26 +10,29 @@ export function LoggedInDashboard() {
   const { user } = useAuth();
 
   return (
-    <div className="bg-gray-50 text-gray-800">
+    <div className="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
       <Navbar />
 
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
         <div className="text-center">
-          <h1 className="mb-6 text-5xl leading-tight font-bold text-gray-900 md:text-6xl">
-            Welcome Back, <span className="text-blue-600">{user?.name}!</span>
+          <h1 className="mb-6 text-5xl leading-tight font-bold text-gray-900 md:text-6xl dark:text-white">
+            Welcome Back,{" "}
+            <span className="text-blue-600 dark:text-blue-400">
+              {user?.name}!
+            </span>
           </h1>
-          <p className="mx-auto mb-8 max-w-3xl text-xl leading-relaxed text-gray-600">
+          <p className="mx-auto mb-8 max-w-3xl text-xl leading-relaxed text-gray-600 dark:text-gray-400">
             Continue your learning journey and explore new connections in your
             knowledge graph.
           </p>
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link href="/courses/enrolled">
-              <button className="transform rounded-lg bg-blue-600 px-8 py-4 text-lg font-semibold text-white transition-all hover:scale-105 hover:bg-blue-700">
+              <button className="transform rounded-lg bg-blue-600 px-8 py-4 text-lg font-semibold text-white transition-all hover:scale-105 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600">
                 Continue Learning
               </button>
             </Link>
             <Link href="/concepts">
-              <button className="flex items-center rounded-lg px-8 py-4 text-lg font-semibold text-gray-600 transition-colors hover:text-gray-900">
+              <button className="flex items-center rounded-lg px-8 py-4 text-lg font-semibold text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
                 <svg
                   className="mr-2 h-5 w-5"
                   fill="none"
@@ -50,10 +53,10 @@ export function LoggedInDashboard() {
         </div>
 
         <div className="relative mt-20">
-          <div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-lg">
+          <div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-lg dark:border-gray-700 dark:bg-gray-800">
             <div className="relative h-64 overflow-hidden">
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transform">
-                <div className="flex h-16 w-16 animate-[float_4s_ease-in-out_infinite] items-center justify-center rounded-full bg-blue-600 font-semibold text-white">
+                <div className="flex h-16 w-16 animate-[float_4s_ease-in-out_infinite] items-center justify-center rounded-full bg-blue-600 font-semibold text-white dark:bg-blue-500">
                   ML
                 </div>
               </div>
@@ -88,6 +91,7 @@ export function LoggedInDashboard() {
                   stroke="#e5e7eb"
                   strokeWidth="2"
                   opacity="0.6"
+                  className="dark:stroke-gray-600"
                 />
                 <line
                   x1="50%"
@@ -97,6 +101,7 @@ export function LoggedInDashboard() {
                   stroke="#e5e7eb"
                   strokeWidth="2"
                   opacity="0.6"
+                  className="dark:stroke-gray-600"
                 />
                 <line
                   x1="50%"
@@ -106,6 +111,7 @@ export function LoggedInDashboard() {
                   stroke="#e5e7eb"
                   strokeWidth="2"
                   opacity="0.6"
+                  className="dark:stroke-gray-600"
                 />
                 <line
                   x1="50%"
@@ -115,6 +121,7 @@ export function LoggedInDashboard() {
                   stroke="#e5e7eb"
                   strokeWidth="2"
                   opacity="0.6"
+                  className="dark:stroke-gray-600"
                 />
               </svg>
             </div>

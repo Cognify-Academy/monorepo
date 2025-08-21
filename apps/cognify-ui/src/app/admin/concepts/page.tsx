@@ -7,7 +7,7 @@ export default function AdminConceptsPage() {
     <div className="flex min-h-screen flex-col bg-gray-50 text-gray-800">
       <Navbar />
 
-      <main className="w-full flex-1">
+      <main className="w-full flex-1 dark:bg-gray-900">
         <ConceptGraphEditor />
       </main>
 

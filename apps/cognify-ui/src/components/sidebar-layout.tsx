@@ -202,7 +202,7 @@ export function SidebarLayoutContent({
           </div>
         </div>
       </header>
-      <main className="px-4 sm:px-6">{children}</main>
+      <main className="px-4 sm:px-6 dark:bg-gray-900">{children}</main>
     </>
   );
 }

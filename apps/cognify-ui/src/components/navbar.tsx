@@ -64,11 +64,11 @@ export function Navbar() {
   };
 
   return (
-    <nav className="relative z-50 border-b border-gray-100 bg-white shadow-sm">
+    <nav className="relative z-50 border-b border-gray-100 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 dark:bg-blue-500">
               <svg
                 className="h-5 w-5 text-white"
                 fill="none"
@@ -83,7 +83,10 @@ export function Navbar() {
                 />
               </svg>
             </div>
-            <Link href="/" className="text-xl font-semibold text-gray-900">
+            <Link
+              href="/"
+              className="text-xl font-semibold text-gray-900 dark:text-white"
+            >
               Cognify Academy
             </Link>
           </div>
@@ -92,7 +95,7 @@ export function Navbar() {
           <div className="hidden space-x-8 md:flex">
             <Link
               href="/courses"
-              className="text-gray-600 transition-colors hover:text-gray-900"
+              className="text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
             >
               Courses
             </Link>
@@ -101,23 +104,23 @@ export function Navbar() {
               <div className="relative" ref={instructorMenuRef}>
                 <button
                   onClick={() => setIsInstructorMenuOpen(!isInstructorMenuOpen)}
-                  className="flex items-center text-gray-600 transition-colors hover:text-gray-900"
+                  className="flex items-center text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
                 >
                   Instructor
                   <ChevronDownIcon className="ml-1 h-4 w-4" />
                 </button>
                 {isInstructorMenuOpen && (
-                  <div className="absolute left-0 z-10 mt-2 w-48 rounded-md bg-white py-1 shadow-lg">
+                  <div className="absolute left-0 z-10 mt-2 w-48 rounded-md border border-gray-100 bg-white py-1 shadow-lg dark:border-gray-600 dark:bg-gray-700">
                     <Link
                       href="/instructor/courses/new"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600"
                       onClick={() => setIsInstructorMenuOpen(false)}
                     >
                       Create course
                     </Link>
                     <Link
                       href="/instructor/courses"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600"
                       onClick={() => setIsInstructorMenuOpen(false)}
                     >
                       My courses
@@ -131,23 +134,23 @@ export function Navbar() {
               <div className="relative" ref={adminMenuRef}>
                 <button
                   onClick={() => setIsAdminMenuOpen(!isAdminMenuOpen)}
-                  className="flex items-center text-gray-600 transition-colors hover:text-gray-900"
+                  className="flex items-center text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
                 >
                   Admin
                   <ChevronDownIcon className="ml-1 h-4 w-4" />
                 </button>
                 {isAdminMenuOpen && (
-                  <div className="absolute left-0 z-10 mt-2 w-48 rounded-md bg-white py-1 shadow-lg">
+                  <div className="absolute left-0 z-10 mt-2 w-48 rounded-md border border-gray-100 bg-white py-1 shadow-lg dark:border-gray-600 dark:bg-gray-700">
                     <Link
                       href="/admin/concepts"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600"
                       onClick={() => setIsAdminMenuOpen(false)}
                     >
                       Concepts
                     </Link>
                     <Link
                       href="/admin/contacts"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600"
                       onClick={() => setIsAdminMenuOpen(false)}
                     >
                       Contact
@@ -166,7 +169,7 @@ export function Navbar() {
                 <div className="relative" ref={userMenuRef}>
                   <button
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    className="flex items-center text-gray-600 transition-colors hover:text-gray-900"
+                    className="flex items-center text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
                   >
                     <span className="mr-2">{user?.name || user?.username}</span>
                     <Image
@@ -175,15 +178,15 @@ export function Navbar() {
                       width={32}
                       height={32}
                       unoptimized
-                      className="h-8 w-8 rounded-full border border-gray-200"
+                      className="h-8 w-8 rounded-full border border-gray-200 dark:border-gray-600"
                     />
                     <ChevronDownIcon className="ml-1 h-4 w-4" />
                   </button>
                   {isUserMenuOpen && (
-                    <div className="absolute right-0 z-10 mt-2 w-48 rounded-md bg-white py-1 shadow-lg">
+                    <div className="absolute right-0 z-10 mt-2 w-48 rounded-md border border-gray-100 bg-white py-1 shadow-lg dark:border-gray-600 dark:bg-gray-700">
                       <Link
                         href="/profile"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600"
                         onClick={() => setIsUserMenuOpen(false)}
                       >
                         Profile
@@ -191,7 +194,7 @@ export function Navbar() {
                       {isAuthenticated && (
                         <Link
                           href="/courses/enrolled"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600"
                           onClick={() => setIsUserMenuOpen(false)}
                         >
                           My Courses
@@ -200,7 +203,7 @@ export function Navbar() {
                       {isAuthenticated && (
                         <Link
                           href="/concepts"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600"
                           onClick={() => setIsUserMenuOpen(false)}
                         >
                           My Concepts
@@ -208,7 +211,7 @@ export function Navbar() {
                       )}
                       <button
                         onClick={handleLogout}
-                        className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+                        className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600"
                       >
                         Sign Out
                       </button>
@@ -221,7 +224,7 @@ export function Navbar() {
                     <Button>Log in</Button>
                   </Link>
                   <Link href="/signup">
-                    <Button className="border border-gray-300 text-gray-900 hover:bg-gray-50">
+                    <Button className="border border-gray-300 text-gray-900 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-100 dark:hover:bg-gray-700">
                       Sign up
                     </Button>
                   </Link>
@@ -234,7 +237,7 @@ export function Navbar() {
               onClick={() => {
                 setIsMenuOpen(!isMenuOpen);
               }}
-              className="rounded-md p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 md:hidden"
+              className="rounded-md p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 md:hidden dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
               aria-label="Toggle mobile menu"
             >
               {isMenuOpen ? (
@@ -247,11 +250,11 @@ export function Navbar() {
         </div>
 
         {isMenuOpen && (
-          <div className="border-t border-gray-100 pt-4 pb-4 md:hidden">
+          <div className="border-t border-gray-100 pt-4 pb-4 md:hidden dark:border-gray-700">
             <div className="space-y-3">
               <Link
                 href="/courses"
-                className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900"
+                className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
                 onClick={closeAllMenus}
               >
                 Courses
@@ -259,19 +262,19 @@ export function Navbar() {
 
               {isAuthenticated && hasRole("INSTRUCTOR") && (
                 <>
-                  <div className="px-3 py-2 text-xs font-semibold tracking-wide text-gray-500 uppercase">
+                  <div className="px-3 py-2 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">
                     Instructor
                   </div>
                   <Link
                     href="/instructor/courses/new"
-                    className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900"
+                    className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
                     onClick={closeAllMenus}
                   >
                     Create course
                   </Link>
                   <Link
                     href="/instructor/courses"
-                    className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900"
+                    className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
                     onClick={closeAllMenus}
                   >
                     My courses
@@ -281,19 +284,19 @@ export function Navbar() {
 
               {isAuthenticated && hasRole("ADMIN") && (
                 <>
-                  <div className="px-3 py-2 text-xs font-semibold tracking-wide text-gray-500 uppercase">
+                  <div className="px-3 py-2 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">
                     Admin
                   </div>
                   <Link
                     href="/admin/concepts"
-                    className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900"
+                    className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
                     onClick={closeAllMenus}
                   >
                     Concepts
                   </Link>
                   <Link
                     href="/admin/contacts"
-                    className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900"
+                    className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
                     onClick={closeAllMenus}
                   >
                     Contact
@@ -302,48 +305,48 @@ export function Navbar() {
               )}
 
               {isAuthenticated ? (
-                <div className="space-y-3 border-t border-gray-100 pt-3">
+                <div className="space-y-3 border-t border-gray-100 pt-3 dark:border-gray-700">
                   <div className="flex items-center space-x-2 px-3 py-2">
                     <Image
                       src={`https://api.dicebear.com/7.x/initials/svg?seed=${user?.name || user?.username}`}
                       alt="User Avatar"
                       width={32}
                       height={32}
-                      className="h-8 w-8 rounded-full border border-gray-200"
+                      className="h-8 w-8 rounded-full border border-gray-200 dark:border-gray-600"
                     />
-                    <span className="text-sm text-gray-700">
+                    <span className="text-sm text-gray-700 dark:text-gray-200">
                       {user?.name || user?.username}
                     </span>
                   </div>
                   <Link
                     href="/profile"
-                    className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900"
+                    className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
                     onClick={closeAllMenus}
                   >
                     Profile
                   </Link>
                   <Link
                     href="/courses/enrolled"
-                    className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900"
+                    className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
                     onClick={closeAllMenus}
                   >
                     My Courses
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="flex w-full items-center justify-center space-x-2 rounded-lg bg-gray-100 px-3 py-2 text-gray-700 hover:bg-gray-200"
+                    className="flex w-full items-center justify-center space-x-2 rounded-lg bg-gray-100 px-3 py-2 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
                   >
                     <LogoutIcon className="h-4 w-4" />
                     <span>Sign Out</span>
                   </button>
                 </div>
               ) : (
-                <div className="space-y-3 border-t border-gray-100 pt-3">
+                <div className="space-y-3 border-t border-gray-100 pt-3 dark:border-gray-700">
                   <Link href="/login" onClick={closeAllMenus}>
                     <Button className="w-full">Log in</Button>
                   </Link>
                   <Link href="/signup" onClick={closeAllMenus}>
-                    <Button className="w-full border border-gray-300 text-gray-900 hover:bg-gray-50">
+                    <Button className="w-full border border-gray-300 text-gray-900 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-100 dark:hover:bg-gray-700">
                       Sign up
                     </Button>
                   </Link>

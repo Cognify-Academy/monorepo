@@ -140,7 +140,7 @@ export default function EditCoursePage({
 
   if (error && !course) {
     return (
-      <div className="min-h-screen bg-gray-50 text-gray-800">
+      <div className="min-h-screen bg-gray-50 text-gray-800 dark:bg-gray-900">
         <Navbar />
         <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
           <div className="rounded-md border border-red-200 bg-red-50 p-4">
@@ -163,7 +163,7 @@ export default function EditCoursePage({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800">
+    <div className="min-h-screen bg-gray-50 text-gray-800 dark:bg-gray-900">
       <Navbar />
       <div className="mx-auto max-w-4xl space-y-8 px-4 py-16 sm:px-6 lg:px-8">
         {/* Course Basic Information */}

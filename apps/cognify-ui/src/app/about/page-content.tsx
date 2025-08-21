@@ -33,10 +33,10 @@ export default function AboutPage() {
   ];
 
   return (
-    <div className="bg-gray-50 text-gray-800">
+    <div className="bg-gray-50 text-gray-800 dark:bg-gray-900">
       <Navbar />
 
-      <main>
+      <main className="dark:bg-gray-900">
         <section className="mx-auto my-10 max-w-7xl rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-20 shadow-inner sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="mb-6 text-5xl leading-tight font-extrabold text-gray-900 md:text-6xl">
