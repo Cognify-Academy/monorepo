@@ -2,7 +2,11 @@
 
 import { type ConceptType } from "@/components/concept-selector";
 import { CourseForm, type CourseFormData } from "@/components/course-form";
-import { CourseStructure, type Section } from "@/components/course-structure";
+import {
+  CourseStructure,
+  type Media,
+  type Section,
+} from "@/components/course-structure";
 import { Navbar } from "@/components/navbar";
 import { useAuth } from "@/contexts/auth";
 import { apiClient } from "@/lib/api";
@@ -69,7 +73,7 @@ export default function EditCoursePage({
             lessons: section.lessons.map((lesson) => ({
               ...lesson,
               conceptIds: lesson.conceptIds || [],
-              media: lesson.media || [],
+              media: (lesson.media || []) as Media[],
             })),
           })),
         };

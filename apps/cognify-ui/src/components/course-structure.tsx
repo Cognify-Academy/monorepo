@@ -69,7 +69,7 @@ export function CourseStructure({
     draggedItemRef.current = draggedItem;
   }, [draggedItem]);
   const [dragOverSection, setDragOverSection] = useState<string | null>(null);
-  const [dragOverLesson, setDragOverLesson] = useState<{
+  const [, setDragOverLesson] = useState<{
     sectionId: string;
     beforeLessonId?: string;
   } | null>(null);
@@ -288,7 +288,7 @@ export function CourseStructure({
         },
         accessToken,
       );
-    } catch (error: unknown) {
+    } catch {
       showError("Failed to save lesson");
     } finally {
       setSavingLessons((prev) => {
@@ -318,7 +318,7 @@ export function CourseStructure({
         return section;
       });
       onSectionsChange(updatedSections);
-    } catch (error: unknown) {
+    } catch {
       showError("Failed to delete lesson");
     } finally {
       setIsLoading(false);
@@ -863,11 +863,9 @@ function SectionEditor({
             >
               {section.lessons
                 .sort((a, b) => a.order - b.order)
-                .map((lesson, index) => (
+                .map((lesson) => (
                   <div key={lesson.id} data-lesson-id={lesson.id}>
                     <LessonEditor
-                      courseId={courseId}
-                      sectionId={section.id}
                       lesson={lesson}
                       availableConcepts={availableConcepts}
                       onUpdate={(updates) => onUpdateLesson(lesson.id, updates)}
@@ -895,8 +893,6 @@ function SectionEditor({
 }
 
 interface LessonEditorProps {
-  courseId: string;
-  sectionId: string;
   lesson: Lesson;
   availableConcepts: ConceptType[];
   onUpdate: (updates: Partial<Lesson>) => void;
@@ -908,8 +904,6 @@ interface LessonEditorProps {
 }
 
 function LessonEditor({
-  courseId,
-  sectionId,
   lesson,
   availableConcepts,
   onUpdate,
