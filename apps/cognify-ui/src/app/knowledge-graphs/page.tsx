@@ -4,12 +4,11 @@ import Link from "next/link";
 
 export default function KnowledgeGraphsPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
 
-      {/* Hero Section */}
       <section className="mx-auto max-w-7xl px-4 py-20 text-center sm:px-6 lg:px-8">
-        <h1 className="mb-6 text-5xl leading-tight font-extrabold text-gray-900 md:text-6xl">
+        <h1 className="mb-6 text-5xl leading-tight font-extrabold text-gray-900 md:text-6xl dark:text-white">
           What Are <span className="text-blue-600">Knowledge Graphs</span>?
         </h1>
         <p className="mx-auto mb-8 max-w-4xl text-xl leading-relaxed text-gray-700">
@@ -18,11 +17,10 @@ export default function KnowledgeGraphsPage() {
         </p>
       </section>
 
-      {/* Connecting the Dots Section */}
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid items-center gap-12 md:grid-cols-2">
           <div>
-            <h2 className="mb-6 text-4xl font-bold text-gray-900">
+            <h2 className="mb-6 text-4xl font-bold text-gray-900 dark:text-white">
               Connecting the Dots of Knowledge
             </h2>
             <p className="mb-4 text-lg text-gray-700">
@@ -33,7 +31,7 @@ export default function KnowledgeGraphsPage() {
               &quot;Python&quot;) and the relationships between them (like
               &quot;Machine Learning uses Python&quot;).
             </p>
-            <p className="text-lg text-gray-700">
+            <p className="text-lg text-gray-700 dark:text-gray-300">
               Unlike traditional databases, which are often rigid, knowledge
               graphs are flexible and can grow dynamically. They help systems
               (and learners!) understand the context and meaning behind data,
@@ -130,20 +128,19 @@ export default function KnowledgeGraphsPage() {
         </div>
       </section>
 
-      {/* How We Use Knowledge Graphs Section */}
-      <section className="mx-auto my-10 max-w-7xl rounded-lg bg-gray-100 px-4 py-16 shadow-inner sm:px-6 lg:px-8">
+      <section className="mx-auto my-10 max-w-7xl rounded-lg bg-gray-100 px-4 py-16 shadow-inner sm:px-6 lg:px-8 dark:bg-gray-800">
         <div className="mb-12 text-center">
-          <h2 className="mb-4 text-4xl font-bold text-gray-900">
+          <h2 className="mb-4 text-4xl font-bold text-gray-900 dark:text-white">
             How We Use Knowledge Graphs at Cognify Academy
           </h2>
-          <p className="mx-auto max-w-3xl text-lg text-gray-700">
+          <p className="mx-auto max-w-3xl text-lg text-gray-700 dark:text-gray-300">
             We integrate knowledge graph technology directly into your learning
             experience to provide unparalleled clarity and depth.
           </p>
         </div>
 
         <div className="grid gap-8 md:grid-cols-3">
-          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-700">
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
               <svg
                 className="h-6 w-6 text-blue-600"
@@ -159,16 +156,16 @@ export default function KnowledgeGraphsPage() {
                 />
               </svg>
             </div>
-            <h3 className="mb-2 text-xl font-semibold text-gray-900">
+            <h3 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">
               Personalized Learning Paths
             </h3>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               Our knowledge graph understands your current knowledge state and
               recommends the most relevant next steps, filling gaps and building
               on strengths.
             </p>
           </div>
-          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-700">
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
               <svg
                 className="h-6 w-6 text-green-600"
@@ -184,16 +181,16 @@ export default function KnowledgeGraphsPage() {
                 />
               </svg>
             </div>
-            <h3 className="mb-2 text-xl font-semibold text-gray-900">
+            <h3 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">
               Contextualized Explanations
             </h3>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               When you encounter a new concept, the platform shows you its
               prerequisites, related ideas, and real-world applications,
               providing immediate context.
             </p>
           </div>
-          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-700">
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-purple-100">
               <svg
                 className="h-6 w-6 text-purple-600"
@@ -209,16 +206,16 @@ export default function KnowledgeGraphsPage() {
                 />
               </svg>
             </div>
-            <h3 className="mb-2 text-xl font-semibold text-gray-900">
+            <h3 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">
               Intelligent Search & Discovery
             </h3>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               Our search goes beyond keywords, understanding your intent and
               providing courses, lessons, and resources truly relevant to your
               query.
             </p>
           </div>
-          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-700">
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-yellow-100">
               <svg
                 className="h-6 w-6 text-yellow-600"
@@ -234,16 +231,16 @@ export default function KnowledgeGraphsPage() {
                 />
               </svg>
             </div>
-            <h3 className="mb-2 text-xl font-semibold text-gray-900">
+            <h3 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">
               Concept Mapping Tools
             </h3>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               Instructors can easily define and link concepts within their
               courses, ensuring a coherent and interconnected curriculum for
               learners.
             </p>
           </div>
-          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-700">
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
               <svg
                 className="h-6 w-6 text-red-600"
@@ -259,16 +256,16 @@ export default function KnowledgeGraphsPage() {
                 />
               </svg>
             </div>
-            <h3 className="mb-2 text-xl font-semibold text-gray-900">
+            <h3 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">
               Dynamic Content Updates
             </h3>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               As new information emerges or courses are updated, the knowledge
               graph intelligently propagates changes, keeping your learning
               current.
             </p>
           </div>
-          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-700">
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100">
               <svg
                 className="h-6 w-6 text-indigo-600"
@@ -284,10 +281,10 @@ export default function KnowledgeGraphsPage() {
                 />
               </svg>
             </div>
-            <h3 className="mb-2 text-xl font-semibold text-gray-900">
+            <h3 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">
               Enhanced Collaboration
             </h3>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               Instructors can see how their course content connects with others,
               facilitating collaboration and holistic curriculum development.
             </p>
@@ -295,12 +292,11 @@ export default function KnowledgeGraphsPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="mx-auto max-w-4xl px-4 py-16 text-center sm:px-6 lg:px-8">
-        <h2 className="mb-4 text-3xl font-bold text-gray-900">
+        <h2 className="mb-4 text-3xl font-bold text-gray-900 dark:text-white">
           Experience Smarter Learning Today
         </h2>
-        <p className="mb-8 text-lg text-gray-700">
+        <p className="mb-8 text-lg text-gray-700 dark:text-gray-300">
           Dive into courses powered by Knowledge Graphs and transform your
           understanding.
         </p>

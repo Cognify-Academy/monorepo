@@ -84,14 +84,14 @@ export function CourseForm({
   };
 
   return (
-    <div className="rounded-lg border border-gray-100 bg-white p-8 shadow-lg">
-      <h1 className="mb-8 text-center text-3xl font-bold text-gray-900">
+    <div className="rounded-lg border border-gray-100 bg-white p-8 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+      <h1 className="mb-8 text-center text-3xl font-bold text-gray-900 dark:text-white">
         {isEditing ? "Update Course" : "Create New Course"}
       </h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
-          <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-800">
+          <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-200">
             {error}
           </div>
         )}
@@ -113,13 +113,13 @@ export function CourseForm({
               checked={formData.published}
               onChange={(e) => handleChange("published", e.target.checked)}
               disabled={isLoading}
-              className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:focus:ring-blue-400"
             />
-            <span className="text-sm font-medium text-gray-700">
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Publish Course
             </span>
           </label>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             When published, the course will be visible to students for
             enrollment.
           </p>
@@ -134,7 +134,7 @@ export function CourseForm({
         <div className="pt-6">
           <Button
             type="submit"
-            className="w-full transform rounded-lg bg-blue-600 px-6 py-3 text-lg font-semibold text-white transition-all hover:scale-105 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+            className="w-full transform rounded-lg bg-blue-600 px-6 py-3 text-lg font-semibold text-white transition-all hover:scale-105 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-400 dark:focus:ring-offset-gray-800"
             disabled={isLoading}
           >
             {isLoading
@@ -175,23 +175,25 @@ export function CourseBasicInfo({
       <div>
         <label
           htmlFor="course-title"
-          className="mb-1 block text-sm font-medium text-gray-700"
+          className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
         >
-          Course Title <span className="text-red-500">*</span>
+          Course Title <span className="text-red-500 dark:text-red-400">*</span>
         </label>
         <TextInput
           type="text"
           id="course-title"
           value={title}
           onChange={(e) => onTitleChange(e.target.value)}
-          className="mt-1 block w-full rounded-md border border-gray-300 p-3 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+          className="mt-1 block w-full rounded-md border border-gray-300 bg-white p-3 text-gray-900 placeholder-gray-500 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
           placeholder="e.g., Introduction to Machine Learning"
           disabled={disabled}
         />
         {titleError && (
-          <p className="mt-1 text-sm text-red-600">{titleError}</p>
+          <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+            {titleError}
+          </p>
         )}
-        <p className="mt-2 text-sm text-gray-500">
+        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
           A clear and concise title for your course.
         </p>
       </div>
@@ -199,23 +201,26 @@ export function CourseBasicInfo({
       <div>
         <label
           htmlFor="course-description"
-          className="mb-1 block text-sm font-medium text-gray-700"
+          className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
         >
-          Course Description <span className="text-red-500">*</span>
+          Course Description{" "}
+          <span className="text-red-500 dark:text-red-400">*</span>
         </label>
         <textarea
           id="course-description"
           rows={4}
           value={description}
           onChange={(e) => onDescriptionChange(e.target.value)}
-          className="mt-1 block w-full rounded-md border border-gray-300 p-3 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+          className="mt-1 block w-full rounded-md border border-gray-300 bg-white p-3 text-gray-900 placeholder-gray-500 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
           placeholder="Provide a comprehensive description of what students will learn in this course."
           disabled={disabled}
         />
         {descriptionError && (
-          <p className="mt-1 text-sm text-red-600">{descriptionError}</p>
+          <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+            {descriptionError}
+          </p>
         )}
-        <p className="mt-2 text-sm text-gray-500">
+        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
           A detailed description covering topics, benefits, and target audience.
         </p>
       </div>

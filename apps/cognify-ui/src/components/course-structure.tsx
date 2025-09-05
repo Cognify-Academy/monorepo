@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/contexts/auth";
 import { apiClient } from "@/lib/api";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "./button";
 import { ConceptSelector, type ConceptType } from "./concept-selector";
 import { TextInput } from "./input";
@@ -76,16 +76,6 @@ export function CourseStructure({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [savingLessons, setSavingLessons] = useState<Set<string>>(new Set());
-  const saveTimeout = useRef<NodeJS.Timeout | null>(null);
-
-  const debouncedSave = useCallback(() => {
-    if (saveTimeout.current) {
-      clearTimeout(saveTimeout.current);
-    }
-    saveTimeout.current = setTimeout(() => {
-      // Debounced save logic can be added here
-    }, 1000) as NodeJS.Timeout;
-  }, []);
 
   const showError = (message: string) => {
     setError(message);
@@ -251,20 +241,11 @@ export function CourseStructure({
     }
   };
 
-  const updateLesson = async (
+  const updateLesson = (
     sectionId: string,
     lessonId: string,
     updates: Partial<Lesson>,
   ) => {
-    if (!accessToken) {
-      showError("Authentication required");
-      return;
-    }
-
-    const section = sections.find((s) => s.id === sectionId);
-    const lesson = section?.lessons.find((l) => l.id === lessonId);
-    if (!section || !lesson) return;
-
     const updatedSections = sections.map((s) => {
       if (s.id === sectionId) {
         return {
@@ -277,31 +258,6 @@ export function CourseStructure({
       return s;
     });
     onSectionsChange(updatedSections);
-
-    const updatedSection = updatedSections.find((s) => s.id === sectionId);
-    const updatedLesson = updatedSection?.lessons.find(
-      (l) => l.id === lessonId,
-    );
-    if (!updatedLesson) return;
-
-    try {
-      await apiClient.updateLesson(
-        courseId,
-        sectionId,
-        lessonId,
-        {
-          title: updatedLesson.title,
-          description: updatedLesson.description,
-          content: updatedLesson.content,
-          conceptIds: updatedLesson.conceptIds || [],
-        },
-        accessToken,
-      );
-    } catch (error: unknown) {
-      showError("Failed to update lesson");
-
-      onSectionsChange(sections);
-    }
   };
 
   const saveLesson = async (sectionId: string, lessonId: string) => {
@@ -625,20 +581,20 @@ export function CourseStructure({
   return (
     <div>
       {error && (
-        <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-800">
+        <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-200">
           {error}
         </div>
       )}
 
       <div className="mb-4 flex items-center justify-between">
-        <label className="block text-sm font-medium text-gray-700">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
           Course Structure / Lessons
         </label>
         <Button
           type="button"
           onClick={addSection}
           disabled={disabled || isLoading}
-          className="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+          className="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-400 dark:focus:ring-offset-gray-800"
         >
           <svg
             className="mr-2 h-4 w-4"
@@ -693,7 +649,7 @@ export function CourseStructure({
         ))}
 
         {sections.length === 0 && (
-          <div className="py-8 text-center text-gray-500">
+          <div className="py-8 text-center text-gray-500 dark:text-gray-400">
             <p>
               No sections added yet. Click &quot;Add Section&quot; to get
               started.
@@ -753,14 +709,16 @@ function SectionEditor({
   return (
     <div
       className={`rounded-lg border ${
-        isDraggedOver ? "border-blue-500 bg-blue-50" : "border-gray-200"
+        isDraggedOver
+          ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+          : "border-gray-200 dark:border-gray-600"
       }`}
       draggable={!disabled}
       onDragStart={onDragStart}
       onDragOver={onDragOver}
       onDrop={onDrop}
     >
-      <div className="border-b border-gray-200 bg-gray-50 p-4">
+      <div className="border-b border-gray-200 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-700">
         <div className="flex items-center justify-between">
           <button
             type="button"
@@ -769,7 +727,7 @@ function SectionEditor({
             disabled={disabled}
           >
             <svg
-              className={`h-4 w-4 transition-transform ${
+              className={`h-4 w-4 text-gray-900 transition-transform dark:text-white ${
                 isExpanded ? "rotate-90" : ""
               }`}
               fill="none"
@@ -783,15 +741,15 @@ function SectionEditor({
                 d="M9 5l7 7-7 7"
               />
             </svg>
-            <h3 className="text-lg font-medium text-gray-900">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
               {section.title || "Untitled Section"}
             </h3>
             <div className="ml-auto flex items-center space-x-2">
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-gray-500 dark:text-gray-400">
                 {section.lessons.length} lessons
               </span>
               <svg
-                className="h-4 w-4 text-gray-400"
+                className="h-4 w-4 text-gray-400 dark:text-gray-500"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -809,7 +767,7 @@ function SectionEditor({
             type="button"
             onClick={onDelete}
             disabled={disabled}
-            className="p-1 text-red-600 hover:text-red-800"
+            className="p-1 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
           >
             <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
               <path
@@ -823,9 +781,9 @@ function SectionEditor({
       </div>
 
       {isExpanded && (
-        <div className="space-y-4 p-4">
+        <div className="space-y-4 bg-white p-4 dark:bg-gray-800">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
               Section Title
             </label>
             <TextInput
@@ -846,7 +804,7 @@ function SectionEditor({
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
               Section Description
             </label>
             <textarea
@@ -855,12 +813,12 @@ function SectionEditor({
               placeholder="Enter section description"
               rows={2}
               disabled={disabled}
-              className="mt-1 block w-full rounded-md border border-gray-300 p-3 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+              className="mt-1 block w-full rounded-md border border-gray-300 bg-white p-3 text-gray-900 placeholder-gray-500 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
               Section Concepts
             </label>
             <ConceptSelector
@@ -872,14 +830,14 @@ function SectionEditor({
 
           <div>
             <div className="mb-2 flex items-center justify-between">
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Lessons
               </label>
               <Button
                 type="button"
                 onClick={onAddLesson}
                 disabled={disabled}
-                className="inline-flex items-center rounded border border-transparent bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-200"
+                className="inline-flex items-center rounded border border-transparent bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50"
               >
                 <svg
                   className="mr-1 h-3 w-3"
@@ -899,7 +857,7 @@ function SectionEditor({
             </div>
 
             <div
-              className="min-h-[50px] space-y-2 rounded border border-gray-200 p-2"
+              className="min-h-[50px] space-y-2 rounded border border-gray-200 bg-gray-50 p-2 dark:border-gray-600 dark:bg-gray-700"
               onDragOver={(e) => onLessonsContainerDragOver(e)}
               onDrop={(e) => onLessonsContainerDrop(e)}
             >
@@ -923,7 +881,7 @@ function SectionEditor({
                 ))}
 
               {section.lessons.length === 0 && (
-                <p className="py-4 text-center text-gray-500">
+                <p className="py-4 text-center text-gray-500 dark:text-gray-400">
                   No lessons added yet. Click &quot;Add Lesson&quot; to get
                   started.
                 </p>
@@ -1027,11 +985,11 @@ function LessonEditor({
   };
 
   return (
-    <div className="rounded border border-gray-200 bg-white">
+    <div className="rounded border border-gray-200 bg-white dark:border-gray-600 dark:bg-gray-800">
       <div className="flex items-center justify-between p-3">
         <div className="flex flex-1 items-center space-x-2">
           <div
-            className="h-4 w-4 cursor-move text-gray-400 hover:text-gray-600"
+            className="h-4 w-4 cursor-move text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400"
             draggable={!disabled}
             onDragStart={onDragStart}
             title="Drag to reorder"
@@ -1060,10 +1018,10 @@ function LessonEditor({
           <button
             type="button"
             onClick={() => setIsExpanded(!isExpanded)}
-            className="p-1 text-gray-500 hover:text-gray-700"
+            className="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
           >
             <svg
-              className={`h-4 w-4 transition-transform ${
+              className={`h-4 w-4 text-gray-900 transition-transform dark:text-white ${
                 isExpanded ? "rotate-180" : ""
               }`}
               fill="none"
@@ -1082,7 +1040,7 @@ function LessonEditor({
             type="button"
             onClick={onDelete}
             disabled={disabled}
-            className="p-1 text-red-600 hover:text-red-800"
+            className="p-1 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
           >
             <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
               <path
@@ -1096,9 +1054,9 @@ function LessonEditor({
       </div>
 
       {isExpanded && (
-        <div className="space-y-3 border-t border-gray-200 p-3">
+        <div className="space-y-3 border-t border-gray-200 p-3 dark:border-gray-600">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
               Lesson Description
             </label>
             <textarea
@@ -1107,14 +1065,14 @@ function LessonEditor({
               placeholder="Lesson description"
               rows={2}
               disabled={disabled}
-              className="w-full rounded-md border border-gray-300 p-2 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="w-full rounded-md border border-gray-300 bg-white p-2 text-sm text-gray-900 placeholder-gray-500 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
               draggable={false}
               onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
               Lesson Content (Markdown)
             </label>
             <textarea
@@ -1127,14 +1085,14 @@ function LessonEditor({
               placeholder="Enter lesson content as Markdown"
               rows={10}
               disabled={disabled}
-              className="w-full rounded-md border border-gray-300 p-2 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="w-full rounded-md border border-gray-300 bg-white p-2 text-sm text-gray-900 placeholder-gray-500 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
               draggable={false}
               onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
               Lesson Concepts
             </label>
             <div
@@ -1150,23 +1108,29 @@ function LessonEditor({
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
               Media
             </label>
-            <div className="rounded-md border border-gray-300 p-2">
+            <div className="rounded-md border border-gray-300 bg-gray-50 p-2 dark:border-gray-600 dark:bg-gray-700">
               {(lesson.media || []).length > 0 ? (
                 <ul className="space-y-2">
                   {(lesson.media || []).map((mediaItem) => (
                     <li
                       key={mediaItem.id}
-                      className="flex items-center justify-between"
+                      className="flex items-center justify-between text-gray-900 dark:text-white"
                     >
                       <span>{mediaItem.title}</span>
                       <div className="flex space-x-2">
-                        <button onClick={() => openMediaDialog(mediaItem)}>
+                        <button
+                          onClick={() => openMediaDialog(mediaItem)}
+                          className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                        >
                           Edit
                         </button>
-                        <button onClick={() => handleDeleteMedia(mediaItem.id)}>
+                        <button
+                          onClick={() => handleDeleteMedia(mediaItem.id)}
+                          className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                        >
                           Delete
                         </button>
                       </div>
@@ -1174,14 +1138,16 @@ function LessonEditor({
                   ))}
                 </ul>
               ) : (
-                <p className="text-sm text-gray-500">No media added yet.</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  No media added yet.
+                </p>
               )}
               <div className="mt-2">
                 <Button
                   type="button"
                   onClick={() => openMediaDialog()}
                   disabled={disabled}
-                  className="inline-flex items-center rounded border border-transparent bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-200"
+                  className="inline-flex items-center rounded border border-transparent bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50"
                 >
                   Add Media
                 </Button>
@@ -1194,7 +1160,7 @@ function LessonEditor({
               type="button"
               onClick={onSave}
               disabled={disabled || isSaving}
-              className="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:bg-gray-400"
+              className="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:bg-gray-400 dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-400 dark:focus:ring-offset-gray-800 dark:disabled:bg-gray-600"
             >
               {isSaving ? (
                 <>

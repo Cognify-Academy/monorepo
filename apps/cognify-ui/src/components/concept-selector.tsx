@@ -38,24 +38,24 @@ export function ConceptSelector({
 
   return (
     <div className="mt-2">
-      <h4 className="font-medium">Concepts:</h4>
-      <div className="mb-4 space-y-4 rounded-md border p-4">
+      <h4 className="font-medium text-gray-900 dark:text-white">Concepts:</h4>
+      <div className="mb-4 space-y-4 rounded-md border border-gray-200 bg-white p-4 dark:border-gray-600 dark:bg-gray-800">
         <div>
           <input
             type="text"
             placeholder="Search concepts..."
-            className="w-full rounded-md border p-2 focus:outline-2 focus:outline-blue-500"
+            className="w-full rounded-md border border-gray-300 bg-white p-2 text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
           />
           {isFocused && filteredConcepts.length > 0 && (
-            <ul className="mt-1 max-h-40 overflow-y-auto rounded-md border bg-white shadow-lg">
+            <ul className="mt-1 max-h-40 overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-700">
               {filteredConcepts.map((concept) => (
                 <li
                   key={concept.id}
-                  className="cursor-pointer p-2 hover:bg-gray-100"
+                  className="cursor-pointer p-2 text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
                   onMouseDown={() => addConcept(concept.id)}
                 >
                   {concept.name}
@@ -71,7 +71,7 @@ export function ConceptSelector({
             return (
               <Badge
                 key={id}
-                className="cursor-pointer hover:bg-gray-200"
+                className="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600"
                 variant="secondary"
                 onClick={() => removeConcept(id)}
               >

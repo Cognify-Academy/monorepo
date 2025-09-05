@@ -1,6 +1,5 @@
 "use client";
 
-import { useMDXComponents } from "@/mdx-components";
 import React from "react";
 import { remark } from "remark";
 import remarkGfm from "remark-gfm";

@@ -44,7 +44,7 @@ export default async function LessonPage({ params }: PageProps) {
     currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1] : null;
 
   return (
-    <div className="bg-gray-50 text-gray-800">
+    <div className="bg-gray-50 text-gray-800 dark:bg-gray-900">
       <Navbar />
 
       <SidebarLayoutContent

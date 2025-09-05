@@ -95,7 +95,7 @@ export function ComingSoon({
   className = "",
 }: ComingSoonProps) {
   return (
-    <section className={`bg-gray-50 py-20 ${className}`}>
+    <section className={`bg-gray-50 py-20 dark:bg-blue-700 ${className}`}>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-16 text-center">
           <h2 className="mb-4 text-3xl font-bold text-gray-900">{title}</h2>

@@ -58,7 +58,7 @@ export default async function CoursePage({ params }: PageProps) {
       : undefined;
 
   return (
-    <div className="bg-gray-50 text-gray-800">
+    <div className="bg-gray-50 text-gray-800 dark:bg-gray-900">
       <Navbar />
 
       <SidebarLayoutContent

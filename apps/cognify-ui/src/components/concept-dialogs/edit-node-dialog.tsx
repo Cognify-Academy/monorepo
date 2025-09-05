@@ -83,11 +83,16 @@ export function EditNodeDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Edit Concept</DialogTitle>
+          <DialogTitle className="text-gray-900 dark:text-white">
+            Edit Concept
+          </DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
-            <label htmlFor="name" className="text-right">
+            <label
+              htmlFor="name"
+              className="text-right text-gray-700 dark:text-gray-300"
+            >
               Name
             </label>
             <TextInput
@@ -98,7 +103,10 @@ export function EditNodeDialog({
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <label htmlFor="description" className="text-right">
+            <label
+              htmlFor="description"
+              className="text-right text-gray-700 dark:text-gray-300"
+            >
               Description
             </label>
             <Textarea
@@ -109,13 +117,16 @@ export function EditNodeDialog({
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <label htmlFor="importance" className="text-right">
+            <label
+              htmlFor="importance"
+              className="text-right text-gray-700 dark:text-gray-300"
+            >
               Importance
             </label>
             <select
               value={importance}
               onChange={(e) => setImportance(Number(e.target.value))}
-              className="col-span-3 rounded-md border p-2"
+              className="col-span-3 rounded-md border border-gray-300 bg-white p-2 text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
               id="importance"
             >
               {Object.values(importances).map(({ code, category }) => (

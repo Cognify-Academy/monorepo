@@ -21,7 +21,7 @@ import {
   type Node,
   type OnConnect,
 } from "@xyflow/react";
-import { SetStateAction, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { useAuth } from "@/contexts/auth";
 import "@xyflow/react/dist/style.css";

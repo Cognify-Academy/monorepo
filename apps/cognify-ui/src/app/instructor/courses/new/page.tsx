@@ -2,6 +2,7 @@
 
 import { type ConceptType } from "@/components/concept-selector";
 import { CourseForm, type CourseFormData } from "@/components/course-form";
+import Footer from "@/components/footer";
 import { Navbar } from "@/components/navbar";
 import { useAuth } from "@/contexts/auth";
 import { apiClient } from "@/lib/api";
@@ -74,10 +75,10 @@ export default function NewCoursePage() {
 
   if (authLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
           <div className="mx-auto h-32 w-32 animate-spin rounded-full border-b-2 border-blue-600"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
         </div>
       </div>
     );
@@ -88,13 +89,15 @@ export default function NewCoursePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
       <Navbar />
       <section className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
         {conceptsLoading ? (
           <div className="text-center">
             <div className="mx-auto h-16 w-16 animate-spin rounded-full border-b-2 border-blue-600"></div>
-            <p className="mt-4 text-gray-600">Loading concepts...</p>
+            <p className="mt-4 text-gray-600 dark:text-gray-400">
+              Loading concepts...
+            </p>
           </div>
         ) : (
           <CourseForm
@@ -105,6 +108,7 @@ export default function NewCoursePage() {
           />
         )}
       </section>
+      <Footer />
     </div>
   );
 }

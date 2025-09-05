@@ -45,7 +45,9 @@ export function NewNodeDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add New Concept</DialogTitle>
+          <DialogTitle className="text-gray-900 dark:text-white">
+            Add New Concept
+          </DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <TextInput
@@ -61,7 +63,7 @@ export function NewNodeDialog({
           <select
             value={importance}
             onChange={(e) => setImportance(Number(e.target.value))}
-            className="rounded-md border p-2"
+            className="rounded-md border border-gray-300 bg-white p-2 text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
           >
             {Object.values(importances).map(({ code, category }) => (
               <option key={code} value={code}>

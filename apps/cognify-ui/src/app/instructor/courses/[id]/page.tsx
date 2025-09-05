@@ -182,7 +182,7 @@ export default function EditCoursePage({
         />
 
         {/* Course Structure */}
-        <div className="rounded-lg border border-gray-100 bg-white p-8 shadow-lg">
+        <div className="rounded-lg border border-gray-100 bg-white p-8 shadow-lg dark:border-gray-700 dark:bg-gray-800">
           <CourseStructure
             courseId={courseId || ""}
             sections={course.sections}

@@ -61,11 +61,16 @@ export function EditEdgeDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Edit Relationship</DialogTitle>
+          <DialogTitle className="text-gray-900 dark:text-white">
+            Edit Relationship
+          </DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
-            <label htmlFor="description" className="text-right">
+            <label
+              htmlFor="description"
+              className="text-right text-gray-700 dark:text-gray-300"
+            >
               Description
             </label>
             <Textarea
@@ -76,7 +81,10 @@ export function EditEdgeDialog({
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <label htmlFor="weighting" className="text-right">
+            <label
+              htmlFor="weighting"
+              className="text-right text-gray-700 dark:text-gray-300"
+            >
               Weighting
             </label>
             <TextInput
