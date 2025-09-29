@@ -1,4 +1,4 @@
-import { Elysia, error, t } from "elysia";
+import { Elysia, t } from "elysia";
 import AuthService from "../../auth/service";
 import { relateConcepts, deleteRelation, patchRelation } from "./model";
 
@@ -23,9 +23,12 @@ const relationRouter = new Elysia({ prefix: "/relation" })
         body.conceptSourceId,
         body.conceptTargetId,
       );
-      return !hasRole("ADMIN")
-        ? error("Forbidden")
-        : await relateConcepts(body);
+      if (!hasRole("ADMIN"))
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
+      return await relateConcepts(body);
     },
     {
       headers: t.Object({
@@ -43,9 +46,12 @@ const relationRouter = new Elysia({ prefix: "/relation" })
   .delete(
     "/:id",
     async ({ Auth: { hasRole }, params }) => {
-      return !hasRole("ADMIN")
-        ? error("Forbidden")
-        : await deleteRelation(params.id);
+      if (!hasRole("ADMIN"))
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
+      return await deleteRelation(params.id);
     },
     {
       headers: t.Object({
@@ -66,13 +72,16 @@ const relationRouter = new Elysia({ prefix: "/relation" })
       params: { id: string };
       body: { weighting: number; description: string };
     }) => {
-      return !hasRole("ADMIN")
-        ? error("Forbidden")
-        : await patchRelation({
-            id: params.id,
-            weighting: body.weighting,
-            description: body.description,
-          });
+      if (!hasRole("ADMIN"))
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
+      return await patchRelation({
+        id: params.id,
+        weighting: body.weighting,
+        description: body.description,
+      });
     },
     {
       headers: t.Object({

@@ -1,4 +1,4 @@
-import { Elysia, error, NotFoundError, t } from "elysia";
+import { Elysia, NotFoundError, t } from "elysia";
 import AuthService from "../auth/service";
 import {
   createCourse,
@@ -63,7 +63,10 @@ export default new Elysia({ prefix: "/instructor/courses" })
       };
     }) => {
       if (!hasRole("INSTRUCTOR") || !user?.id)
-        return error(403, { error: "Forbidden" });
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
       const courses = await getCourses(user.id);
 
       return courses.map(
@@ -124,7 +127,11 @@ export default new Elysia({ prefix: "/instructor/courses" })
         user: { id: string };
       };
     }) => {
-      if (!hasRole("INSTRUCTOR")) return error(403, "Forbidden");
+      if (!hasRole("INSTRUCTOR"))
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
       return createCourse({ ...body, userId: user.id });
     },
     {
@@ -161,7 +168,11 @@ export default new Elysia({ prefix: "/instructor/courses" })
         courseId: string;
       };
     }) => {
-      if (!hasRole("INSTRUCTOR")) return error(403, "Forbidden");
+      if (!hasRole("INSTRUCTOR"))
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
       const payload: {
         id: string;
         userId: string;
@@ -218,7 +229,11 @@ export default new Elysia({ prefix: "/instructor/courses" })
           };
         }) => {
           console.log("Creating media", body);
-          if (!hasRole("INSTRUCTOR")) return error(403, "Forbidden");
+          if (!hasRole("INSTRUCTOR"))
+            return new Response(JSON.stringify({ error: "Forbidden" }), {
+              status: 403,
+              headers: { "Content-Type": "application/json" },
+            });
           return createMedia({ ...body, userId: user.id });
         },
         {
@@ -264,7 +279,11 @@ export default new Elysia({ prefix: "/instructor/courses" })
             mediaId: string;
           };
         }) => {
-          if (!hasRole("INSTRUCTOR")) return error(403, "Forbidden");
+          if (!hasRole("INSTRUCTOR"))
+            return new Response(JSON.stringify({ error: "Forbidden" }), {
+              status: 403,
+              headers: { "Content-Type": "application/json" },
+            });
           return await updateMedia({
             id: params.mediaId,
             userId: user.id,
@@ -305,7 +324,10 @@ export default new Elysia({ prefix: "/instructor/courses" })
           };
         }) => {
           if (!hasRole("INSTRUCTOR") && !hasRole("STUDENT")) {
-            return error(403, { error: "Forbidden" });
+            return new Response(JSON.stringify({ error: "Forbidden" }), {
+              status: 403,
+              headers: { "Content-Type": "application/json" },
+            });
           }
           const media = await getMedia(params.mediaId);
           if (!media) {
@@ -366,7 +388,10 @@ export default new Elysia({ prefix: "/instructor/courses" })
             !query.lessonId ||
             (!hasRole("INSTRUCTOR") && !hasRole("STUDENT"))
           ) {
-            return error(403, { error: "Forbidden" });
+            return new Response(JSON.stringify({ error: "Forbidden" }), {
+              status: 403,
+              headers: { "Content-Type": "application/json" },
+            });
           }
           const medias = await getAllMedia(query.lessonId);
           return medias.map((media) => ({
@@ -420,7 +445,11 @@ export default new Elysia({ prefix: "/instructor/courses" })
             mediaId: string;
           };
         }) => {
-          if (!hasRole("INSTRUCTOR")) return error(403, "Forbidden");
+          if (!hasRole("INSTRUCTOR"))
+            return new Response(JSON.stringify({ error: "Forbidden" }), {
+              status: 403,
+              headers: { "Content-Type": "application/json" },
+            });
           return await deleteMedia({
             id: params.mediaId,
             userId: user.id,
@@ -530,7 +559,11 @@ export default new Elysia({ prefix: "/instructor/courses" })
         courseId: string;
       };
     }) => {
-      if (!hasRole("INSTRUCTOR")) return error(403, "Forbidden");
+      if (!hasRole("INSTRUCTOR"))
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
       try {
         const section = createSection({
           ...body,
@@ -571,7 +604,11 @@ export default new Elysia({ prefix: "/instructor/courses" })
         user: { id: string };
       };
     }) => {
-      if (!hasRole("INSTRUCTOR")) return error(403, "Forbidden");
+      if (!hasRole("INSTRUCTOR"))
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
       const { order } = body;
       return await updateCourseSectionOrder({
         userId: user.id,
@@ -617,7 +654,11 @@ export default new Elysia({ prefix: "/instructor/courses" })
         sectionId: string;
       };
     }) => {
-      if (!hasRole("INSTRUCTOR")) return error(403, "Forbidden");
+      if (!hasRole("INSTRUCTOR"))
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
       const payload: {
         id: string;
         userId: string;
@@ -655,7 +696,11 @@ export default new Elysia({ prefix: "/instructor/courses" })
         user: { id: string };
       };
     }) => {
-      if (!hasRole("INSTRUCTOR")) return error(403, "Forbidden");
+      if (!hasRole("INSTRUCTOR"))
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
       return await deleteSection({ id: params.sectionId, userId: user.id });
     },
     {
@@ -687,7 +732,11 @@ export default new Elysia({ prefix: "/instructor/courses" })
         sectionId: string;
       };
     }) => {
-      if (!hasRole("INSTRUCTOR")) return error(403, "Forbidden");
+      if (!hasRole("INSTRUCTOR"))
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
       return await createLesson({
         sectionId: params.sectionId,
         title: body.title,
@@ -715,7 +764,11 @@ export default new Elysia({ prefix: "/instructor/courses" })
         user: { id: string };
       };
     }) => {
-      if (!hasRole("INSTRUCTOR")) return error(403, "Forbidden");
+      if (!hasRole("INSTRUCTOR"))
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
       const { ordering } = body;
       return await updateCourseLessonOrder({
         userId: user.id,
@@ -764,7 +817,11 @@ export default new Elysia({ prefix: "/instructor/courses" })
         lessonId: string;
       };
     }) => {
-      if (!hasRole("INSTRUCTOR")) return error(403, "Forbidden");
+      if (!hasRole("INSTRUCTOR"))
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
 
       return await updateLesson({
         lessonId: params.lessonId,

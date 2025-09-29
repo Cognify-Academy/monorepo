@@ -1,4 +1,4 @@
-import { Elysia, error, t } from "elysia";
+import { Elysia, t } from "elysia";
 import AuthService from "../auth/service";
 import {
   getCourses,
@@ -14,7 +14,11 @@ export default new Elysia({ prefix: "/student" })
   .get(
     "/profile",
     async ({ Auth: { user } }) => {
-      if (!user?.id) return error(403, { error: "Forbidden" });
+      if (!user?.id)
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
       return await getProfile({ userId: user.id });
     },
     {
@@ -49,7 +53,10 @@ export default new Elysia({ prefix: "/student" })
       };
     }) => {
       if (!hasRole("STUDENT") || !user?.id)
-        return error(403, { error: "Forbidden" });
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
       return await getCourses({ userId: user.id });
     },
     {
@@ -95,15 +102,21 @@ export default new Elysia({ prefix: "/student" })
     }) => {
       try {
         if (!hasRole("STUDENT") || !user?.id) {
-          return error(403, {
-            error: "Forbidden - User must have STUDENT role",
-          });
+          return new Response(
+            JSON.stringify({
+              error: "Forbidden - User must have STUDENT role",
+            }),
+            { status: 403, headers: { "Content-Type": "application/json" } },
+          );
         }
 
         const { lessonId, completed } = body;
 
         if (!lessonId) {
-          return error(400, { error: "Lesson ID is required" });
+          return new Response(
+            JSON.stringify({ error: "Lesson ID is required" }),
+            { status: 400, headers: { "Content-Type": "application/json" } },
+          );
         }
 
         const progress = await recordLessonProgress({
@@ -186,9 +199,12 @@ export default new Elysia({ prefix: "/student" })
     }) => {
       try {
         if (!hasRole("STUDENT") || !user?.id) {
-          return error(403, {
-            error: "Forbidden - User must have STUDENT role",
-          });
+          return new Response(
+            JSON.stringify({
+              error: "Forbidden - User must have STUDENT role",
+            }),
+            { status: 403, headers: { "Content-Type": "application/json" } },
+          );
         }
 
         const { lessonId } = params;
@@ -256,9 +272,12 @@ export default new Elysia({ prefix: "/student" })
     }) => {
       try {
         if (!hasRole("STUDENT") || !user?.id) {
-          return error(403, {
-            error: "Forbidden - User must have STUDENT role",
-          });
+          return new Response(
+            JSON.stringify({
+              error: "Forbidden - User must have STUDENT role",
+            }),
+            { status: 403, headers: { "Content-Type": "application/json" } },
+          );
         }
 
         const { courseId } = query;

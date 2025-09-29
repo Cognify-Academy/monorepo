@@ -1,4 +1,4 @@
-import { Elysia, t, error } from "elysia";
+import { Elysia, t } from "elysia";
 import AuthService from "../auth/service";
 import { importancesRouter } from "./importances";
 import relationRouter from "./relations";
@@ -28,7 +28,12 @@ const conceptRouter = new Elysia({ prefix: "/concepts" })
       body: { name: string; description: string; importance: number };
     }) => {
       console.log("createConcept", body);
-      return !hasRole("ADMIN") ? error("Forbidden") : await createConcept(body);
+      if (!hasRole("ADMIN"))
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
+      return await createConcept(body);
     },
     {
       headers: t.Object({
@@ -65,7 +70,10 @@ const conceptRouter = new Elysia({ prefix: "/concepts" })
     async ({ Auth: { hasRole }, body }) => {
       if (!hasRole("ADMIN")) {
         console.log("Forbidden");
-        return error("Forbidden");
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
       }
       return await importConcepts(body);
     },
@@ -110,7 +118,11 @@ const conceptRouter = new Elysia({ prefix: "/concepts" })
   .patch(
     "/:id",
     async ({ Auth: { hasRole }, params, body }) => {
-      if (!hasRole("ADMIN")) return error("Forbidden");
+      if (!hasRole("ADMIN"))
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
       return await updateConcept({
         id: params.id,
         name: body.name,
@@ -134,7 +146,11 @@ const conceptRouter = new Elysia({ prefix: "/concepts" })
   .delete(
     "/:id",
     async ({ Auth: { hasRole }, params }) => {
-      if (!hasRole("ADMIN")) return error("Forbidden");
+      if (!hasRole("ADMIN"))
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
       return await deleteConcept(params.id);
     },
     {
