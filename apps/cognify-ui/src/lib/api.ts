@@ -152,12 +152,13 @@ class ApiClient {
     }>(`/api/v1/courses/${identifier}`);
   }
 
-  async enrollInCourse(identifier: string) {
-    return this.makeRequest<{ message: string }>(
+  async enrollInCourse(identifier: string, token: string) {
+    return this.makeAuthenticatedRequest<{ message: string }>(
       `/api/v1/courses/${identifier}/students`,
       {
         method: "POST",
       },
+      token,
     );
   }
 

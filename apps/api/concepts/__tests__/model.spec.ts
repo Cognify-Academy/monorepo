@@ -15,6 +15,8 @@ const mockConcept1 = {
   slug: "test-concept",
   description: "This is a test concept",
   importance: 500,
+  conceptSource: [],
+  conceptTarget: [],
   createdAt: new Date("2025-03-17T15:52:12.689Z"),
   updatedAt: new Date("2025-03-17T15:52:12.689Z"),
 };

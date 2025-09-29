@@ -1,4 +1,4 @@
-import { Elysia, NotFoundError, t } from "elysia";
+import { Elysia, NotFoundError, t, error } from "elysia";
 import { getCourse, getCourses, enrolStudent } from "./model";
 import AuthService from "../auth/service";
 
@@ -128,7 +128,7 @@ export default new Elysia({ prefix: "/courses" })
       };
     }) => {
       if (!user || !hasRole("STUDENT")) {
-        throw new Error("Unauthorized");
+        return error(401, "Unauthorized");
       }
 
       const enrolment = await enrolStudent({
@@ -140,7 +140,9 @@ export default new Elysia({ prefix: "/courses" })
     {
       detail: { tags: ["Courses"], description: "Enrol a student in a course" },
       headers: t.Object({
-        authorization: t.String({ description: "Authorization token" }),
+        authorization: t.Optional(
+          t.String({ description: "Authorization token" }),
+        ),
       }),
       params: t.Object({
         identifier: t.String(),

@@ -51,7 +51,13 @@ export function EnrollmentButton({
     setErrorMessage("");
 
     try {
-      const result = await enrollInCourse(courseIdentifier);
+      if (!isAuthenticated || !accessToken) {
+        setEnrollmentStatus("failed");
+        setErrorMessage("You must be logged in to enroll.");
+        return;
+      }
+
+      const result = await enrollInCourse(courseIdentifier, accessToken);
       if (result.success) {
         setEnrollmentStatus("enrolled");
         setIsEnrolled(true);

@@ -108,9 +108,10 @@ export function getLessonFromCourse(
 
 export async function enrollInCourse(
   identifier: string,
+  token: string,
 ): Promise<{ success: boolean; message: string }> {
   try {
-    const result = await apiClient.enrollInCourse(identifier);
+    const result = await apiClient.enrollInCourse(identifier, token);
     return {
       success: true,
       message: result.message,

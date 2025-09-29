@@ -72,7 +72,7 @@ export default function PublicCoursesPage() {
         throw new Error("Course not found");
       }
 
-      const result = await enrollInCourse(course.slug);
+      const result = await enrollInCourse(course.slug, accessToken);
       if (!result.success) {
         throw new Error(result.message);
       }
