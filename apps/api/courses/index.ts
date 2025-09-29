@@ -1,4 +1,4 @@
-import { Elysia, NotFoundError, t, error } from "elysia";
+import { Elysia, NotFoundError, t } from "elysia";
 import { getCourse, getCourses, enrolStudent } from "./model";
 import AuthService from "../auth/service";
 
@@ -128,7 +128,10 @@ export default new Elysia({ prefix: "/courses" })
       };
     }) => {
       if (!user || !hasRole("STUDENT")) {
-        return error(401, "Unauthorized");
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        });
       }
 
       const enrolment = await enrolStudent({
