@@ -26,10 +26,8 @@ class ApiClient {
     endpoint: string,
     options: RequestInit = {},
   ): Promise<T> {
-    // For auth endpoints, use relative URLs (Next.js API routes)
-    // For other endpoints, use the API_BASE_URL
-    const isAuthEndpoint = endpoint.startsWith("/api/auth/");
-    const url = isAuthEndpoint ? endpoint : `${this.baseUrl}${endpoint}`;
+    // All endpoints now use the backend API directly
+    const url = `${this.baseUrl}${endpoint}`;
 
     const config: RequestInit = {
       headers: {
@@ -44,8 +42,15 @@ class ApiClient {
       const response = await fetch(url, config);
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new ApiError(errorText || "Request failed", response.status);
+        let errorMessage = "Request failed";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          // If response is not JSON, use status text
+          errorMessage = response.statusText || errorMessage;
+        }
+        throw new ApiError(errorMessage, response.status);
       }
 
       const contentType = response.headers.get("content-type");
@@ -63,7 +68,7 @@ class ApiClient {
   }
 
   async login(handle: string, password: string) {
-    return this.makeRequest<{ token: string }>("/api/auth/login", {
+    return this.makeRequest<{ token: string }>("/api/v1/auth/login", {
       method: "POST",
       body: JSON.stringify({ handle, password }),
     });
@@ -75,20 +80,20 @@ class ApiClient {
     email: string,
     password: string,
   ) {
-    return this.makeRequest<{ token: string }>("/api/auth/signup", {
+    return this.makeRequest<{ token: string }>("/api/v1/auth/signup", {
       method: "POST",
       body: JSON.stringify({ name, username, email, password }),
     });
   }
 
   async refresh() {
-    return this.makeRequest<{ token: string }>("/api/auth/refresh", {
+    return this.makeRequest<{ token: string }>("/api/v1/auth/refresh", {
       method: "POST",
     });
   }
 
   async logout() {
-    return this.makeRequest<{ message: string }>("/api/auth/logout", {
+    return this.makeRequest<{ message: string }>("/api/v1/auth/logout", {
       method: "POST",
     });
   }

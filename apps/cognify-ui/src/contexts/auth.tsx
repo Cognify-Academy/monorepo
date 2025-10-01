@@ -75,6 +75,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error instanceof ApiError && error.status === 401) {
         setUser(null);
         setAccessToken(null);
+      } else if (error instanceof ApiError && error.status === 0) {
+        // Network error - backend might be down
+        console.warn("Backend connection failed during auth check");
+        setUser(null);
+        setAccessToken(null);
       } else {
         console.error("Auth check error:", error);
         setUser(null);
@@ -97,7 +102,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       decodeTokenAndSetUser(response.token);
     } catch (error) {
       if (error instanceof ApiError) {
-        setError(error.message);
+        if (error.status === 0) {
+          setError("Unable to connect to server. Please try again later.");
+        } else {
+          setError(error.message);
+        }
       } else {
         setError("Login failed. Please try again.");
       }
@@ -120,7 +129,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       decodeTokenAndSetUser(response.token);
     } catch (error) {
       if (error instanceof ApiError) {
-        setError(error.message);
+        if (error.status === 0) {
+          setError("Unable to connect to server. Please try again later.");
+        } else {
+          setError(error.message);
+        }
       } else {
         setError("Signup failed. Please try again.");
       }
