@@ -1296,3 +1296,5 @@ function LessonEditor({
     </div>
   );
 }
+// Test comment
+// Test comment for commit hook

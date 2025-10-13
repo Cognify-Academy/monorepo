@@ -12,7 +12,21 @@
   },
   "devDependencies": {
     "autoprefixer": "^10.4.21",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.4",
     "postcss": "^8.5.3",
     "tailwindcss": "^4.0.15"
+  },
+  "scripts": {
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "apps/cognify-ui/**/*.{js,jsx,ts,tsx}": [
+      "bun run --cwd apps/cognify-ui lint --fix",
+      "bun run --cwd apps/cognify-ui format"
+    ],
+    "apps/api/**/*.{js,ts}": [
+      "bun run --cwd apps/api prettier"
+    ]
   }
 }
