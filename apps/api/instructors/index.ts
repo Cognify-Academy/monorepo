@@ -62,11 +62,7 @@ export default new Elysia({ prefix: "/instructor/courses" })
         user: { id: string } | null;
       };
     }) => {
-      if (!hasRole("INSTRUCTOR") || !user?.id)
-        return new Response(JSON.stringify({ error: "Forbidden" }), {
-          status: 403,
-          headers: { "Content-Type": "application/json" },
-        });
+      if (!hasRole("INSTRUCTOR") || !user?.id) throw new Error("Forbidden");
       const courses = await getCourses(user.id);
 
       return courses.map(
@@ -324,10 +320,7 @@ export default new Elysia({ prefix: "/instructor/courses" })
           };
         }) => {
           if (!hasRole("INSTRUCTOR") && !hasRole("STUDENT")) {
-            return new Response(JSON.stringify({ error: "Forbidden" }), {
-              status: 403,
-              headers: { "Content-Type": "application/json" },
-            });
+            throw new Error("Forbidden");
           }
           const media = await getMedia(params.mediaId);
           if (!media) {
@@ -388,10 +381,7 @@ export default new Elysia({ prefix: "/instructor/courses" })
             !query.lessonId ||
             (!hasRole("INSTRUCTOR") && !hasRole("STUDENT"))
           ) {
-            return new Response(JSON.stringify({ error: "Forbidden" }), {
-              status: 403,
-              headers: { "Content-Type": "application/json" },
-            });
+            throw new Error("Forbidden");
           }
           const medias = await getAllMedia(query.lessonId);
           return medias.map((media) => ({
