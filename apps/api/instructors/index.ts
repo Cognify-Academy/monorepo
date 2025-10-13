@@ -228,7 +228,7 @@ export default new Elysia({ prefix: "/instructor/courses" })
             user: { id: string };
           };
         }) => {
-          console.log("Creating media", body);
+          console.log("Creating media");
           if (!hasRole("INSTRUCTOR"))
             return new Response(JSON.stringify({ error: "Forbidden" }), {
               status: 403,
@@ -572,7 +572,10 @@ export default new Elysia({ prefix: "/instructor/courses" })
         });
         return section;
       } catch (err) {
-        return error(403, "Not authorized");
+        return new Response(JSON.stringify({ error: "Not authorized" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
       }
     },
     {
@@ -769,12 +772,27 @@ export default new Elysia({ prefix: "/instructor/courses" })
           status: 403,
           headers: { "Content-Type": "application/json" },
         });
+
       const { ordering } = body;
-      return await updateCourseLessonOrder({
-        userId: user.id,
+      console.log("Received lesson reorder request:", {
         courseId: params.courseId,
+        userId: user.id,
         ordering,
+        orderingLength: ordering.length,
       });
+
+      try {
+        const result = await updateCourseLessonOrder({
+          userId: user.id,
+          courseId: params.courseId,
+          ordering,
+        });
+        console.log("Lesson reorder completed successfully:");
+        return result;
+      } catch (error) {
+        console.error("Lesson reorder failed:", error);
+        throw error;
+      }
     },
     {
       detail: { tags: ["Instructor Courses"] },
@@ -865,7 +883,12 @@ export default new Elysia({ prefix: "/instructor/courses" })
         user: { id: string };
       };
     }) => {
-      if (!hasRole("INSTRUCTOR")) return error(403, "Forbidden");
+      if (!hasRole("INSTRUCTOR")) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
       return await deleteLesson({
         id: params.lessonId,
         sectionId: params.sectionId,

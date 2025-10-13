@@ -24,6 +24,7 @@ export interface Lesson {
   order: number;
   conceptIds: string[];
   media: Media[];
+  sectionId?: string;
 }
 
 export interface Section {
@@ -69,7 +70,7 @@ export function CourseStructure({
     draggedItemRef.current = draggedItem;
   }, [draggedItem]);
   const [dragOverSection, setDragOverSection] = useState<string | null>(null);
-  const [, setDragOverLesson] = useState<{
+  const [dragOverLesson, setDragOverLesson] = useState<{
     sectionId: string;
     beforeLessonId?: string;
   } | null>(null);
@@ -382,6 +383,7 @@ export function CourseStructure({
             sectionsToReorder.map((s) => ({ id: s.id, order: s.order })),
             accessToken,
           );
+          console.log("Section reorder API call successful");
         }
       } catch (error: unknown) {
         console.error("Section reorder error:", error);
@@ -417,8 +419,35 @@ export function CourseStructure({
     e.dataTransfer.setData("text/plain", "lesson");
   };
 
+  const handleLessonDragEnd = () => {
+    setDraggedItem(null);
+    setDragOverLesson(null);
+  };
+
+  const handleLessonsContainerDragLeave = () => {
+    setDragOverLesson(null);
+  };
+
   const handleLessonsContainerDragOver = (e: React.DragEvent) => {
     e.preventDefault();
+
+    if (!draggedItem || draggedItem.type !== "lesson") return;
+
+    const target = e.target as HTMLElement;
+    const lessonElement = target.closest("[data-lesson-id]") as HTMLElement;
+
+    if (lessonElement) {
+      const lessonId = lessonElement.dataset.lessonId;
+      const sectionId = lessonElement.dataset.sectionId;
+      if (lessonId && sectionId) {
+        setDragOverLesson({
+          sectionId,
+          beforeLessonId: lessonId,
+        });
+      }
+    } else {
+      setDragOverLesson(null);
+    }
   };
 
   const handleLessonsContainerDrop = async (
@@ -448,9 +477,7 @@ export function CourseStructure({
       const targetLessonId = lessonElement.getAttribute("data-lesson-id") || "";
       const rect = lessonElement.getBoundingClientRect();
       const offset = rect.y + rect.height / 2;
-
       const beforeLessonId = e.clientY < offset ? targetLessonId : undefined;
-
       await reorderLessonsInSection(sectionId, draggedLessonId, beforeLessonId);
     } else if (sourceSectionId !== sectionId) {
       await moveLessonToSection(draggedLessonId, sourceSectionId, sectionId);
@@ -477,6 +504,7 @@ export function CourseStructure({
       );
       if (!draggedLesson) return;
 
+      // Create new lesson order
       const newLessons = [...section.lessons];
       const draggedIndex = newLessons.findIndex(
         (l) => l.id === draggedLessonId,
@@ -492,24 +520,28 @@ export function CourseStructure({
         newLessons.push(draggedLesson);
       }
 
-      const updatedSection = { ...section, lessons: newLessons };
+      // Update order property for each lesson
+      const reorderedLessons = newLessons.map((lesson, index) => ({
+        ...lesson,
+        order: index,
+      }));
+
+      // Update UI immediately
+      const updatedSection = { ...section, lessons: reorderedLessons };
       const updatedSections = sections.map((s) =>
         s.id === sectionId ? updatedSection : s,
       );
-
       onSectionsChange(updatedSections);
 
-      await apiClient.reorderLessons(
-        courseId,
-        newLessons.map((lesson, index) => ({
-          id: lesson.id,
-          sectionId,
-          order: index,
-        })),
-        accessToken,
-      );
+      // Save to server
+      const orderingData = reorderedLessons.map((lesson, index) => ({
+        id: lesson.id,
+        sectionId,
+        order: index,
+      }));
+
+      await apiClient.reorderLessons(courseId, orderingData, accessToken);
     } catch (error: unknown) {
-      console.error("Lesson reorder error:", error);
       showError("Failed to reorder lessons");
       onSectionsChange(sections);
     }
@@ -531,11 +563,13 @@ export function CourseStructure({
       const lesson = sourceSection.lessons.find((l) => l.id === lessonId);
       if (!lesson) return;
 
+      // Remove from source section
       const newSourceLessons = sourceSection.lessons.filter(
         (l) => l.id !== lessonId,
       );
-      const newTargetLessons = [...targetSection.lessons];
 
+      // Add to target section
+      const newTargetLessons = [...targetSection.lessons];
       if (beforeLessonId) {
         const beforeIndex = newTargetLessons.findIndex(
           (l) => l.id === beforeLessonId,
@@ -545,34 +579,39 @@ export function CourseStructure({
         newTargetLessons.push(lesson);
       }
 
-      const updatedSourceSection = {
-        ...sourceSection,
-        lessons: newSourceLessons,
-      };
-      const updatedTargetSection = {
-        ...targetSection,
-        lessons: newTargetLessons,
-      };
+      // Update order properties
+      const reorderedSourceLessons = newSourceLessons.map((lesson, index) => ({
+        ...lesson,
+        order: index,
+      }));
 
+      const reorderedTargetLessons = newTargetLessons.map((lesson, index) => ({
+        ...lesson,
+        order: index,
+      }));
+
+      // Update UI immediately
       const updatedSections = sections.map((s) => {
-        if (s.id === sourceSectionId) return updatedSourceSection;
-        if (s.id === targetSectionId) return updatedTargetSection;
+        if (s.id === sourceSectionId) {
+          return { ...s, lessons: reorderedSourceLessons };
+        }
+        if (s.id === targetSectionId) {
+          return { ...s, lessons: reorderedTargetLessons };
+        }
         return s;
       });
 
       onSectionsChange(updatedSections);
 
-      await apiClient.reorderLessons(
-        courseId,
-        newTargetLessons.map((lesson, index) => ({
-          id: lesson.id,
-          sectionId: targetSectionId,
-          order: index,
-        })),
-        accessToken!,
-      );
+      // Save to server
+      const orderingData = reorderedTargetLessons.map((lesson, index) => ({
+        id: lesson.id,
+        sectionId: targetSectionId,
+        order: index,
+      }));
+
+      await apiClient.reorderLessons(courseId, orderingData, accessToken);
     } catch (error: unknown) {
-      console.error("Move lesson error:", error);
       showError("Failed to move lesson");
       onSectionsChange(sections);
     }
@@ -638,13 +677,20 @@ export function CourseStructure({
             onLessonDragStart={(e, lessonId) =>
               handleLessonDragStart(e, lessonId, section.id)
             }
+            onLessonDragEnd={handleLessonDragEnd}
             onLessonsContainerDragOver={(e) =>
               handleLessonsContainerDragOver(e)
             }
+            onLessonsContainerDragLeave={handleLessonsContainerDragLeave}
             onLessonsContainerDrop={(e) =>
               handleLessonsContainerDrop(e, section.id)
             }
-            isDraggedOver={dragOverSection === section.id}
+            isDraggedOver={
+              dragOverSection === section.id ||
+              dragOverLesson?.sectionId === section.id
+            }
+            draggedItem={draggedItem}
+            dragOverLesson={dragOverLesson}
           />
         ))}
 
@@ -679,9 +725,16 @@ interface SectionEditorProps {
   onDragOver: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent) => void;
   onLessonDragStart: (e: React.DragEvent, lessonId: string) => void;
+  onLessonDragEnd: () => void;
   onLessonsContainerDragOver: (e: React.DragEvent) => void;
+  onLessonsContainerDragLeave: () => void;
   onLessonsContainerDrop: (e: React.DragEvent) => void;
   isDraggedOver: boolean;
+  draggedItem: DraggedItem | null;
+  dragOverLesson: {
+    sectionId: string;
+    beforeLessonId?: string;
+  } | null;
 }
 
 function SectionEditor({
@@ -702,9 +755,13 @@ function SectionEditor({
   onDragOver,
   onDrop,
   onLessonDragStart,
+  onLessonDragEnd,
   onLessonsContainerDragOver,
+  onLessonsContainerDragLeave,
   onLessonsContainerDrop,
   isDraggedOver,
+  draggedItem,
+  dragOverLesson,
 }: SectionEditorProps) {
   return (
     <div
@@ -857,8 +914,13 @@ function SectionEditor({
             </div>
 
             <div
-              className="min-h-[50px] space-y-2 rounded border border-gray-200 bg-gray-50 p-2 dark:border-gray-600 dark:bg-gray-700"
+              className={`min-h-[50px] space-y-2 rounded border p-2 transition-all duration-200 ${
+                isDraggedOver
+                  ? "border-blue-500 bg-blue-50 dark:border-blue-400 dark:bg-blue-900/20"
+                  : "border-gray-200 bg-gray-50 dark:border-gray-600 dark:bg-gray-700"
+              }`}
               onDragOver={(e) => onLessonsContainerDragOver(e)}
+              onDragLeave={() => onLessonsContainerDragLeave()}
               onDrop={(e) => onLessonsContainerDrop(e)}
             >
               {section.lessons
@@ -874,6 +936,16 @@ function SectionEditor({
                       disabled={disabled}
                       isSaving={savingLessonsSet?.has(lesson.id) || false}
                       onDragStart={(e) => onLessonDragStart(e, lesson.id)}
+                      onDragEnd={onLessonDragEnd}
+                      isDragged={
+                        draggedItem?.type === "lesson" &&
+                        draggedItem.id === lesson.id
+                      }
+                      isDragOver={
+                        dragOverLesson?.sectionId === section.id &&
+                        dragOverLesson?.beforeLessonId === lesson.id
+                      }
+                      sectionId={section.id}
                     />
                   </div>
                 ))}
@@ -901,6 +973,10 @@ interface LessonEditorProps {
   disabled?: boolean;
   isSaving?: boolean;
   onDragStart: (e: React.DragEvent) => void;
+  onDragEnd: () => void;
+  isDragged?: boolean;
+  isDragOver?: boolean;
+  sectionId: string;
 }
 
 function LessonEditor({
@@ -912,6 +988,10 @@ function LessonEditor({
   disabled = false,
   isSaving = false,
   onDragStart,
+  onDragEnd,
+  isDragged = false,
+  isDragOver = false,
+  sectionId,
 }: LessonEditorProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMediaDialogOpen, setIsMediaDialogOpen] = useState(false);
@@ -979,14 +1059,26 @@ function LessonEditor({
   };
 
   return (
-    <div className="rounded border border-gray-200 bg-white dark:border-gray-600 dark:bg-gray-800">
+    <div
+      className={`cursor-move rounded border transition-all duration-200 ${
+        isDragged
+          ? "border-blue-500 bg-blue-50 opacity-50 shadow-lg dark:border-blue-400 dark:bg-blue-900/20"
+          : isDragOver
+            ? "border-blue-500 bg-blue-50 dark:border-blue-400 dark:bg-blue-900/20"
+            : "border-gray-200 bg-white dark:border-gray-600 dark:bg-gray-800"
+      }`}
+      draggable={!disabled}
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+      title="Drag to reorder"
+      data-lesson-id={lesson.id}
+      data-section-id={sectionId}
+    >
       <div className="flex items-center justify-between p-3">
         <div className="flex flex-1 items-center space-x-2">
           <div
-            className="h-4 w-4 cursor-move text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400"
-            draggable={!disabled}
-            onDragStart={onDragStart}
-            title="Drag to reorder"
+            className="h-4 w-4 text-gray-400 dark:text-gray-500"
+            title="Drag handle"
           >
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path

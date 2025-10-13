@@ -421,7 +421,13 @@ export async function updateCourseLessonOrder({
   courseId: string;
   ordering: { id: string; sectionId: string; order: number }[];
 }) {
-  console.log(`Updating lesson order for course id: ${courseId}`);
+  console.log(`Updating lesson order for course id: ${courseId}`, {
+    userId,
+    courseId,
+    ordering,
+    orderingLength: ordering.length,
+  });
+
   const course = await prisma.course.findUniqueOrThrow({
     where: { id: courseId },
     include: {
@@ -436,13 +442,32 @@ export async function updateCourseLessonOrder({
     throw new Error("Unauthorized to update lesson order for this course");
   }
 
-  const lessonUpdatePromises = ordering.map(({ id, sectionId, order }) =>
-    prisma.lesson.update({
+  console.log(
+    "Processing lesson updates:",
+    ordering.map(({ id, sectionId, order }) => ({
+      lessonId: id,
+      sectionId,
+      order,
+    })),
+  );
+
+  const lessonUpdatePromises = ordering.map(({ id, sectionId, order }) => {
+    console.log(
+      `Updating lesson ${id} to section ${sectionId} with order ${order}`,
+    );
+    return prisma.lesson.update({
       where: { id },
       data: { order, sectionId },
-    }),
+    });
+  });
+
+  const result = await Promise.all(lessonUpdatePromises);
+  console.log(
+    "All lesson updates completed:",
+    result.length,
+    "lessons updated",
   );
-  return await Promise.all(lessonUpdatePromises);
+  return result;
 }
 
 export async function createLesson({
