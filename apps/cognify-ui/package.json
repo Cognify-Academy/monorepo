@@ -56,5 +56,8 @@
     "prettier-plugin-tailwindcss": "^0.6.11",
     "storybook": "^8.6.14",
     "typescript": "^5"
+  },
+  "resolutions": {
+    "webpack-dev-middleware": "^6.1.3"
   }
 }
