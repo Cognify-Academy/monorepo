@@ -22,11 +22,11 @@
   },
   "lint-staged": {
     "apps/cognify-ui/**/*.{js,jsx,ts,tsx}": [
-      "bun run --cwd apps/cognify-ui lint --fix",
-      "bun run --cwd apps/cognify-ui format"
+      "cd apps/cognify-ui && bun run lint --fix",
+      "cd apps/cognify-ui && bun run format"
     ],
     "apps/api/**/*.{js,ts}": [
-      "bun run --cwd apps/api prettier"
+      "cd apps/api && bun run prettier"
     ]
   }
 }
