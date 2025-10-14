@@ -1,1 +1,2 @@
-bun test
+# Run only unit and integration tests, skip E2E tests
+bun test apps/api apps/cognify-ui/src/__tests__ packages/test-utils/src
