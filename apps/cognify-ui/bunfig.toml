@@ -1,0 +1,5 @@
+[test]
+# Bun test configuration for React testing
+preload = ["./src/test-setup.ts"]
+timeout = 10000
+coverage = true

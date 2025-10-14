@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "lib": ["ESNext"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "incremental": true,
+
+    // Strict type checking - gradually enabled
+    "strict": true,
+    "noImplicitAny": false, // Temporarily disabled
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": false, // Temporarily disabled
+    "noUnusedParameters": false, // Temporarily disabled
+    "exactOptionalPropertyTypes": false, // Temporarily disabled
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": false, // Temporarily disabled
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": false, // Temporarily disabled
+
+    // Additional strict checks - gradually enabled
+    "noUncheckedSideEffectImports": false, // Temporarily disabled
+    "allowUnusedLabels": false,
+    "allowUnreachableCode": false
+  },
+  "exclude": ["node_modules", "dist", "build", ".next"]
+}

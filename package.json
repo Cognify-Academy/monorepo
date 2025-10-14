@@ -1,18 +1,42 @@
 {
-  "name": "cognify-academy-monorepo",
+  "name": "cognify-academy",
   "version": "1.0.0",
-  "packageManager": "bun",
+  "private": true,
   "workspaces": [
     "apps/*",
     "packages/*"
   ],
-  "dependencies": {
-    "@parcel/watcher": "^2.5.1",
-    "@rollup/rollup-darwin-arm64": "^4.36.0"
+  "scripts": {
+    "dev": "concurrently \"bun run --cwd apps/api dev\" \"bun run --cwd apps/cognify-ui dev\"",
+    "build": "bun run --cwd apps/api build && bun run --cwd apps/cognify-ui build",
+    "test": "bun run test:api",
+    "test:watch": "bun run test:api && bun run test:ui:watch",
+    "test:api": "bun --cwd apps/api test",
+    "test:ui": "bun --cwd apps/cognify-ui test",
+    "test:ui:watch": "bun --cwd apps/cognify-ui run test:watch",
+    "test:ui:ui": "bun --cwd apps/cognify-ui run test:ui",
+    "test:ui:coverage": "bun --cwd apps/cognify-ui run test:coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:storybook": "bun --cwd apps/cognify-ui run test-storybook",
+    "test:coverage": "bun run test:ui:coverage",
+    "test:all": "bun run test && bun run test:e2e && bun run test:storybook",
+    "storybook": "bun --cwd apps/cognify-ui run storybook",
+    "storybook:build": "bun --cwd apps/cognify-ui run storybook:build",
+    "lint": "prettier --write .",
+    "type-check": "bun run --cwd apps/api type-check && bun run --cwd apps/cognify-ui type-check"
   },
   "devDependencies": {
-    "autoprefixer": "^10.4.21",
-    "postcss": "^8.5.3",
-    "tailwindcss": "^4.0.15"
+    "typescript": "^5.0.0",
+    "prettier": "^3.5.3",
+    "@types/node": "^20",
+    "concurrently": "^8.2.2",
+    "@playwright/test": "^1.40.0",
+    "@storybook/test-runner": "^0.15.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "bun": ">=1.0.0"
   }
 }

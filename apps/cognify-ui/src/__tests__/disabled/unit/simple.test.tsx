@@ -1,0 +1,10 @@
+// Simple test to verify Bun test runner is working
+describe("Simple Test", () => {
+  it("should pass", () => {
+    expect(1 + 1).toBe(2);
+  });
+
+  it("should handle strings", () => {
+    expect("hello").toBe("hello");
+  });
+});

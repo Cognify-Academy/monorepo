@@ -12,7 +12,7 @@ import enrollmentRouter from "./enrollments";
 import contactRouter from "./contact";
 import kanban from "./kanban";
 
-const PORT = process.env.PORT || 3333;
+const PORT = process.env["PORT"] || 3333;
 
 dotenv.config();
 
@@ -70,7 +70,7 @@ const app = new Elysia({ prefix: "/api/v1" })
   .use(contactRouter)
   .use(kanban)
   .all("*", () => new Response("Not found", { status: 404 }))
-  .listen(PORT);
+  .listen(Number(PORT));
 
 console.log(`API running on port ${PORT}`);
 console.log(`Swagger Docs available at http://localhost:${PORT}/swagger`);

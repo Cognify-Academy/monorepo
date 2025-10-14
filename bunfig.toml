@@ -1,0 +1,5 @@
+[test]
+# Root test configuration for monorepo
+preload = ["./apps/cognify-ui/src/test-setup.ts"]
+timeout = 10000
+coverage = true

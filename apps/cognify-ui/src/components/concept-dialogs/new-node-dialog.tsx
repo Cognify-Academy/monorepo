@@ -45,9 +45,7 @@ export function NewNodeDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="text-gray-900 dark:text-white">
-            Add New Concept
-          </DialogTitle>
+          <DialogTitle>Add New Concept</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <TextInput

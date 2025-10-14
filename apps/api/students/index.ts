@@ -284,7 +284,7 @@ export default new Elysia({ prefix: "/student" })
 
         const progress = await getStudentProgress({
           userId: user.id,
-          courseId,
+          courseId: courseId || undefined,
         });
 
         return { progress };
@@ -371,9 +371,12 @@ export default new Elysia({ prefix: "/student" })
     }) => {
       try {
         if (!hasRole("STUDENT") || !user?.id) {
-          return error(403, {
-            error: "Forbidden - User must have STUDENT role",
-          });
+          return new Response(
+            JSON.stringify({
+              error: "Forbidden - User must have STUDENT role",
+            }),
+            { status: 403, headers: { "Content-Type": "application/json" } },
+          );
         }
 
         const concepts = await getConceptsFromCompletedLessons({
