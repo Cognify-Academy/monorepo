@@ -66,9 +66,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const hasRole = (role: string): boolean => {
-    return user?.roles?.includes(role) || false;
-  };
+  const hasRole = useCallback(
+    (role: string): boolean => {
+      return user?.roles?.includes(role) || false;
+    },
+    [user?.roles],
+  );
 
   const checkAuth = useCallback(async () => {
     try {
@@ -76,20 +79,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const response = await apiClient.refresh();
       decodeTokenAndSetUser(response.token);
     } catch (error) {
-      // If it's a 401 error (no refresh token), this is normal for new users
-      // Don't treat it as an error, just set user to null
+      // If it's a 401 error from the refresh endpoint, this means no valid refresh token
+      // This is normal for new users or when the refresh token has expired
       if (error instanceof ApiError && error.status === 401) {
-        setUser(null);
-        setAccessToken(null);
+        // Don't clear user state - user might still have a valid access token
+        // Only clear if we explicitly need to logout
       } else if (error instanceof ApiError && error.status === 0) {
         // Network error - backend might be down
         console.warn("Backend connection failed during auth check");
-        setUser(null);
-        setAccessToken(null);
       } else {
         console.error("Auth check error:", error);
-        setUser(null);
-        setAccessToken(null);
       }
     } finally {
       setIsLoading(false);
@@ -98,7 +97,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     checkAuth();
-  }, [checkAuth]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
 
   const login = async (handle: string, password: string) => {
     try {

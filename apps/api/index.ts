@@ -19,47 +19,34 @@ dotenv.config();
 // Configure allowed origins for CORS
 const getAllowedOrigins = () => {
   const origins = [];
-  
+
   // Add production domain
   if (process.env.FRONTEND_URL) {
     origins.push(process.env.FRONTEND_URL);
   }
-  
+
   // Add additional production domains
   origins.push("https://www.cognify.academy");
   origins.push("https://cognify.academy");
-  
+
   // Add development domains
   origins.push("http://localhost:3000");
   origins.push("http://127.0.0.1:3000");
-  
+
   console.log("Configured CORS origins:", origins);
   return origins;
 };
 
 const app = new Elysia({ prefix: "/api/v1" })
-  .use(cors({
-    origin: (origin) => {
-      const allowedOrigins = getAllowedOrigins();
-      
-      // Allow requests with no origin (mobile apps, Postman, etc.)
-      if (!origin) return true;
-      
-      // Check if origin is in allowed list
-      if (allowedOrigins.includes(origin)) {
-        console.log(`CORS: Allowed origin ${origin}`);
-        return true;
-      }
-      
-      // Log rejected origins for debugging
-      console.warn(`CORS: Rejected origin ${origin}. Allowed origins:`, allowedOrigins);
-      return false;
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
-    exposedHeaders: ["Set-Cookie"]
-  }))
+  .use(
+    cors({
+      origin: getAllowedOrigins(),
+      credentials: true,
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+      exposedHeaders: ["Set-Cookie"],
+    }),
+  )
   .use(swagger({ path: "/swagger" }))
   .use(authRouter)
   .use(conceptRouter)

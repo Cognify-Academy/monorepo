@@ -100,12 +100,14 @@ export default function NewCoursePage() {
             </p>
           </div>
         ) : (
-          <CourseForm
-            availableConcepts={concepts}
-            onSubmit={handleSubmit}
-            isLoading={isLoading}
-            error={error}
-          />
+          <div data-testid="course-form">
+            <CourseForm
+              availableConcepts={concepts}
+              onSubmit={handleSubmit}
+              isLoading={isLoading}
+              error={error}
+            />
+          </div>
         )}
       </section>
       <Footer />

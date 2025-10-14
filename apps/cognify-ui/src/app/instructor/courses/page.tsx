@@ -12,7 +12,14 @@ export default function InstructorCoursesPage() {
   const router = useRouter();
 
   useEffect(() => {
+    console.log("Instructor courses page - auth state:", {
+      authLoading,
+      isAuthenticated,
+      hasInstructorRole: hasRole("INSTRUCTOR"),
+    });
+    
     if (!authLoading && (!isAuthenticated || !hasRole("INSTRUCTOR"))) {
+      console.log("Redirecting to home page due to auth failure");
       router.push("/");
     }
   }, [isAuthenticated, hasRole, authLoading, router]);

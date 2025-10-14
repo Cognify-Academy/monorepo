@@ -21,6 +21,28 @@ const config: StorybookConfig = {
         prop.parent ? !/node_modules/.test(prop.parent.fileName) : true,
     },
   },
+  webpackFinal: async (config) => {
+    // Ensure CSS files are processed with PostCSS
+    if (config.module && config.module.rules) {
+      const cssRule = config.module.rules.find(
+        (rule: any) => rule.test && rule.test.toString().includes("css"),
+      );
+
+      if (cssRule && cssRule.use) {
+        // Add postcss-loader to the existing CSS rule
+        cssRule.use.push({
+          loader: "postcss-loader",
+          options: {
+            postcssOptions: {
+              plugins: [require("@tailwindcss/postcss")],
+            },
+          },
+        });
+      }
+    }
+
+    return config;
+  },
 };
 
 export default config;

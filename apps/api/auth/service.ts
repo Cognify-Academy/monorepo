@@ -1,7 +1,7 @@
 import { Elysia } from "elysia";
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env["JWT_SECRET"] as string;
+const getJWTSecret = () => process.env["JWT_SECRET"] as string;
 
 const AuthService = new Elysia({ name: "Service.Auth" }).derive(
   { as: "scoped" },
@@ -16,7 +16,7 @@ const AuthService = new Elysia({ name: "Service.Auth" }).derive(
     }
 
     try {
-      const user = jwt.verify(token, JWT_SECRET) as {
+      const user = jwt.verify(token, getJWTSecret()) as {
         id: string;
         roles: string[];
       };

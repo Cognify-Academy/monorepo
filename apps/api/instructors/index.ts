@@ -62,7 +62,19 @@ export default new Elysia({ prefix: "/instructor/courses" })
         user: { id: string } | null;
       };
     }) => {
-      if (!hasRole("INSTRUCTOR") || !user?.id) throw new Error("Forbidden");
+      if (!user?.id) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      
+      if (!hasRole("INSTRUCTOR")) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
       const courses = await getCourses(user.id);
 
       return courses.map(
@@ -78,9 +90,6 @@ export default new Elysia({ prefix: "/instructor/courses" })
     },
     {
       detail: { tags: ["Instructor Courses"] },
-      headers: t.Object({
-        authorization: t.String({ description: "Authorization token" }),
-      }),
       response: {
         200: t.Array(
           t.Object({
@@ -100,6 +109,9 @@ export default new Elysia({ prefix: "/instructor/courses" })
             conceptIds: t.Array(t.String()),
           }),
         ),
+        401: t.Object({
+          error: t.String(),
+        }),
         403: t.Object({
           error: t.String(),
         }),
@@ -320,7 +332,10 @@ export default new Elysia({ prefix: "/instructor/courses" })
           };
         }) => {
           if (!hasRole("INSTRUCTOR") && !hasRole("STUDENT")) {
-            throw new Error("Forbidden");
+            return new Response(JSON.stringify({ error: "Forbidden" }), {
+              status: 403,
+              headers: { "Content-Type": "application/json" },
+            });
           }
           const media = await getMedia(params.mediaId);
           if (!media) {
@@ -381,7 +396,10 @@ export default new Elysia({ prefix: "/instructor/courses" })
             !query.lessonId ||
             (!hasRole("INSTRUCTOR") && !hasRole("STUDENT"))
           ) {
-            throw new Error("Forbidden");
+            return new Response(JSON.stringify({ error: "Forbidden" }), {
+              status: 403,
+              headers: { "Content-Type": "application/json" },
+            });
           }
           const medias = await getAllMedia(query.lessonId);
           return medias.map((media) => ({

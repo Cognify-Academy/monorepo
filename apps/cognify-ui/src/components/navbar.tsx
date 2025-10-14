@@ -170,6 +170,7 @@ export function Navbar() {
                   <button
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                     className="flex items-center text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                    data-testid="user-menu"
                   >
                     <span className="mr-2">{user?.name || user?.username}</span>
                     <Image
@@ -239,6 +240,7 @@ export function Navbar() {
               }}
               className="rounded-md p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 md:hidden dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
               aria-label="Toggle mobile menu"
+              data-testid="mobile-menu-button"
             >
               {isMenuOpen ? (
                 <CloseIcon className="h-6 w-6" />

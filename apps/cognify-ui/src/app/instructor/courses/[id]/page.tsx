@@ -25,11 +25,7 @@ interface CourseData {
   updatedAt: string;
 }
 
-export default function EditCoursePage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function EditCoursePage({ params }: { params: { id: string } }) {
   const {
     isAuthenticated,
     hasRole,
@@ -45,8 +41,8 @@ export default function EditCoursePage({
   const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {
-    params.then((p) => setCourseId(p.id));
-  }, [params]);
+    setCourseId(params.id);
+  }, [params.id]);
 
   useEffect(() => {
     if (!authLoading && (!isAuthenticated || !hasRole("INSTRUCTOR"))) {
@@ -171,22 +167,27 @@ export default function EditCoursePage({
       <Navbar />
       <div className="mx-auto max-w-4xl space-y-8 px-4 py-16 sm:px-6 lg:px-8">
         {/* Course Basic Information */}
-        <CourseForm
-          initialData={{
-            title: course.title,
-            description: course.description,
-            conceptIds: course.conceptIds,
-            published: course.published,
-          }}
-          availableConcepts={concepts}
-          onSubmit={handleCourseSubmit}
-          isLoading={isLoading}
-          isEditing={true}
-          error={error}
-        />
+        <div data-testid="course-form">
+          <CourseForm
+            initialData={{
+              title: course.title,
+              description: course.description,
+              conceptIds: course.conceptIds,
+              published: course.published,
+            }}
+            availableConcepts={concepts}
+            onSubmit={handleCourseSubmit}
+            isLoading={isLoading}
+            isEditing={true}
+            error={error}
+          />
+        </div>
 
         {/* Course Structure */}
-        <div className="rounded-lg border border-gray-100 bg-white p-8 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+        <div
+          className="rounded-lg border border-gray-100 bg-white p-8 shadow-lg dark:border-gray-700 dark:bg-gray-800"
+          data-testid="course-structure"
+        >
           <CourseStructure
             courseId={courseId || ""}
             sections={course.sections}

@@ -44,7 +44,10 @@ export default function LoginPage() {
       <h1 className="sr-only">Login</h1>
       <form onSubmit={handleSubmit}>
         {error && (
-          <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-800 dark:bg-red-900/50 dark:text-red-200">
+          <div
+            className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-800 dark:bg-red-900/50 dark:text-red-200"
+            data-testid="email-error"
+          >
             {error}
           </div>
         )}
@@ -60,6 +63,7 @@ export default function LoginPage() {
             type="text"
             id="handle"
             name="handle"
+            data-testid="email-input"
             value={formData.handle}
             onChange={handleChange}
             required
@@ -79,6 +83,7 @@ export default function LoginPage() {
             type="password"
             id="password"
             name="password"
+            data-testid="password-input"
             value={formData.password}
             onChange={handleChange}
             required
@@ -87,7 +92,12 @@ export default function LoginPage() {
           />
         </div>
 
-        <Button type="submit" className="mt-6 w-full" disabled={isLoading}>
+        <Button
+          type="submit"
+          className="mt-6 w-full"
+          disabled={isLoading}
+          data-testid="login-button"
+        >
           {isLoading ? "Logging in..." : "Log in"}
         </Button>
       </form>

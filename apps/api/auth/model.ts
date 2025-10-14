@@ -14,7 +14,9 @@ const JWT_REFRESH_EXPIRATION = process.env["JWT_REFRESH_EXPIRATION"] || "7d"; //
 
 // Helper to create an HTTP-only cookie for the refresh token.
 function createRefreshCookie(token: string) {
-  return `refreshToken=${token}; HttpOnly; Secure; Path=/; SameSite=Strict; Max-Age=${7 * 24 * 60 * 60}`;
+  const isProduction = process.env.NODE_ENV === "production";
+  const secureFlag = isProduction ? "Secure" : "";
+  return `refreshToken=${token}; HttpOnly; ${secureFlag}; Path=/; SameSite=Strict; Max-Age=${7 * 24 * 60 * 60}`.trim();
 }
 
 export async function signup({
@@ -199,7 +201,8 @@ export async function refreshToken(refreshToken: string) {
     console.debug("Refreshing token");
     await prisma.$transaction(async (tx) => {
       console.debug("Deleting old token");
-      await tx.refreshToken.delete({
+      // Try to delete the old token, but don't fail if it doesn't exist
+      await tx.refreshToken.deleteMany({
         where: { token: refreshToken },
       });
       console.debug("Creating new token");
@@ -251,7 +254,10 @@ export async function logout(token: string) {
     await prisma.refreshToken.deleteMany({
       where: { token: refreshToken },
     });
-    const cookieHeader = `refreshToken=; HttpOnly; Secure; Path=/; SameSite=Strict; Max-Age=0`;
+    const isProduction = process.env.NODE_ENV === "production";
+    const secureFlag = isProduction ? "Secure" : "";
+    const cookieHeader =
+      `refreshToken=; HttpOnly; ${secureFlag}; Path=/; SameSite=Strict; Max-Age=0`.trim();
     return new Response(JSON.stringify({ message: "Logged out" }), {
       headers: {
         "Content-Type": "application/json",

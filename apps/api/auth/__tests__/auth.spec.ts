@@ -222,6 +222,7 @@ describe("Refresh Token", () => {
         const mockTx = {
           refreshToken: {
             delete: jest.fn(),
+            deleteMany: jest.fn(),
             create: jest.fn(),
           },
         };

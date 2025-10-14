@@ -1,9 +1,9 @@
 "use client";
 
 import { useAuth } from "@/contexts/auth";
-import { apiClient } from "@/lib/api";
+import { apiClient, ApiError } from "@/lib/api";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 
 interface Course {
   id: string;
@@ -136,6 +136,7 @@ export function MyActiveCourses({
   const [dynamicCourses, setDynamicCourses] = useState<Course[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const hasFetched = useRef(false);
 
   const fetchInstructorCourses = useCallback(async () => {
     if (!accessToken) return;
@@ -152,7 +153,11 @@ export function MyActiveCourses({
       setDynamicCourses(transformedCourses);
     } catch (error) {
       console.error("Failed to fetch instructor courses:", error);
-      setError("Failed to load courses. Please try again.");
+      if (error instanceof ApiError && error.status === 401) {
+        setError("You don't have permission to access instructor courses.");
+      } else {
+        setError("Failed to load courses. Please try again.");
+      }
       setDynamicCourses([]);
     } finally {
       setIsLoading(false);
@@ -160,15 +165,19 @@ export function MyActiveCourses({
   }, [accessToken]);
 
   useEffect(() => {
+    // Only fetch courses if we have all required authentication state and haven't fetched yet
     if (
       context === "instructor" &&
       isAuthenticated &&
       accessToken &&
-      hasRole("INSTRUCTOR")
+      hasRole("INSTRUCTOR") &&
+      !hasFetched.current
     ) {
+      hasFetched.current = true;
       fetchInstructorCourses();
     }
-  }, [context, isAuthenticated, accessToken, hasRole, fetchInstructorCourses]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [context, isAuthenticated, accessToken, hasRole]);
 
   const getProgressPercentage = (completed: number, total: number) => {
     return Math.round((completed / total) * 100);
@@ -270,10 +279,14 @@ export function MyActiveCourses({
             )}
           </div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div
+            className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+            data-testid="courses-list"
+          >
             {coursesToDisplay.map((course) => (
               <div
                 key={course.id}
+                data-testid="course-card"
                 className="cursor-pointer rounded-lg border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
                 onClick={() => {
                   if (context === "instructor") {
@@ -298,7 +311,10 @@ export function MyActiveCourses({
                     />
                   </svg>
                 </div>
-                <h3 className="mb-2 text-lg font-semibold text-gray-900">
+                <h3
+                  className="mb-2 text-lg font-semibold text-gray-900"
+                  data-testid="course-title"
+                >
                   {course.title}
                 </h3>
                 <p className="mb-4 text-sm text-gray-600">
