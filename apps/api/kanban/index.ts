@@ -16,36 +16,40 @@ export default new Elysia({ prefix: "/kanban" })
         },
       });
       return card;
-    }, {
-    detail: { tags: ["Kanban"] },
-    body: t.Object({
-      title: t.String(),
-      column: t.String(),
-    }),
-    response: {
-      201: t.Object({
-        id: t.String(),
+    },
+    {
+      detail: { tags: ["Kanban"] },
+      body: t.Object({
         title: t.String(),
         column: t.String(),
       }),
-    },
-  })
-  .get(
-    "/",
-    async () => {
-      return prisma.card.findMany();
-    }, {
-    detail: { tags: ["Kanban"] },
-    response: {
-      200: t.Array(
-        t.Object({
+      response: {
+        201: t.Object({
           id: t.String(),
           title: t.String(),
           column: t.String(),
         }),
-      ),
+      },
     },
-  })
+  )
+  .get(
+    "/",
+    async () => {
+      return prisma.card.findMany();
+    },
+    {
+      detail: { tags: ["Kanban"] },
+      response: {
+        200: t.Array(
+          t.Object({
+            id: t.String(),
+            title: t.String(),
+            column: t.String(),
+          }),
+        ),
+      },
+    },
+  )
   .patch(
     "/:id",
     async ({ params, body }) => {
@@ -55,8 +59,8 @@ export default new Elysia({ prefix: "/kanban" })
         data: { column: column as $Enums.Column },
       });
       return card;
-    }
-    , {
+    },
+    {
       detail: { tags: ["Kanban"] },
       body: t.Object({
         column: t.String(),
@@ -71,7 +75,8 @@ export default new Elysia({ prefix: "/kanban" })
           column: t.String(),
         }),
       },
-    })
+    },
+  )
   .delete(
     "/:id",
     async ({ params }) => {
@@ -79,11 +84,11 @@ export default new Elysia({ prefix: "/kanban" })
         where: { id: params.id },
       });
       return card;
-    }
-    , {
+    },
+    {
       detail: { tags: ["Kanban"] },
       params: t.Object({
         id: t.String(),
       }),
     },
-  )
+  );

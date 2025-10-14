@@ -6,7 +6,7 @@ export async function getProfile({ userId }: { userId?: string } = {}) {
   try {
     const user = await prisma.user.findUnique({
       where: {
-        id: userId,
+        id: userId!,
       },
     });
 
