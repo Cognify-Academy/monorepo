@@ -213,6 +213,7 @@ export function Navbar() {
                       <button
                         onClick={handleLogout}
                         className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600"
+                        data-testid="logout-button"
                       >
                         Sign Out
                       </button>
@@ -337,6 +338,7 @@ export function Navbar() {
                   <button
                     onClick={handleLogout}
                     className="flex w-full items-center justify-center space-x-2 rounded-lg bg-gray-100 px-3 py-2 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                    data-testid="logout-button"
                   >
                     <LogoutIcon className="h-4 w-4" />
                     <span>Sign Out</span>

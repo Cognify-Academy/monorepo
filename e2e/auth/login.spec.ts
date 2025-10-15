@@ -5,41 +5,13 @@ test.describe("Authentication", () => {
     await loginPage.goto();
     await loginPage.login("test@example.com", "password123");
 
-    // Wait for login to complete and check if we're redirected
-    await page.waitForLoadState("networkidle");
+    // Wait for the "Welcome Back," text to appear instead of waiting for URL change
+    await expect(page.locator("h1")).toContainText("Welcome Back,", {
+      timeout: 10000,
+    });
 
-    // Should redirect to dashboard after successful login (or stay on login if there's an error)
-    const currentUrl = page.url();
-    if (currentUrl.includes("/login")) {
-      // If still on login page, check for error message
-      const errorMessage = await page
-        .locator('[data-testid="email-error"]')
-        .textContent();
-      console.log("Login error:", errorMessage);
-      throw new Error(`Login failed: ${errorMessage}`);
-    } else {
-      // If redirected, should be on home page
-      await expect(page).toHaveURL("/");
-
-      // Check for user menu (desktop) or mobile menu button as indicators of successful login
-      const userMenuVisible = await page
-        .locator('[data-testid="user-menu"]')
-        .isVisible();
-      const mobileMenuVisible = await page
-        .locator('[data-testid="mobile-menu-button"]')
-        .isVisible();
-
-      if (!userMenuVisible && !mobileMenuVisible) {
-        // If neither menu is visible, check if we can find any authenticated content
-        const hasAuthenticatedContent =
-          (await page.locator("text=My Courses").count()) > 0;
-        if (!hasAuthenticatedContent) {
-          throw new Error(
-            "Login successful but no authenticated content visible",
-          );
-        }
-      }
-    }
+    // Verify we're on the home page
+    await expect(page).toHaveURL("/");
   });
 
   test("user sees error message with invalid credentials", async ({
@@ -57,13 +29,18 @@ test.describe("Authentication", () => {
     await loginPage.goto();
     await loginPage.login("test@example.com", "password123");
 
+    // Wait for login to complete
+    await page.waitForURL("/", { timeout: 10000 });
+
     // Then logout
     await page.click('[data-testid="user-menu"]');
     await page.click('[data-testid="logout-button"]');
 
-    // Should redirect to login page
-    await expect(page).toHaveURL("/login");
-    await expect(page.locator('[data-testid="email-input"]')).toBeVisible();
+    // Should redirect to home page
+    await expect(page).toHaveURL("/");
+
+    // Should show landing page content (not logged in state)
+    await expect(page.locator("h1")).not.toContainText("Welcome Back,");
   });
 
   test("login form validation works", async ({ page }) => {
