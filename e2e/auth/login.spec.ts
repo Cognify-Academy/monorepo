@@ -35,7 +35,7 @@ test.describe("Authentication", () => {
           (await page.locator("text=My Courses").count()) > 0;
         if (!hasAuthenticatedContent) {
           throw new Error(
-            "Login successful but no authenticated content visible"
+            "Login successful but no authenticated content visible",
           );
         }
       }

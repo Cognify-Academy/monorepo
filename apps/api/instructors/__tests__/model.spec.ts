@@ -4,6 +4,7 @@ import prisma from "../../prisma";
 import {
   createCourse,
   updateCourse,
+  deleteCourse,
   getCourses,
   getCourse,
   createSection,
@@ -159,6 +160,224 @@ describe("Course Management", () => {
           userId: "test-user-id",
         }),
       ).rejects.toThrow("Invalid course or user");
+    });
+  });
+
+  describe("deleteCourse", () => {
+    test("should delete course successfully when no sections exist", async () => {
+      const mockCourse = {
+        id: "test-course-id",
+        title: "Test Course",
+        slug: "test-course",
+        description: "Test description",
+        published: false,
+        userId: "test-user-id",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        instructors: [{ userId: "test-user-id" }],
+        sections: [],
+      };
+
+      const deletedCourse = {
+        id: "test-course-id",
+        title: "Test Course",
+        slug: "test-course",
+        description: "Test description",
+        published: false,
+        userId: "test-user-id",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      prisma.course.findUniqueOrThrow = jest.fn().mockResolvedValue(mockCourse);
+      prisma.course.delete = jest.fn().mockResolvedValue(deletedCourse);
+
+      const result = await deleteCourse({
+        id: "test-course-id",
+        userId: "test-user-id",
+      });
+
+      expect(result).toEqual(deletedCourse);
+      expect(prisma.course.findUniqueOrThrow).toHaveBeenCalledWith({
+        where: { id: "test-course-id" },
+        include: {
+          instructors: true,
+          sections: {
+            include: {
+              lessons: true,
+            },
+          },
+        },
+      });
+      expect(prisma.course.delete).toHaveBeenCalledWith({
+        where: { id: "test-course-id" },
+      });
+    });
+
+    test("should throw error when course not found", async () => {
+      prisma.course.findUniqueOrThrow = jest
+        .fn()
+        .mockRejectedValue(new Error("Record to delete does not exist"));
+
+      await expect(
+        deleteCourse({
+          id: "non-existent-course-id",
+          userId: "test-user-id",
+        }),
+      ).rejects.toThrow("Record to delete does not exist");
+    });
+
+    test("should throw error when user is not an instructor", async () => {
+      const mockCourse = {
+        id: "test-course-id",
+        instructors: [{ userId: "other-user-id" }],
+        sections: [],
+      };
+
+      prisma.course.findUniqueOrThrow = jest.fn().mockResolvedValue(mockCourse);
+
+      await expect(
+        deleteCourse({
+          id: "test-course-id",
+          userId: "test-user-id",
+        }),
+      ).rejects.toThrow("Unauthorized to delete this course");
+    });
+
+    test("should throw error when course has sections", async () => {
+      const mockCourse = {
+        id: "test-course-id",
+        instructors: [{ userId: "test-user-id" }],
+        sections: [
+          {
+            id: "section-1",
+            title: "Section 1",
+            lessons: [],
+          },
+        ],
+      };
+
+      prisma.course.findUniqueOrThrow = jest.fn().mockResolvedValue(mockCourse);
+
+      await expect(
+        deleteCourse({
+          id: "test-course-id",
+          userId: "test-user-id",
+        }),
+      ).rejects.toThrow(
+        "Cannot delete course with sections. Please delete all sections first.",
+      );
+    });
+
+    test("should throw error when course has sections with lessons", async () => {
+      const mockCourse = {
+        id: "test-course-id",
+        instructors: [{ userId: "test-user-id" }],
+        sections: [
+          {
+            id: "section-1",
+            title: "Section 1",
+            lessons: [
+              {
+                id: "lesson-1",
+                title: "Lesson 1",
+              },
+            ],
+          },
+        ],
+      };
+
+      prisma.course.findUniqueOrThrow = jest.fn().mockResolvedValue(mockCourse);
+
+      await expect(
+        deleteCourse({
+          id: "test-course-id",
+          userId: "test-user-id",
+        }),
+      ).rejects.toThrow(
+        "Cannot delete course with sections. Please delete all sections first.",
+      );
+    });
+
+    test("should allow deletion when course has no sections", async () => {
+      const mockCourse = {
+        id: "test-course-id",
+        instructors: [{ userId: "test-user-id" }],
+        sections: [],
+      };
+
+      const deletedCourse = {
+        id: "test-course-id",
+        title: "Test Course",
+        slug: "test-course",
+        description: "Test description",
+        published: false,
+        userId: "test-user-id",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      prisma.course.findUniqueOrThrow = jest.fn().mockResolvedValue(mockCourse);
+      prisma.course.delete = jest.fn().mockResolvedValue(deletedCourse);
+
+      const result = await deleteCourse({
+        id: "test-course-id",
+        userId: "test-user-id",
+      });
+
+      expect(result).toEqual(deletedCourse);
+      expect(prisma.course.delete).toHaveBeenCalledWith({
+        where: { id: "test-course-id" },
+      });
+    });
+
+    test("should handle multiple instructors correctly", async () => {
+      const mockCourse = {
+        id: "test-course-id",
+        instructors: [
+          { userId: "test-user-id" },
+          { userId: "other-instructor-id" },
+        ],
+        sections: [],
+      };
+
+      const deletedCourse = {
+        id: "test-course-id",
+        title: "Test Course",
+        slug: "test-course",
+        description: "Test description",
+        published: false,
+        userId: "test-user-id",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      prisma.course.findUniqueOrThrow = jest.fn().mockResolvedValue(mockCourse);
+      prisma.course.delete = jest.fn().mockResolvedValue(deletedCourse);
+
+      const result = await deleteCourse({
+        id: "test-course-id",
+        userId: "test-user-id",
+      });
+
+      expect(result).toEqual(deletedCourse);
+    });
+
+    test("should throw error when user is not in instructors list", async () => {
+      const mockCourse = {
+        id: "test-course-id",
+        instructors: [{ userId: "instructor-1" }, { userId: "instructor-2" }],
+        sections: [],
+      };
+
+      prisma.course.findUniqueOrThrow = jest.fn().mockResolvedValue(mockCourse);
+
+      await expect(
+        deleteCourse({
+          id: "test-course-id",
+          userId: "unauthorized-user-id",
+        }),
+      ).rejects.toThrow("Unauthorized to delete this course");
     });
   });
 

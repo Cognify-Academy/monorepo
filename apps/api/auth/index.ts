@@ -57,28 +57,34 @@ const authRouter = new Elysia({ prefix: "/auth" })
         const cookieHeader = headers.cookie;
         if (!cookieHeader) {
           console.error("No Cookie header found");
-          return new Response(JSON.stringify({ error: "No refresh token found" }), {
-            status: 401,
-            headers: { "Content-Type": "application/json" },
-          });
+          return new Response(
+            JSON.stringify({ error: "No refresh token found" }),
+            {
+              status: 401,
+              headers: { "Content-Type": "application/json" },
+            },
+          );
         }
-        
+
         const cookies = Object.fromEntries(
           cookieHeader.split(";").map((c) => {
             const [key, ...v] = c.trim().split("=");
             return [key, v.join("=")];
           }),
         );
-        
+
         const token = cookies.refreshToken;
         if (!token) {
           console.error("refreshToken not found in cookies", cookies);
-          return new Response(JSON.stringify({ error: "No refresh token found" }), {
-            status: 401,
-            headers: { "Content-Type": "application/json" },
-          });
+          return new Response(
+            JSON.stringify({ error: "No refresh token found" }),
+            {
+              status: 401,
+              headers: { "Content-Type": "application/json" },
+            },
+          );
         }
-        
+
         console.log("Refresh token from cookie:", token);
         return await refreshToken(token);
       } catch (error) {
@@ -102,10 +108,13 @@ const authRouter = new Elysia({ prefix: "/auth" })
       try {
         const cookieHeader = headers.cookie;
         if (!cookieHeader) {
-          return new Response(JSON.stringify({ error: "No refresh token found" }), {
-            status: 401,
-            headers: { "Content-Type": "application/json" },
-          });
+          return new Response(
+            JSON.stringify({ error: "No refresh token found" }),
+            {
+              status: 401,
+              headers: { "Content-Type": "application/json" },
+            },
+          );
         }
         return await logout(cookieHeader);
       } catch (error) {

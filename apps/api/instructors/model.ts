@@ -147,6 +147,50 @@ export async function updateCourse({
   return updatedCourse;
 }
 
+export async function deleteCourse({
+  id,
+  userId,
+}: {
+  id: string;
+  userId: string;
+}) {
+  console.log(`Deleting course id: ${id}`);
+  const course = await prisma.course.findUniqueOrThrow({
+    where: {
+      id,
+    },
+    include: {
+      instructors: true,
+      sections: {
+        include: {
+          lessons: true,
+        },
+      },
+    },
+  });
+
+  if (!course) {
+    throw new Error("Course not found");
+  }
+
+  const isInstructor = course.instructors.some(
+    (instructor) => instructor.userId === userId,
+  );
+  if (!isInstructor) {
+    throw new Error("Unauthorized to delete this course");
+  }
+
+  // Check if course has any sections
+  if (course.sections.length > 0) {
+    throw new Error(
+      "Cannot delete course with sections. Please delete all sections first.",
+    );
+  }
+
+  // Delete the course (cascade will handle related records)
+  return await prisma.course.delete({ where: { id } });
+}
+
 export async function getCourses(userId: string) {
   const courses = await prisma.course.findMany({
     where: {

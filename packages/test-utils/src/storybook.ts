@@ -22,7 +22,7 @@ export const storybookConfig = {
 export class StorybookTestHelpers {
   static async testStoryInteraction(
     story: any,
-    interaction: () => Promise<void>
+    interaction: () => Promise<void>,
   ) {
     await test.beforeEach(async ({ page }) => {
       await page.goto(`/iframe.html?id=${story.id}`);

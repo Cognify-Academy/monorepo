@@ -5,6 +5,7 @@ import {
   createLesson,
   createSection,
   deleteLesson,
+  deleteCourse,
   getCourse,
   getCourses,
   updateCourse,
@@ -54,21 +55,14 @@ export default new Elysia({ prefix: "/instructor/courses" })
   .use(AuthService)
   .get(
     "/",
-    async ({
-      Auth: { hasRole, user },
-    }: {
-      Auth: {
-        hasRole: (role: string) => boolean;
-        user: { id: string } | null;
-      };
-    }) => {
+    async ({ Auth: { hasRole, user } }) => {
       if (!user?.id) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
           status: 401,
           headers: { "Content-Type": "application/json" },
         });
       }
-      
+
       if (!hasRole("INSTRUCTOR")) {
         return new Response(JSON.stringify({ error: "Forbidden" }), {
           status: 403,
@@ -211,6 +205,84 @@ export default new Elysia({ prefix: "/instructor/courses" })
       }),
     },
   )
+  .delete(
+    "/:courseId",
+    async ({ Auth: { hasRole, user }, params }) => {
+      if (!hasRole("INSTRUCTOR"))
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
+      if (!user) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      try {
+        await deleteCourse({
+          id: params.courseId,
+          userId: user.id,
+        });
+        return { message: "Course deleted successfully" };
+      } catch (error) {
+        if (error instanceof Error) {
+          if (error.message === "Course not found") {
+            return new Response(JSON.stringify({ error: "Course not found" }), {
+              status: 404,
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+          if (error.message === "Unauthorized to delete this course") {
+            return new Response(JSON.stringify({ error: "Unauthorized" }), {
+              status: 403,
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+          if (error.message.includes("Cannot delete course with sections")) {
+            return new Response(JSON.stringify({ error: error.message }), {
+              status: 400,
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+        }
+        return new Response(
+          JSON.stringify({ error: "Internal server error" }),
+          {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
+      }
+    },
+    {
+      detail: { tags: ["Instructor Courses"] },
+      params: t.Object({
+        courseId: t.String(),
+      }),
+      headers: t.Object({
+        authorization: t.String({ description: "Authorization token" }),
+      }),
+      response: {
+        200: t.Object({
+          message: t.String(),
+        }),
+        400: t.Object({
+          error: t.String(),
+        }),
+        403: t.Object({
+          error: t.String(),
+        }),
+        404: t.Object({
+          error: t.String(),
+        }),
+        500: t.Object({
+          error: t.String(),
+        }),
+      },
+    },
+  )
   .group("/media", (app) =>
     app
       .use(AuthService)
@@ -320,17 +392,7 @@ export default new Elysia({ prefix: "/instructor/courses" })
       )
       .get(
         "/:mediaId",
-        async ({
-          Auth: { hasRole },
-          params,
-        }: {
-          Auth: {
-            hasRole: (role: string) => boolean;
-          };
-          params: {
-            mediaId: string;
-          };
-        }) => {
+        async ({ Auth: { hasRole }, params }) => {
           if (!hasRole("INSTRUCTOR") && !hasRole("STUDENT")) {
             return new Response(JSON.stringify({ error: "Forbidden" }), {
               status: 403,
@@ -381,17 +443,7 @@ export default new Elysia({ prefix: "/instructor/courses" })
       )
       .get(
         "/",
-        async ({
-          Auth: { hasRole },
-          query,
-        }: {
-          Auth: {
-            hasRole: (role: string) => boolean;
-          };
-          query: {
-            lessonId?: string;
-          };
-        }) => {
+        async ({ Auth: { hasRole }, query }) => {
           if (
             !query.lessonId ||
             (!hasRole("INSTRUCTOR") && !hasRole("STUDENT"))

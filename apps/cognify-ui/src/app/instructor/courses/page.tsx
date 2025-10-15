@@ -17,7 +17,7 @@ export default function InstructorCoursesPage() {
       isAuthenticated,
       hasInstructorRole: hasRole("INSTRUCTOR"),
     });
-    
+
     if (!authLoading && (!isAuthenticated || !hasRole("INSTRUCTOR"))) {
       console.log("Redirecting to home page due to auth failure");
       router.push("/");

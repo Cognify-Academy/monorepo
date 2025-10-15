@@ -35,7 +35,7 @@ test.describe("Instructor Workflow", () => {
     await page.fill('[data-testid="course-title-input"]', courseTitle);
     await page.fill(
       '[data-testid="course-description"]',
-      "A test course created during test setup"
+      "A test course created during test setup",
     );
 
     // Save course
@@ -54,7 +54,7 @@ test.describe("Instructor Workflow", () => {
     await page.fill('[data-testid="course-title"]', "New Test Course");
     await page.fill(
       '[data-testid="course-description"]',
-      "A comprehensive test course"
+      "A comprehensive test course",
     );
     await page.selectOption('[data-testid="course-category"]', "programming");
 
@@ -90,7 +90,7 @@ test.describe("Instructor Workflow", () => {
     await page.fill('[data-testid="lesson-title"]', "Introduction to Testing");
     await page.fill(
       '[data-testid="lesson-content"]',
-      "This lesson covers the basics of testing..."
+      "This lesson covers the basics of testing...",
     );
     await page.fill('[data-testid="lesson-duration"]', "30");
 
@@ -109,7 +109,7 @@ test.describe("Instructor Workflow", () => {
 
     // Should see analytics data
     await expect(
-      page.locator('[data-testid="enrollment-count"]')
+      page.locator('[data-testid="enrollment-count"]'),
     ).toBeVisible();
     await expect(page.locator('[data-testid="completion-rate"]')).toBeVisible();
     await expect(page.locator('[data-testid="average-rating"]')).toBeVisible();
@@ -130,10 +130,10 @@ test.describe("Instructor Workflow", () => {
 
     // Should see the test course that was created in beforeEach
     await expect(
-      page.locator('[data-testid="course-card"]').first()
+      page.locator('[data-testid="course-card"]').first(),
     ).toBeVisible();
     await expect(
-      page.locator('[data-testid="course-title"]').first()
+      page.locator('[data-testid="course-title"]').first(),
     ).toContainText("Test Course for Instructor");
   });
 
@@ -196,5 +196,132 @@ test.describe("Instructor Workflow", () => {
       // Should see the create course button
       await expect(page.locator("text=Create your first course")).toBeVisible();
     }
+  });
+
+  test("instructor can delete a course", async ({ page }) => {
+    // First, create a course to delete
+    await page.goto("/instructor/courses/new");
+    await page.waitForLoadState("networkidle");
+
+    const timestamp = Date.now();
+    const courseTitle = `Course to Delete ${timestamp}`;
+    await page.fill('[data-testid="course-title-input"]', courseTitle);
+    await page.fill(
+      '[data-testid="course-description"]',
+      "A test course that will be deleted",
+    );
+
+    // Save course
+    await page.click('[data-testid="save-course-button"]');
+    await page.waitForLoadState("networkidle");
+
+    // Navigate to the course list
+    await page.goto("/instructor/courses");
+    await page.waitForLoadState("networkidle");
+
+    // Find the course card and click delete
+    const courseCard = page.locator('[data-testid="course-card"]').filter({
+      hasText: courseTitle,
+    });
+    await expect(courseCard).toBeVisible();
+
+    // Click the delete button (assuming it exists in the course card)
+    await courseCard.locator('[data-testid="delete-course-button"]').click();
+
+    // Confirm deletion in the confirmation dialog
+    await page.locator('[data-testid="confirm-delete-button"]').click();
+
+    // Wait for the course to be removed from the list
+    await expect(courseCard).not.toBeVisible();
+
+    // Verify the course is no longer in the list
+    await expect(page.locator(`text=${courseTitle}`)).not.toBeVisible();
+  });
+
+  test("instructor cannot delete a course with sections", async ({ page }) => {
+    // First, create a course with a section
+    await page.goto("/instructor/courses/new");
+    await page.waitForLoadState("networkidle");
+
+    const timestamp = Date.now();
+    const courseTitle = `Course with Sections ${timestamp}`;
+    await page.fill('[data-testid="course-title-input"]', courseTitle);
+    await page.fill(
+      '[data-testid="course-description"]',
+      "A test course with sections that cannot be deleted",
+    );
+
+    // Save course
+    await page.click('[data-testid="save-course-button"]');
+    await page.waitForLoadState("networkidle");
+
+    // Add a section to the course
+    await page.goto("/instructor/courses/1");
+    await page.waitForLoadState("networkidle");
+
+    // Click add section button
+    await page.click('[data-testid="add-section-button"]');
+    await page.fill('[data-testid="section-title"]', "Test Section");
+    await page.fill('[data-testid="section-description"]', "A test section");
+    await page.click('[data-testid="save-section-button"]');
+
+    // Navigate back to courses list
+    await page.goto("/instructor/courses");
+    await page.waitForLoadState("networkidle");
+
+    // Find the course card and try to delete
+    const courseCard = page.locator('[data-testid="course-card"]').filter({
+      hasText: courseTitle,
+    });
+    await expect(courseCard).toBeVisible();
+
+    // Click the delete button
+    await courseCard.locator('[data-testid="delete-course-button"]').click();
+
+    // Should see an error message about not being able to delete course with sections
+    await expect(
+      page.locator("text=Cannot delete course with sections"),
+    ).toBeVisible();
+
+    // Course should still be visible
+    await expect(courseCard).toBeVisible();
+  });
+
+  test("cleanup test courses from database", async ({ page }) => {
+    // This test helps clean up test courses that might be cluttering the database
+    await page.goto("/instructor/courses");
+    await page.waitForLoadState("networkidle");
+
+    // Find all course cards that contain "Test Course" in their title
+    const testCourseCards = page.locator('[data-testid="course-card"]').filter({
+      hasText: "Test Course",
+    });
+
+    const testCourseCount = await testCourseCards.count();
+    console.log(`Found ${testCourseCount} test courses to clean up`);
+
+    // Delete each test course
+    for (let i = 0; i < testCourseCount; i++) {
+      const courseCard = testCourseCards.nth(i);
+      const courseTitle = await courseCard
+        .locator('[data-testid="course-title"]')
+        .textContent();
+
+      console.log(`Deleting test course: ${courseTitle}`);
+
+      // Click the delete button
+      await courseCard.locator('[data-testid="delete-course-button"]').click();
+
+      // Confirm deletion
+      await page.locator('[data-testid="confirm-delete-button"]').click();
+
+      // Wait for the course to be removed
+      await expect(courseCard).not.toBeVisible();
+
+      // Wait a bit before processing the next course
+      await page.waitForTimeout(1000);
+    }
+
+    console.log("Test course cleanup completed");
   });
 });

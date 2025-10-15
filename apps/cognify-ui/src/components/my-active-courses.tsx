@@ -3,7 +3,7 @@
 import { useAuth } from "@/contexts/auth";
 import { apiClient, ApiError } from "@/lib/api";
 import Link from "next/link";
-import { useCallback, useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface Course {
   id: string;

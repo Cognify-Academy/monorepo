@@ -67,7 +67,7 @@ export const createMockResponse = (overrides = {}) => ({
 
 // Component test helpers
 export const createWrapper = (
-  Wrapper: React.ComponentType<{ children: React.ReactNode }>
+  Wrapper: React.ComponentType<{ children: React.ReactNode }>,
 ) => {
   return ({ children }: { children: React.ReactNode }) => {
     const React = require("react");
