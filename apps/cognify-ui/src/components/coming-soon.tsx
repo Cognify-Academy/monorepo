@@ -95,29 +95,33 @@ export function ComingSoon({
   className = "",
 }: ComingSoonProps) {
   return (
-    <section className={`bg-gray-50 py-20 dark:bg-blue-700 ${className}`}>
+    <section className={`bg-gray-50 py-20 dark:bg-gray-800 ${className}`}>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-16 text-center">
-          <h2 className="mb-4 text-3xl font-bold text-gray-900">{title}</h2>
-          <p className="text-lg text-gray-600">{subtitle}</p>
+          <h2 className="mb-4 text-3xl font-bold text-gray-900 dark:text-white">
+            {title}
+          </h2>
+          <p className="text-lg text-gray-600 dark:text-gray-400">{subtitle}</p>
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {courses.map((course) => (
             <div
               key={course.id}
-              className="cursor-pointer rounded-lg border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+              className="cursor-pointer rounded-lg border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-900 dark:hover:shadow-lg"
             >
               <div
                 className={`mb-4 flex h-10 w-10 items-center justify-center rounded-lg ${course.iconBgColor}`}
               >
                 {course.icon}
               </div>
-              <h3 className="mb-2 text-lg font-semibold text-gray-900">
+              <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
                 {course.title}
               </h3>
-              <p className="mb-4 text-sm text-gray-600">{course.description}</p>
-              <div className="flex items-center text-sm text-gray-500">
-                <span className="mr-2 rounded-full bg-gray-100 px-2 py-1">
+              <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+                {course.description}
+              </p>
+              <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                <span className="mr-2 rounded-full bg-gray-100 px-2 py-1 dark:bg-gray-700 dark:text-gray-300">
                   {course.conceptsCount} concepts
                 </span>
               </div>

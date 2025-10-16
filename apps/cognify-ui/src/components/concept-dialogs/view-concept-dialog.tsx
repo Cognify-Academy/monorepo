@@ -36,6 +36,7 @@ export function ViewConceptDialog({
   useEffect(() => {
     if (isOpen) {
       setIsVisible(true);
+      return;
     } else {
       const timer = setTimeout(() => setIsVisible(false), 200);
       return () => clearTimeout(timer);

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "./button";
-import { Media } from "./course-structure";
+import { type Media } from "./course-structure";
 import { TextInput } from "./input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 

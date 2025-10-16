@@ -12,7 +12,7 @@ export default function Footer() {
   const supportLinks = [{ href: "/contact", label: "Contact" }];
 
   return (
-    <footer className="bg-gray-900 py-12 text-gray-300">
+    <footer className="bg-gray-900 py-12 text-gray-300 dark:bg-gray-950">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid gap-8 md:grid-cols-4">
           <div>
@@ -22,7 +22,7 @@ export default function Footer() {
                 Cognify Academy
               </span>
             </div>
-            <p className="text-sm">
+            <p className="text-sm dark:text-gray-400">
               Making complex knowledge accessible through connected learning
               experiences.
             </p>
@@ -31,8 +31,8 @@ export default function Footer() {
           <FooterLinkSection title="Company" links={companyLinks} />
           <FooterLinkSection title="Support" links={supportLinks} />
         </div>
-        <div className="mt-8 border-t border-gray-700 pt-8 text-center text-sm">
-          <p>
+        <div className="mt-8 border-t border-gray-700 pt-8 text-center text-sm dark:border-gray-800">
+          <p className="dark:text-gray-400">
             &copy; {new Date().getFullYear()} Cognify Academy. All rights
             reserved.
           </p>
@@ -57,7 +57,7 @@ function FooterLinkSection({
           <Link
             key={href}
             href={href}
-            className="block transition-colors hover:text-white"
+            className="block transition-colors hover:text-white dark:text-gray-400 dark:hover:text-white"
           >
             {label}
           </Link>

@@ -3,7 +3,7 @@
 import { clsx } from "clsx";
 import {
   OTPInput as BaseOTPInput,
-  SlotProps as BaseOTPSlotProps,
+  type SlotProps as BaseOTPSlotProps,
   REGEXP_ONLY_DIGITS,
 } from "input-otp";
 import type React from "react";
@@ -17,8 +17,8 @@ export function TextInput({
       className={clsx(
         className,
         "block w-full rounded-lg bg-white px-3 py-1.5",
-        "border border-gray-300",
-        "text-base/6 text-gray-950 sm:text-sm/6",
+        "border border-gray-300 dark:border-gray-600",
+        "text-base/6 text-gray-950 sm:text-sm/6 dark:bg-gray-800 dark:text-white",
         "focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none",
       )}
       {...props}

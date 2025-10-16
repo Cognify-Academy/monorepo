@@ -30,6 +30,7 @@ COPY --from=base /app/instructors ./instructors
 COPY --from=base /app/enrollments ./enrollments
 COPY --from=base /app/contact ./contact
 COPY --from=base /app/kanban ./kanban
+COPY --from=base /app/middleware ./middleware
 COPY --from=base /app/prisma ./prisma
 COPY --from=base /app/prisma.ts ./
 COPY --from=base /app/tsconfig.json ./

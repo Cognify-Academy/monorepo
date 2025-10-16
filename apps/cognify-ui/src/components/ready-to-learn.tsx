@@ -13,24 +13,24 @@ export default function ReadyToLearn() {
 
   return (
     <div className="mt-16 text-center">
-      <div className="rounded-lg border border-gray-100 bg-white p-8 shadow-sm">
-        <h2 className="mb-4 text-2xl font-bold text-gray-900">
+      <div className="rounded-lg border border-gray-100 bg-white p-8 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <h2 className="mb-4 text-2xl font-bold text-gray-900 dark:text-white">
           Ready to Start Learning?
         </h2>
-        <p className="mb-6 text-gray-600">
+        <p className="mb-6 text-gray-600 dark:text-gray-400">
           Join thousands of learners building deeper understanding through
           connected knowledge.
         </p>
         <div className="flex flex-col justify-center gap-4 sm:flex-row">
           <Link
             href="/signup"
-            className="rounded-lg bg-blue-600 px-8 py-3 text-lg font-semibold text-white transition-colors hover:bg-blue-700"
+            className="rounded-lg bg-blue-600 px-8 py-3 text-lg font-semibold text-white transition-colors hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
           >
             Sign Up Free
           </Link>
           <Link
             href="/login"
-            className="rounded-lg border border-gray-300 px-8 py-3 text-lg font-semibold text-gray-900 transition-colors hover:bg-gray-50"
+            className="rounded-lg border border-gray-300 px-8 py-3 text-lg font-semibold text-gray-900 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-100 dark:hover:bg-gray-700"
           >
             Sign In
           </Link>

@@ -80,7 +80,7 @@ export function getLessonFromCourse(
     if (lessonIndex !== -1) {
       const lesson = section.lessons[lessonIndex];
 
-      let nextLesson = null;
+      let nextLesson: CourseDetail["sections"][0]["lessons"][0] | null = null;
       if (lessonIndex < section.lessons.length - 1) {
         nextLesson = section.lessons[lessonIndex + 1];
       } else {

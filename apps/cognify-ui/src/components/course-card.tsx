@@ -1,6 +1,6 @@
 import { ClockIcon } from "@/icons/clock-icon";
 import { UsersIcon } from "@/icons/users-icon";
-import { Course } from "@/services/courses";
+import { type Course } from "@/services/courses";
 import Link from "next/link";
 
 interface CourseCardProps {

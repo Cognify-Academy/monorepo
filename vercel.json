@@ -1,0 +1,12 @@
+{
+  "buildCommand": "cd apps/cognify-ui && bun install && bun run build",
+  "installCommand": "bun install",
+  "framework": "nextjs",
+  "outputDirectory": "apps/cognify-ui/.next",
+  "rootDirectory": "apps/cognify-ui",
+  "functions": {
+    "apps/api/index.ts": {
+      "runtime": "nodejs22.x"
+    }
+  }
+}

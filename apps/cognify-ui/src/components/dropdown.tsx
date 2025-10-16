@@ -1,11 +1,11 @@
 import {
   Menu,
   MenuButton,
-  MenuButtonProps,
+  type MenuButtonProps,
   MenuItem,
   MenuItems,
-  MenuItemsProps,
-  MenuProps,
+  type MenuItemsProps,
+  type MenuProps,
 } from "@headlessui/react";
 import Link from "next/link";
 import React from "react";

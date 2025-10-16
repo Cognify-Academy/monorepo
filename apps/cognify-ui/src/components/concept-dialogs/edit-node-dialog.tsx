@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Node } from "@xyflow/react";
+import { type Node } from "@xyflow/react";
 import { useEffect, useState } from "react";
 
 interface EditNodeDialogProps {
@@ -83,9 +83,7 @@ export function EditNodeDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="text-gray-900 dark:text-white">
-            Edit Concept
-          </DialogTitle>
+          <DialogTitle>Edit Concept</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">

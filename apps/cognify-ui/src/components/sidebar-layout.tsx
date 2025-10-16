@@ -71,7 +71,6 @@ function CourseNavigation({
                   aria-current={
                     `/courses/${lesson.id}` === pathname ? "page" : undefined
                   }
-                  onNavigate={onNavigate}
                   className="aria-[current=page]:font-medium aria-[current=page]:text-gray-950 dark:aria-[current=page]:text-white"
                 >
                   {lesson.title}

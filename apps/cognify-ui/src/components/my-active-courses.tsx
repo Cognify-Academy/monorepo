@@ -211,17 +211,21 @@ export function MyActiveCourses({
 
   if (context === "instructor" && isLoading) {
     return (
-      <section className="bg-gray-50 py-20">
+      <section className="bg-gray-50 py-20 dark:bg-gray-900">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-16 text-center">
-            <h2 className="mb-4 text-3xl font-bold text-gray-900">
+            <h2 className="mb-4 text-3xl font-bold text-gray-900 dark:text-white">
               {getTitle()}
             </h2>
-            <p className="text-lg text-gray-600">{getSubtitle()}</p>
+            <p className="text-lg text-gray-600 dark:text-gray-400">
+              {getSubtitle()}
+            </p>
           </div>
           <div className="text-center">
-            <div className="mx-auto h-16 w-16 animate-spin rounded-full border-b-2 border-blue-600"></div>
-            <p className="mt-4 text-gray-600">Loading courses...</p>
+            <div className="mx-auto h-16 w-16 animate-spin rounded-full border-b-2 border-blue-600 dark:border-blue-500"></div>
+            <p className="mt-4 text-gray-600 dark:text-gray-400">
+              Loading courses...
+            </p>
           </div>
         </div>
       </section>
@@ -230,19 +234,23 @@ export function MyActiveCourses({
 
   if (context === "instructor" && error) {
     return (
-      <section className="bg-gray-50 py-20">
+      <section className="bg-gray-50 py-20 dark:bg-gray-900">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-16 text-center">
-            <h2 className="mb-4 text-3xl font-bold text-gray-900">
+            <h2 className="mb-4 text-3xl font-bold text-gray-900 dark:text-white">
               {getTitle()}
             </h2>
-            <p className="text-lg text-gray-600">{getSubtitle()}</p>
+            <p className="text-lg text-gray-600 dark:text-gray-400">
+              {getSubtitle()}
+            </p>
           </div>
-          <div className="rounded-md border border-red-200 bg-red-50 p-4">
+          <div className="rounded-md border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
             <div className="flex">
               <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800">Error</h3>
-                <div className="mt-2 text-sm text-red-700">
+                <h3 className="text-sm font-medium text-red-800 dark:text-red-400">
+                  Error
+                </h3>
+                <div className="mt-2 text-sm text-red-700 dark:text-red-300">
                   <p>{error}</p>
                 </div>
               </div>
@@ -254,17 +262,19 @@ export function MyActiveCourses({
   }
 
   return (
-    <section className="bg-gray-50 py-20">
+    <section className="bg-gray-50 py-20 dark:bg-gray-900">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-16 text-center">
-          <h2 className="mb-4 text-3xl font-bold text-gray-900">
+          <h2 className="mb-4 text-3xl font-bold text-gray-900 dark:text-white">
             {getTitle()}
           </h2>
-          <p className="text-lg text-gray-600">{getSubtitle()}</p>
+          <p className="text-lg text-gray-600 dark:text-gray-400">
+            {getSubtitle()}
+          </p>
         </div>
         {coursesToDisplay.length === 0 ? (
           <div className="text-center">
-            <p className="text-lg text-gray-600">
+            <p className="text-lg text-gray-600 dark:text-gray-400">
               {context === "instructor"
                 ? "You haven't created any courses yet. Start by creating your first course!"
                 : "No courses available."}
@@ -272,7 +282,7 @@ export function MyActiveCourses({
             {context === "instructor" && (
               <Link
                 href="/instructor/courses/new"
-                className="mt-4 inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                className="mt-4 inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
               >
                 Create your first course
               </Link>
@@ -287,7 +297,7 @@ export function MyActiveCourses({
               <div
                 key={course.id}
                 data-testid="course-card"
-                className="cursor-pointer rounded-lg border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+                className="cursor-pointer rounded-lg border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:shadow-lg"
                 onClick={() => {
                   if (context === "instructor") {
                     window.location.href = `/instructor/courses/${course.id}`;
@@ -312,16 +322,16 @@ export function MyActiveCourses({
                   </svg>
                 </div>
                 <h3
-                  className="mb-2 text-lg font-semibold text-gray-900"
+                  className="mb-2 text-lg font-semibold text-gray-900 dark:text-white"
                   data-testid="course-title"
                 >
                   {course.title}
                 </h3>
-                <p className="mb-4 text-sm text-gray-600">
+                <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
                   {course.description}
                 </p>
-                <div className="mb-2 flex items-center text-sm text-gray-500">
-                  <span className="mr-2 rounded-full bg-gray-100 px-2 py-1">
+                <div className="mb-2 flex items-center text-sm text-gray-500 dark:text-gray-400">
+                  <span className="mr-2 rounded-full bg-gray-100 px-2 py-1 dark:bg-gray-700 dark:text-gray-300">
                     {context === "instructor"
                       ? `${course.completedConcepts} concepts`
                       : `${course.completedConcepts}/${course.totalConcepts} concepts complete`}
@@ -333,7 +343,7 @@ export function MyActiveCourses({
                   </span>
                 </div>
                 {context !== "instructor" && (
-                  <div className="h-2.5 w-full rounded-full bg-gray-200">
+                  <div className="h-2.5 w-full rounded-full bg-gray-200 dark:bg-gray-700">
                     <div
                       className={`h-2.5 rounded-full ${getProgressColor(course)}`}
                       style={{

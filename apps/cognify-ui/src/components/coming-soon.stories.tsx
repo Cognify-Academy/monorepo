@@ -65,7 +65,6 @@ export const CustomCourses: Story = {
         ),
         iconBgColor: "bg-indigo-600",
         conceptsCount: 25,
-        duration: "12-16 weeks",
       },
       {
         id: "blockchain",
@@ -89,7 +88,6 @@ export const CustomCourses: Story = {
         ),
         iconBgColor: "bg-yellow-600",
         conceptsCount: 20,
-        duration: "10-12 weeks",
       },
       {
         id: "ai-ethics",
@@ -113,7 +111,6 @@ export const CustomCourses: Story = {
         ),
         iconBgColor: "bg-red-600",
         conceptsCount: 15,
-        duration: "8-10 weeks",
       },
     ],
   },
@@ -146,7 +143,6 @@ export const SingleCourse: Story = {
         ),
         iconBgColor: "bg-purple-600",
         conceptsCount: 30,
-        duration: "16-20 weeks",
       },
     ],
   },
