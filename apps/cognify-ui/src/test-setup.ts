@@ -39,7 +39,7 @@ afterEach(() => {
 // Mock functions for testing
 (global as any).fn = (implementation?: any) => {
   const calls: any[] = [];
-  const mockFn = (...args: any[]) => {
+  const mockFn: any = (...args: any[]) => {
     calls.push(args);
     if (implementation) {
       return implementation(...args);
