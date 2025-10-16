@@ -47,8 +47,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const clearError = () => setError(null);
 
   const decodeTokenAndSetUser = (token: string) => {
+    // Check if token exists and is a valid string
+    if (!token || typeof token !== "string") {
+      console.error("Invalid token provided to decodeTokenAndSetUser:", token);
+      setUser(null);
+      setAccessToken(null);
+      return;
+    }
+
     try {
-      const payload = JSON.parse(atob(token.split(".")[1]));
+      // Check if token has the expected JWT format (header.payload.signature)
+      const tokenParts = token.split(".");
+      if (tokenParts.length !== 3) {
+        console.error("Invalid JWT token format:", token);
+        setUser(null);
+        setAccessToken(null);
+        return;
+      }
+
+      const payload = JSON.parse(atob(tokenParts[1]));
       const userData: User = {
         id: payload.id,
         name: payload.name || payload.username,
@@ -76,14 +93,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const checkAuth = useCallback(async () => {
     try {
       setIsLoading(true);
+      console.log("Checking authentication...");
       const response = await apiClient.refresh();
-      decodeTokenAndSetUser(response.token);
+      console.log("Refresh response:", response);
+
+      // Only decode token if it exists and is valid
+      if (response && response.token) {
+        console.log("Token found, decoding...");
+        decodeTokenAndSetUser(response.token);
+      } else {
+        console.warn("No token received from refresh endpoint");
+        setUser(null);
+        setAccessToken(null);
+      }
     } catch (error) {
+      console.log("Auth check error caught:", error);
       // If it's a 401 error from the refresh endpoint, this means no valid refresh token
       // This is normal for new users or when the refresh token has expired
       if (error instanceof ApiError && error.status === 401) {
         // Don't clear user state - user might still have a valid access token
         // Only clear if we explicitly need to logout
+        console.log("No valid refresh token found - user not authenticated");
       } else if (error instanceof ApiError && error.status === 0) {
         // Network error - backend might be down
         console.warn("Backend connection failed during auth check");
@@ -105,7 +135,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setError(null);
       setIsLoading(true);
       const response = await apiClient.login(handle, password);
-      decodeTokenAndSetUser(response.token);
+
+      // Only decode token if it exists and is valid
+      if (response && response.token) {
+        decodeTokenAndSetUser(response.token);
+      } else {
+        console.error("No token received from login endpoint");
+        setError("Login failed - no token received");
+        throw new Error("No token received from login");
+      }
     } catch (error) {
       if (error instanceof ApiError) {
         if (error.status === 0) {
@@ -132,7 +170,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setError(null);
       setIsLoading(true);
       const response = await apiClient.signup(name, username, email, password);
-      decodeTokenAndSetUser(response.token);
+
+      // Only decode token if it exists and is valid
+      if (response && response.token) {
+        decodeTokenAndSetUser(response.token);
+      } else {
+        console.error("No token received from signup endpoint");
+        setError("Signup failed - no token received");
+        throw new Error("No token received from signup");
+      }
     } catch (error) {
       if (error instanceof ApiError) {
         if (error.status === 0) {
