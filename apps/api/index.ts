@@ -24,10 +24,16 @@ import {
 // Load environment variables from the correct path
 // In production (Docker), the .env file is in the root directory
 // In development, it's in ./apps/api/.env
-const envPath =
-  process.env.NODE_ENV === "production" ? "./.env" : "./apps/api/.env";
+// Check if we're in a Docker container or if NODE_ENV is production
+const isProduction =
+  process.env.NODE_ENV === "production" ||
+  process.env.RAILWAY_ENVIRONMENT === "production" ||
+  process.env.PORT;
+const envPath = isProduction ? "./.env" : "./apps/api/.env";
 console.log("Loading environment from:", envPath);
 console.log("NODE_ENV:", process.env.NODE_ENV);
+console.log("RAILWAY_ENVIRONMENT:", process.env.RAILWAY_ENVIRONMENT);
+console.log("isProduction:", isProduction);
 dotenv.config({ path: envPath });
 
 // Debug environment variables
@@ -38,6 +44,8 @@ console.log("ACCESS_TOKEN_EXPIRY:", process.env.ACCESS_TOKEN_EXPIRY);
 console.log("REFRESH_TOKEN_EXPIRY:", process.env.REFRESH_TOKEN_EXPIRY);
 
 const PORT = process.env["PORT"] || 3333;
+console.log("PORT environment variable:", process.env.PORT);
+console.log("Using PORT:", PORT);
 
 // Configure allowed origins for CORS
 const getAllowedOrigins = (): string[] => {
@@ -77,7 +85,18 @@ const app = new Elysia({ prefix: "/api/v1" })
       methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     }),
   )
-  .use(swagger({ path: "/swagger" }))
+  .use(
+    swagger({
+      path: "/swagger",
+      documentation: {
+        info: {
+          title: "Cognify Academy API",
+          version: "1.0.0",
+          description: "API for Cognify Academy learning platform",
+        },
+      },
+    }),
+  )
   // Other middleware
   .use(requestIdMiddleware)
   .use(requestLogger)

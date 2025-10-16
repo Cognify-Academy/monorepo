@@ -35,6 +35,6 @@ COPY --from=base /app/prisma ./prisma
 COPY --from=base /app/prisma.ts ./
 COPY --from=base /app/tsconfig.json ./
 
-EXPOSE 3000
+EXPOSE 8080
 
 CMD ["bun", "run", "start"] 
