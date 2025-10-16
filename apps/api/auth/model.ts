@@ -98,7 +98,6 @@ export async function login({
   });
 
   if (!user) {
-    console.log("Login: user not found");
     return new Response(JSON.stringify({ error: "Invalid credentials" }), {
       status: 401,
       headers: { "Content-Type": "application/json" },
@@ -107,7 +106,6 @@ export async function login({
 
   const isPasswordValid = await bcrypt.compare(password, user.password);
   if (!isPasswordValid) {
-    console.log("Login: invalid password");
     return new Response(JSON.stringify({ error: "Invalid credentials" }), {
       status: 401,
       headers: { "Content-Type": "application/json" },
@@ -115,19 +113,16 @@ export async function login({
   }
 
   const roles = user.roles.map((role) => role.role);
-  console.debug("Login: creating token");
   const token = jwt.sign(
     { id: user.id, username: user.username, roles },
     JWT_SECRET,
     { expiresIn: JWT_EXPIRATION },
   );
-  console.debug("Login: creating refresh token");
   const refreshToken = jwt.sign(
     { id: user.id, username: user.username, roles },
     JWT_REFRESH_SECRET,
     { expiresIn: JWT_REFRESH_EXPIRATION },
   );
-  console.debug("Login: creating refresh token record");
   await prisma.refreshToken.create({
     data: {
       token: refreshToken,
@@ -136,10 +131,7 @@ export async function login({
     },
   });
 
-  console.debug("Login: creating cookie");
   const cookie = createRefreshCookie(refreshToken);
-
-  console.log("Logged in user: " + user.id);
 
   return new Response(JSON.stringify({ token }), {
     headers: { "Content-Type": "application/json", "Set-Cookie": cookie },

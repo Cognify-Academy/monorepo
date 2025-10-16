@@ -12,13 +12,23 @@ import enrollmentRouter from "./enrollments";
 import contactRouter from "./contact";
 import kanban from "./kanban";
 
+// Import middleware
+import {
+  requestLogger,
+  requestIdMiddleware,
+  generalRateLimiter,
+  authRateLimiter,
+  AppError,
+} from "./middleware";
+
+// Load environment variables from the correct path
+dotenv.config({ path: "./apps/api/.env" });
+
 const PORT = process.env["PORT"] || 3333;
 
-dotenv.config();
-
 // Configure allowed origins for CORS
-const getAllowedOrigins = () => {
-  const origins = [];
+const getAllowedOrigins = (): string[] => {
+  const origins: string[] = [];
 
   // Add production domain
   if (process.env.FRONTEND_URL) {
@@ -38,16 +48,11 @@ const getAllowedOrigins = () => {
 };
 
 const app = new Elysia({ prefix: "/api/v1" })
-  .use(
-    cors({
-      origin: getAllowedOrigins(),
-      credentials: true,
-      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-      allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
-      exposedHeaders: ["Set-Cookie"],
-    }),
-  )
+  .use(cors())
   .use(swagger({ path: "/swagger" }))
+  // Other middleware
+  .use(requestIdMiddleware)
+  .use(requestLogger)
   .use(authRouter)
   .use(conceptRouter)
   .use(courseRouter)

@@ -8,17 +8,7 @@ const authRouter = new Elysia({ prefix: "/auth" })
       body,
     }: {
       body: { name: string; username: string; email: string; password: string };
-    }) => {
-      try {
-        return await signup(body);
-      } catch (error) {
-        console.error("Signup error:", error);
-        return new Response(JSON.stringify({ error: "Signup failed" }), {
-          status: 500,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
-    },
+    }) => await signup(body),
     {
       body: t.Object({
         name: t.String(),
@@ -31,16 +21,28 @@ const authRouter = new Elysia({ prefix: "/auth" })
   )
   .post(
     "/login",
-    async ({ body }: { body: { handle: string; password: string } }) => {
-      try {
-        return await login(body);
-      } catch (error) {
-        console.error("Login error:", error);
-        return new Response(JSON.stringify({ error: "Login failed" }), {
-          status: 500,
-          headers: { "Content-Type": "application/json" },
-        });
+    async ({
+      body,
+      set,
+    }: {
+      body: { handle: string; password: string };
+      set: any;
+    }) => {
+      const response = await login(body);
+
+      // Extract data from Response object
+      const data = await response.json();
+      const setCookieHeader = response.headers.get("Set-Cookie");
+
+      if (setCookieHeader) {
+        set.headers = {
+          ...set.headers,
+          "Set-Cookie": setCookieHeader,
+        };
       }
+
+      set.status = response.status;
+      return data;
     },
     {
       body: t.Object({
