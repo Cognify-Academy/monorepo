@@ -3,22 +3,22 @@ FROM oven/bun:1 AS base
 WORKDIR /api
 
 # Copy package files
-COPY apps/api/package.json apps/api/bun.lock* ./
+COPY package.json bun.lock* ./
 
 # Install dependencies
 RUN bun install
 
 # Copy prisma schema and generate client
-COPY apps/api/prisma ./prisma
+COPY prisma ./prisma
 RUN bun run prisma generate
 
 # Copy source code
-COPY apps/api/ .
+COPY . .
 
 # Build stage
 FROM oven/bun:1-slim
 
-WORKDIR /api
+WORKDIR /
 
 # Install system dependencies
 RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*

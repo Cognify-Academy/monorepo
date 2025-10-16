@@ -1,0 +1,42 @@
+# Ignore development files
+apps/cognify-ui/
+e2e/
+packages/
+playwright-report/
+test-results/
+node_modules/
+*.log
+*.tmp
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Ignore test files
+**/__tests__/
+**/*.spec.ts
+**/*.test.ts
+**/test-*.ts
+
+# Ignore build artifacts
+dist/
+build/
+.next/
+coverage/
+
+# Ignore documentation
+README.md
+TESTING.md
+*.md
+
+# Ignore config files not needed in production
+playwright.config.ts
+tsconfig.json
+tailwind.config.js
+next.config.mjs
+postcss.config.mjs
+bunfig.toml
+
+# Keep apps/api directory for the build
+!apps/api/
