@@ -1,0 +1,12 @@
+[phases.setup]
+nixPkgs = ["nodejs_18", "bun", "openssl"]
+
+[phases.install]
+cmds = ["bun i --no-save"]
+
+[phases.build]
+cmds = ["bun run build"]
+
+[start]
+cmd = "bun run start"
+

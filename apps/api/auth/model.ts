@@ -60,6 +60,17 @@ export async function signup({
   } catch (error: any) {
     console.error("Signup error:", error);
 
+    // Handle database connection errors
+    if (
+      error.message?.includes("Database not connected") ||
+      error.code === "P1001"
+    ) {
+      return new Response(JSON.stringify({ error: "Database not available" }), {
+        status: 503, // Service Unavailable
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     // Handle unique constraint violations
     if (error.code === "P2002") {
       const field = error.meta?.target?.[0];
@@ -92,55 +103,76 @@ export async function login({
   handle: string;
   password: string;
 }) {
-  const user = await prisma.user.findFirst({
-    where: {
-      OR: [{ username: handle }, { email: handle }],
-    },
-    include: {
-      roles: true,
-    },
-  });
+  try {
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [{ username: handle }, { email: handle }],
+      },
+      include: {
+        roles: true,
+      },
+    });
 
-  if (!user) {
-    return new Response(JSON.stringify({ error: "Invalid credentials" }), {
-      status: 401,
+    if (!user) {
+      return new Response(JSON.stringify({ error: "Invalid credentials" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return new Response(JSON.stringify({ error: "Invalid credentials" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const roles = user.roles.map((role) => role.role);
+    const token = jwt.sign(
+      { id: user.id, username: user.username, roles },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRATION },
+    );
+    const refreshToken = jwt.sign(
+      { id: user.id, username: user.username, roles },
+      JWT_REFRESH_SECRET,
+      { expiresIn: JWT_REFRESH_EXPIRATION },
+    );
+    await prisma.refreshToken.create({
+      data: {
+        token: refreshToken,
+        userId: user.id,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days expiry
+      },
+    });
+
+    const cookie = createRefreshCookie(refreshToken);
+
+    return new Response(JSON.stringify({ token }), {
+      headers: { "Content-Type": "application/json", "Set-Cookie": cookie },
+      status: 200,
+    });
+  } catch (error: any) {
+    console.error("Login error:", error);
+
+    // Handle database connection errors
+    if (
+      error.message?.includes("Database not connected") ||
+      error.code === "P1001"
+    ) {
+      return new Response(JSON.stringify({ error: "Database not available" }), {
+        status: 503, // Service Unavailable
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Handle other errors
+    return new Response(JSON.stringify({ error: "Login failed" }), {
+      status: 500,
       headers: { "Content-Type": "application/json" },
     });
   }
-
-  const isPasswordValid = await bcrypt.compare(password, user.password);
-  if (!isPasswordValid) {
-    return new Response(JSON.stringify({ error: "Invalid credentials" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-
-  const roles = user.roles.map((role) => role.role);
-  const token = jwt.sign(
-    { id: user.id, username: user.username, roles },
-    JWT_SECRET,
-    { expiresIn: JWT_EXPIRATION },
-  );
-  const refreshToken = jwt.sign(
-    { id: user.id, username: user.username, roles },
-    JWT_REFRESH_SECRET,
-    { expiresIn: JWT_REFRESH_EXPIRATION },
-  );
-  await prisma.refreshToken.create({
-    data: {
-      token: refreshToken,
-      userId: user.id,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days expiry
-    },
-  });
-
-  const cookie = createRefreshCookie(refreshToken);
-
-  return new Response(JSON.stringify({ token }), {
-    headers: { "Content-Type": "application/json", "Set-Cookie": cookie },
-    status: 200,
-  });
 }
 
 export async function refreshToken(refreshToken: string) {

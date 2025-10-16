@@ -3,6 +3,7 @@ import { Elysia } from "elysia";
 import { cors } from "@elysiajs/cors";
 import { swagger } from "@elysiajs/swagger";
 
+// Import routers
 import authRouter from "./auth";
 import conceptRouter from "./concepts";
 import courseRouter from "./courses";
@@ -21,31 +22,10 @@ import {
   AppError,
 } from "./middleware";
 
-// Load environment variables from the correct path
-// In production (Docker), the .env file is in the root directory
-// In development, it's in ./apps/api/.env
-// Check if we're in a Docker container or if NODE_ENV is production
-const isProduction =
-  process.env.NODE_ENV === "production" ||
-  process.env.RAILWAY_ENVIRONMENT === "production" ||
-  process.env.PORT;
-const envPath = isProduction ? "./.env" : "./apps/api/.env";
-console.log("Loading environment from:", envPath);
-console.log("NODE_ENV:", process.env.NODE_ENV);
-console.log("RAILWAY_ENVIRONMENT:", process.env.RAILWAY_ENVIRONMENT);
-console.log("isProduction:", isProduction);
-dotenv.config({ path: envPath });
-
-// Debug environment variables
-console.log("JWT_SECRET exists:", !!process.env.JWT_SECRET);
-console.log("JWT_REFRESH_SECRET exists:", !!process.env.JWT_REFRESH_SECRET);
-console.log("DATABASE_URL exists:", !!process.env.DATABASE_URL);
-console.log("ACCESS_TOKEN_EXPIRY:", process.env.ACCESS_TOKEN_EXPIRY);
-console.log("REFRESH_TOKEN_EXPIRY:", process.env.REFRESH_TOKEN_EXPIRY);
+// Load environment variables
+dotenv.config();
 
 const PORT = process.env["PORT"] || 3333;
-console.log("PORT environment variable:", process.env.PORT);
-console.log("Using PORT:", PORT);
 
 // Configure allowed origins for CORS
 const getAllowedOrigins = (): string[] => {
@@ -64,11 +44,22 @@ const getAllowedOrigins = (): string[] => {
   origins.push("http://localhost:3000");
   origins.push("http://127.0.0.1:3000");
 
-  console.log("Configured CORS origins:", origins);
   return origins;
 };
 
+// Create the main app with working endpoints
 const app = new Elysia({ prefix: "/api/v1" })
+  .use(
+    swagger({
+      documentation: {
+        info: {
+          title: "Cognify Academy API",
+          version: "1.0.0",
+          description: "API for Cognify Academy learning platform",
+        },
+      },
+    }),
+  )
   .use(
     cors({
       origin: getAllowedOrigins(),
@@ -85,21 +76,16 @@ const app = new Elysia({ prefix: "/api/v1" })
       methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     }),
   )
-  .use(
-    swagger({
-      path: "/swagger",
-      documentation: {
-        info: {
-          title: "Cognify Academy API",
-          version: "1.0.0",
-          description: "API for Cognify Academy learning platform",
-        },
-      },
-    }),
-  )
-  // Other middleware
-  .use(requestIdMiddleware)
-  .use(requestLogger)
+  // Add middleware - temporarily disabled for testing
+  // .use(requestIdMiddleware)
+  // .use(requestLogger)
+  .get("/", () => ({ message: "Cognify Academy API is running!" }))
+  .get("/health", () => ({
+    status: "healthy",
+    timestamp: new Date().toISOString(),
+    version: "1.0.0",
+  }))
+  // Add routers
   .use(authRouter)
   .use(conceptRouter)
   .use(courseRouter)
