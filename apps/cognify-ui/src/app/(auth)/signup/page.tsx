@@ -163,6 +163,7 @@ export default function SignupPage() {
             required
             className="mt-2"
             disabled={isLoading}
+            autoComplete="new-password"
           />
           {formErrors.password && (
             <p className="mt-1 text-sm text-red-600 dark:text-red-400">
@@ -187,6 +188,7 @@ export default function SignupPage() {
             required
             className="mt-2"
             disabled={isLoading}
+            autoComplete="new-password"
           />
           {formErrors.confirmPassword && (
             <p className="mt-1 text-sm text-red-600 dark:text-red-400">

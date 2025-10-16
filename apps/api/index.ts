@@ -48,7 +48,22 @@ const getAllowedOrigins = (): string[] => {
 };
 
 const app = new Elysia({ prefix: "/api/v1" })
-  .use(cors())
+  .use(
+    cors({
+      origin: getAllowedOrigins(),
+      credentials: true,
+      allowedHeaders: [
+        "Content-Type",
+        "Authorization",
+        "X-Requested-With",
+        "Accept",
+        "Origin",
+        "Access-Control-Request-Method",
+        "Access-Control-Request-Headers",
+      ],
+      methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    }),
+  )
   .use(swagger({ path: "/swagger" }))
   // Other middleware
   .use(requestIdMiddleware)

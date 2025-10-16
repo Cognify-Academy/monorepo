@@ -69,6 +69,7 @@ export default function LoginPage() {
             required
             className="mt-2"
             disabled={isLoading}
+            autoComplete="username"
           />
         </div>
 
@@ -89,6 +90,7 @@ export default function LoginPage() {
             required
             className="mt-2"
             disabled={isLoading}
+            autoComplete="current-password"
           />
         </div>
 
