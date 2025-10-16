@@ -114,9 +114,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Don't clear user state - user might still have a valid access token
         // Only clear if we explicitly need to logout
         console.log("No valid refresh token found - user not authenticated");
-      } else if (error instanceof ApiError && error.status === 0) {
-        // Network error - backend might be down
-        console.warn("Backend connection failed during auth check");
+      } else if (
+        error instanceof ApiError &&
+        (error.status === 0 || error.status === 502)
+      ) {
+        // Network error or Bad Gateway - backend might be down
+        console.warn(
+          "Backend connection failed during auth check:",
+          error.message,
+        );
       } else {
         console.error("Auth check error:", error);
       }
@@ -146,7 +152,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (error) {
       if (error instanceof ApiError) {
-        if (error.status === 0) {
+        if (error.status === 0 || error.status === 502) {
           setError("Unable to connect to server. Please try again later.");
         } else {
           setError(error.message);
@@ -181,7 +187,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (error) {
       if (error instanceof ApiError) {
-        if (error.status === 0) {
+        if (error.status === 0 || error.status === 502) {
           setError("Unable to connect to server. Please try again later.");
         } else {
           setError(error.message);

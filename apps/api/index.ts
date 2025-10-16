@@ -22,7 +22,18 @@ import {
 } from "./middleware";
 
 // Load environment variables from the correct path
-dotenv.config({ path: "./apps/api/.env" });
+// In production (Docker), the .env file is in the root directory
+// In development, it's in ./apps/api/.env
+const envPath =
+  process.env.NODE_ENV === "production" ? "./.env" : "./apps/api/.env";
+console.log("Loading environment from:", envPath);
+console.log("NODE_ENV:", process.env.NODE_ENV);
+dotenv.config({ path: envPath });
+
+// Debug environment variables
+console.log("JWT_SECRET exists:", !!process.env.JWT_SECRET);
+console.log("JWT_REFRESH_SECRET exists:", !!process.env.JWT_REFRESH_SECRET);
+console.log("DATABASE_URL exists:", !!process.env.DATABASE_URL);
 
 const PORT = process.env["PORT"] || 3333;
 

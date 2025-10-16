@@ -28,10 +28,13 @@ const authRouter = new Elysia({ prefix: "/auth" })
       body: { handle: string; password: string };
       set: any;
     }) => {
+      console.log("Login endpoint called with body:", body);
       const response = await login(body);
+      console.log("Login response status:", response.status);
 
       // Extract data from Response object
       const data = await response.json();
+      console.log("Login response data:", data);
       const setCookieHeader = response.headers.get("Set-Cookie");
 
       if (setCookieHeader) {
@@ -99,7 +102,7 @@ const authRouter = new Elysia({ prefix: "/auth" })
     },
     {
       headers: t.Object({
-        cookie: t.String(),
+        cookie: t.Optional(t.String()),
       }),
       detail: { tags: ["Auth"] },
     },
