@@ -34,6 +34,8 @@ dotenv.config({ path: envPath });
 console.log("JWT_SECRET exists:", !!process.env.JWT_SECRET);
 console.log("JWT_REFRESH_SECRET exists:", !!process.env.JWT_REFRESH_SECRET);
 console.log("DATABASE_URL exists:", !!process.env.DATABASE_URL);
+console.log("ACCESS_TOKEN_EXPIRY:", process.env.ACCESS_TOKEN_EXPIRY);
+console.log("REFRESH_TOKEN_EXPIRY:", process.env.REFRESH_TOKEN_EXPIRY);
 
 const PORT = process.env["PORT"] || 3333;
 

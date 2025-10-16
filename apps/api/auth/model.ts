@@ -9,8 +9,12 @@ if (!process.env["JWT_REFRESH_SECRET"])
 const JWT_SECRET = process.env["JWT_SECRET"] as string;
 const JWT_REFRESH_SECRET = process.env["JWT_REFRESH_SECRET"] as string;
 
-const JWT_EXPIRATION = process.env["JWT_EXPIRATION"] || "1h"; // Default to 1 hour if not set
-const JWT_REFRESH_EXPIRATION = process.env["JWT_REFRESH_EXPIRATION"] || "7d"; // Default to 7 days if not set
+const JWT_EXPIRATION =
+  process.env["ACCESS_TOKEN_EXPIRY"] || process.env["JWT_EXPIRATION"] || "1h"; // Default to 1 hour if not set
+const JWT_REFRESH_EXPIRATION =
+  process.env["REFRESH_TOKEN_EXPIRY"] ||
+  process.env["JWT_REFRESH_EXPIRATION"] ||
+  "7d"; // Default to 7 days if not set
 
 // Helper to create an HTTP-only cookie for the refresh token.
 function createRefreshCookie(token: string) {
