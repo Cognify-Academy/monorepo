@@ -49,7 +49,7 @@ export function DropdownItem({
     <MenuItem>
       <Link
         href={href}
-        className="block rounded-md px-3 py-0.5 text-sm/7 text-gray-950 focus:outline-none data-focus:bg-blue-500 data-focus:text-white dark:text-white"
+        className="data-focus:bg-blue-500 data-focus:text-white block rounded-md px-3 py-0.5 text-sm/7 text-gray-950 focus:outline-none dark:text-white"
       >
         {children}
       </Link>

@@ -34,7 +34,7 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
 
   return (
     <div
-      className="prose dark:prose-invert max-w-none [&_table]:w-full [&_table]:border-collapse [&_td]:border [&_td]:border-gray-300 [&_td]:px-4 [&_td]:py-2 [&_td]:text-sm [&_td]:text-gray-700 dark:[&_td]:border-gray-600 dark:[&_td]:text-gray-300 [&_th]:border [&_th]:border-gray-300 [&_th]:bg-gray-50 [&_th]:px-4 [&_th]:py-2 [&_th]:text-left [&_th]:text-sm [&_th]:font-medium [&_th]:text-gray-900 dark:[&_th]:border-gray-600 dark:[&_th]:bg-gray-800 dark:[&_th]:text-gray-100"
+      className="prose max-w-none dark:prose-invert [&_table]:w-full [&_table]:border-collapse [&_td]:border [&_td]:border-gray-300 [&_td]:px-4 [&_td]:py-2 [&_td]:text-sm [&_td]:text-gray-700 dark:[&_td]:border-gray-600 dark:[&_td]:text-gray-300 [&_th]:border [&_th]:border-gray-300 [&_th]:bg-gray-50 [&_th]:px-4 [&_th]:py-2 [&_th]:text-left [&_th]:text-sm [&_th]:font-medium [&_th]:text-gray-900 dark:[&_th]:border-gray-600 dark:[&_th]:bg-gray-800 dark:[&_th]:text-gray-100"
       dangerouslySetInnerHTML={{ __html: htmlContent }}
     />
   );

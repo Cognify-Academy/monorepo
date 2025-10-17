@@ -39,7 +39,7 @@ export default function AboutPage() {
       <main className="dark:bg-gray-900">
         <section className="mx-auto my-10 max-w-7xl rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-20 shadow-inner sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="mb-6 text-5xl leading-tight font-extrabold text-gray-900 md:text-6xl">
+            <h1 className="mb-6 text-5xl font-extrabold leading-tight text-gray-900 md:text-6xl">
               Unlocking Knowledge, One Connection at a Time
             </h1>
             <p className="mx-auto mb-8 max-w-4xl text-xl leading-relaxed text-gray-700">

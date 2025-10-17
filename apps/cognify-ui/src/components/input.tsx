@@ -18,8 +18,8 @@ export function TextInput({
         className,
         "block w-full rounded-lg bg-white px-3 py-1.5",
         "border border-gray-300 dark:border-gray-600",
-        "text-base/6 text-gray-950 sm:text-sm/6 dark:bg-gray-800 dark:text-white",
-        "focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none",
+        "text-base/6 text-gray-950 dark:bg-gray-800 dark:text-white sm:text-sm/6",
+        "focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500",
       )}
       {...props}
     />

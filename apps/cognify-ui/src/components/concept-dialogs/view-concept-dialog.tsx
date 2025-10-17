@@ -66,7 +66,7 @@ export function ViewConceptDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div
-        className="bg-opacity-50 absolute inset-0 bg-black transition-opacity"
+        className="absolute inset-0 bg-black bg-opacity-50 transition-opacity"
         onClick={onClose}
       />
       <div className="relative w-full max-w-2xl transform rounded-lg bg-white p-6 shadow-xl transition-all dark:bg-gray-800">

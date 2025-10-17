@@ -31,7 +31,7 @@ test.describe("Course Enrollment", () => {
         .locator('[data-testid="email-error"]')
         .textContent();
       console.log(
-        `Student login failed in test environment: ${errorText} - but app works locally`
+        `Student login failed in test environment: ${errorText} - but app works locally`,
       );
       return false;
     }
@@ -54,7 +54,7 @@ test.describe("Course Enrollment", () => {
     // If course page doesn't exist, that's a real issue - courses should be accessible
     if (!currentUrl.includes("/courses/")) {
       console.log(
-        "Course page not found - this indicates missing course functionality"
+        "Course page not found - this indicates missing course functionality",
       );
       expect(currentUrl).toContain("/courses/");
       return;
@@ -87,7 +87,7 @@ test.describe("Course Enrollment", () => {
 
     // If we get here, we should be able to see course content
     console.log(
-      "Successfully accessed course page, checking for course content"
+      "Successfully accessed course page, checking for course content",
     );
 
     // Look for basic course elements (these should exist if courses are implemented)

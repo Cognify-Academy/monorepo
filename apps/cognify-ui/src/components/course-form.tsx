@@ -135,7 +135,7 @@ export function CourseForm({
           <Button
             type="submit"
             data-testid="save-course-button"
-            className="w-full transform rounded-lg bg-blue-600 px-6 py-3 text-lg font-semibold text-white transition-all hover:scale-105 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-400 dark:focus:ring-offset-gray-800"
+            className="w-full transform rounded-lg bg-blue-600 px-6 py-3 text-lg font-semibold text-white transition-all hover:scale-105 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-400 dark:focus:ring-offset-gray-800"
             disabled={isLoading}
           >
             {isLoading
@@ -186,7 +186,7 @@ export function CourseBasicInfo({
           data-testid="course-title-input"
           value={title}
           onChange={(e) => onTitleChange(e.target.value)}
-          className="mt-1 block w-full rounded-md border border-gray-300 bg-white p-3 text-gray-900 placeholder-gray-500 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
+          className="mt-1 block w-full rounded-md border border-gray-300 bg-white p-3 text-gray-900 placeholder-gray-500 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400 sm:text-sm"
           placeholder="e.g., Introduction to Machine Learning"
           disabled={disabled}
         />
@@ -214,7 +214,7 @@ export function CourseBasicInfo({
           rows={4}
           value={description}
           onChange={(e) => onDescriptionChange(e.target.value)}
-          className="mt-1 block w-full rounded-md border border-gray-300 bg-white p-3 text-gray-900 placeholder-gray-500 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
+          className="mt-1 block w-full rounded-md border border-gray-300 bg-white p-3 text-gray-900 placeholder-gray-500 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400 sm:text-sm"
           placeholder="Provide a comprehensive description of what students will learn in this course."
           disabled={disabled}
         />

@@ -12,7 +12,7 @@ export function Textarea({
       className={clsx(
         className,
         "block w-full rounded-lg bg-white px-3 py-1.5",
-        "text-base/6 sm:text-sm/6 dark:bg-gray-800 dark:text-white",
+        "text-base/6 dark:bg-gray-800 dark:text-white sm:text-sm/6",
         "outline -outline-offset-1 outline-gray-950/15 focus:outline-2 focus:outline-blue-500 dark:outline-white/15",
       )}
       {...props}

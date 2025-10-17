@@ -14,7 +14,7 @@ export function NextPageLink({
     <div className="flow-root">
       <Link
         href={href}
-        className="-mx-3 -my-2 block rounded-xl px-3 py-2 hover:bg-gray-950/4 dark:hover:bg-white/5"
+        className="hover:bg-gray-950/4 -mx-3 -my-2 block rounded-xl px-3 py-2 dark:hover:bg-white/5"
       >
         <p className="flex items-center gap-3 text-sm/7 text-gray-500">
           Up next

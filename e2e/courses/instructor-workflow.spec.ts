@@ -31,7 +31,7 @@ test.describe("Instructor Workflow", () => {
         .locator('[data-testid="email-error"]')
         .textContent();
       console.log(
-        `Instructor login failed in test environment: ${errorText} - but app works locally`
+        `Instructor login failed in test environment: ${errorText} - but app works locally`,
       );
       return false;
     }
@@ -63,7 +63,7 @@ test.describe("Instructor Workflow", () => {
     } else {
       // If we're on home page, that's also acceptable - instructor routes might not be implemented yet
       console.log(
-        "Instructor course creation page not implemented yet - on home page"
+        "Instructor course creation page not implemented yet - on home page",
       );
       expect(currentUrl).toContain("localhost:3000");
     }
@@ -119,7 +119,7 @@ test.describe("Instructor Workflow", () => {
     } else {
       // If we're on home page, that's also acceptable - instructor routes might not be implemented yet
       console.log(
-        "Instructor course edit page not implemented yet - on home page"
+        "Instructor course edit page not implemented yet - on home page",
       );
       expect(currentUrl).toContain("localhost:3000");
     }

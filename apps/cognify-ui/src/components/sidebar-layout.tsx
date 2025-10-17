@@ -53,16 +53,16 @@ function CourseNavigation({
     <div className={clsx(className, "space-y-8")}>
       {modules.map((module) => (
         <div key={module.id}>
-          <h2 className="text-base/7 font-semibold text-pretty text-gray-950 sm:text-sm/6 dark:text-white">
+          <h2 className="text-pretty text-base/7 font-semibold text-gray-950 dark:text-white sm:text-sm/6">
             {module.title}
           </h2>
-          <ul className="mt-4 flex flex-col gap-4 border-l border-gray-950/10 text-base/7 text-gray-700 sm:mt-3 sm:gap-3 sm:text-sm/6 dark:border-white/10 dark:text-gray-400">
+          <ul className="mt-4 flex flex-col gap-4 border-l border-gray-950/10 text-base/7 text-gray-700 dark:border-white/10 dark:text-gray-400 sm:mt-3 sm:gap-3 sm:text-sm/6">
             {module.lessons.map((lesson) => (
               <li
                 key={lesson.id}
                 className={clsx(
                   "-ml-px flex border-l border-transparent pl-4",
-                  "hover:text-gray-950 hover:not-has-aria-[current=page]:border-gray-400 dark:hover:text-white",
+                  "hover:not-has-aria-[current=page]:border-gray-400 hover:text-gray-950 dark:hover:text-white",
                   "has-aria-[current=page]:border-gray-950 dark:has-aria-[current=page]:border-white",
                 )}
               >
@@ -96,7 +96,7 @@ function MobileNavigation({
   return (
     <Dialog open={open} onClose={onClose} className="xl:hidden">
       <DialogBackdrop className="fixed inset-0 bg-gray-950/25" />
-      <DialogPanel className="fixed inset-y-0 left-0 isolate w-sm max-w-[calc(100%-(--spacing(11)))] overflow-y-auto bg-white ring ring-gray-950/10 sm:w-xs dark:bg-gray-950 dark:ring-white/10">
+      <DialogPanel className="w-sm sm:w-xs fixed inset-y-0 left-0 isolate max-w-[calc(100%-(--spacing(11)))] overflow-y-auto bg-white ring ring-gray-950/10 dark:bg-gray-950 dark:ring-white/10">
         <div className="sticky top-0 z-10 px-4 py-4 sm:px-6">
           <div className="flex h-6 shrink-0">
             <CloseButton as={IconButton}>
@@ -137,7 +137,7 @@ export function SidebarLayout({
         data-sidebar-collapsed={isSidebarOpen ? undefined : ""}
         className="group"
       >
-        <aside className="fixed inset-y-0 left-0 w-2xs overflow-y-auto border-r border-gray-950/10 group-data-sidebar-collapsed:hidden max-xl:hidden dark:border-white/10">
+        <aside className="w-2xs group-data-sidebar-collapsed:hidden fixed inset-y-0 left-0 overflow-y-auto border-r border-gray-950/10 dark:border-white/10 max-xl:hidden">
           <nav aria-label="Course" className="px-6 py-4">
             <div className="sticky top-4 flex h-6">
               <IconButton onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
@@ -201,7 +201,7 @@ export function SidebarLayoutContent({
           </div>
         </div>
       </header>
-      <main className="px-4 sm:px-6 dark:bg-gray-900">{children}</main>
+      <main className="px-4 dark:bg-gray-900 sm:px-6">{children}</main>
     </>
   );
 }

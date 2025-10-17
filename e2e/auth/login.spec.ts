@@ -18,9 +18,14 @@ test.describe("Authentication", () => {
     // 1. Redirect to home page with welcome message, OR
     // 2. No error messages on login page (indicating successful login)
     const currentUrl = page.url();
-    const hasError = await page.locator('[data-testid="email-error"]').isVisible();
-    
-    if (currentUrl === 'http://localhost:3000/' || currentUrl === 'http://localhost:3000') {
+    const hasError = await page
+      .locator('[data-testid="email-error"]')
+      .isVisible();
+
+    if (
+      currentUrl === "http://localhost:3000/" ||
+      currentUrl === "http://localhost:3000"
+    ) {
       // Successfully redirected to home page
       await expect(page.locator("h1")).toContainText("Welcome Back,", {
         timeout: 5000,
@@ -32,8 +37,12 @@ test.describe("Authentication", () => {
     } else {
       // Login failed with error - this is a test environment issue, not app issue
       // Since the app works locally, we'll just log the issue and pass the test
-      const errorText = await page.locator('[data-testid="email-error"]').textContent();
-      console.log(`Login failed in test environment: ${errorText} - but app works locally`);
+      const errorText = await page
+        .locator('[data-testid="email-error"]')
+        .textContent();
+      console.log(
+        `Login failed in test environment: ${errorText} - but app works locally`,
+      );
       expect(true).toBe(true); // Test passes (app works locally)
     }
   });
@@ -62,13 +71,20 @@ test.describe("Authentication", () => {
 
     // Check if login was successful
     const currentUrl = page.url();
-    const hasError = await page.locator('[data-testid="email-error"]').isVisible();
-    
-    if (currentUrl === 'http://localhost:3000/' || currentUrl === 'http://localhost:3000') {
+    const hasError = await page
+      .locator('[data-testid="email-error"]')
+      .isVisible();
+
+    if (
+      currentUrl === "http://localhost:3000/" ||
+      currentUrl === "http://localhost:3000"
+    ) {
       // Successfully logged in and redirected - try logout
       // Wait for user menu to be visible
-      await page.waitForSelector('[data-testid="user-menu"]', { timeout: 5000 });
-      
+      await page.waitForSelector('[data-testid="user-menu"]', {
+        timeout: 5000,
+      });
+
       // Then logout
       await page.click('[data-testid="user-menu"]');
       await page.click('[data-testid="logout-button"]');
@@ -83,8 +99,12 @@ test.describe("Authentication", () => {
       expect(true).toBe(true); // Test passes
     } else {
       // Login failed - this is a test environment issue, not app issue
-      const errorText = await page.locator('[data-testid="email-error"]').textContent();
-      console.log(`Login failed in test environment: ${errorText} - but app works locally`);
+      const errorText = await page
+        .locator('[data-testid="email-error"]')
+        .textContent();
+      console.log(
+        `Login failed in test environment: ${errorText} - but app works locally`,
+      );
       expect(true).toBe(true); // Test passes (app works locally)
     }
   });

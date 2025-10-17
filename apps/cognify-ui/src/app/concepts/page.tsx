@@ -108,7 +108,7 @@ export default function MyConceptsPage() {
         )}
 
         {error && (
-          <div className="absolute top-20 left-1/2 z-50 -translate-x-1/2 transform rounded-md bg-red-50 p-4">
+          <div className="absolute left-1/2 top-20 z-50 -translate-x-1/2 transform rounded-md bg-red-50 p-4">
             <div className="flex">
               <div className="ml-3">
                 <h3 className="text-sm font-medium text-red-800">Error</h3>
@@ -121,7 +121,7 @@ export default function MyConceptsPage() {
         )}
 
         {!isLoading && !error && concepts.length === 0 && (
-          <div className="absolute top-20 left-1/2 z-50 -translate-x-1/2 transform rounded-md bg-blue-50 p-4">
+          <div className="absolute left-1/2 top-20 z-50 -translate-x-1/2 transform rounded-md bg-blue-50 p-4">
             <div className="flex">
               <div className="ml-3">
                 <h3 className="text-sm font-medium text-blue-800">

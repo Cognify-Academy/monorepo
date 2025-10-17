@@ -27,9 +27,9 @@ export function ContentLink({
     <div className="flow-root">
       <Link
         href={href}
-        className="-mx-3 -my-2 flex gap-3 rounded-xl px-3 py-2 text-sm/7 hover:bg-gray-950/4 dark:hover:bg-white/5"
+        className="hover:bg-gray-950/4 -mx-3 -my-2 flex gap-3 rounded-xl px-3 py-2 text-sm/7 dark:hover:bg-white/5"
       >
-        <div className="flex h-lh shrink items-center">
+        <div className="h-lh flex shrink items-center">
           {type === "article" && (
             <ArticleIcon className="fill-gray-950 stroke-gray-950/40 dark:fill-white dark:stroke-white/40" />
           )}
@@ -47,7 +47,7 @@ export function ContentLink({
             </span>
             {duration && (
               <>
-                <span className="mx-2 hidden text-gray-950/25 sm:inline dark:text-white/25">
+                <span className="mx-2 hidden text-gray-950/25 dark:text-white/25 sm:inline">
                   &middot;
                 </span>
                 <span className="hidden text-gray-500 sm:inline">

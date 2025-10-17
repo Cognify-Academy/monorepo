@@ -45,13 +45,13 @@ export class TestHelpers {
     name = "Test User",
     username = "testuser",
     email = "test@example.com",
-    password = "password123"
+    password = "password123",
   ) {
     const response = await page.request.post(
       "http://localhost:3333/api/v1/auth/signup",
       {
         data: { name, username, email, password },
-      }
+      },
     );
     return response;
   }
@@ -61,13 +61,13 @@ export class TestHelpers {
     name = "Instructor User",
     username = "instructor",
     email = "instructor@example.com",
-    password = "password123"
+    password = "password123",
   ) {
     const response = await page.request.post(
       "http://localhost:3333/api/v1/auth/signup",
       {
         data: { name, username, email, password },
-      }
+      },
     );
     return response;
   }
@@ -75,7 +75,7 @@ export class TestHelpers {
   static async login(
     page: any,
     email = "test@example.com",
-    password = "password123"
+    password = "password123",
   ) {
     await page.goto("/login");
     await page.fill('[data-testid="email-input"]', email);
@@ -95,7 +95,7 @@ export class TestHelpers {
     await page.fill('[data-testid="course-title"]', courseData.title);
     await page.fill(
       '[data-testid="course-description"]',
-      courseData.description
+      courseData.description,
     );
     await page.click('[data-testid="save-course"]');
     await page.waitForURL("/instructor/courses");

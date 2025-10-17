@@ -9,12 +9,14 @@ This directory contains comprehensive middleware for the Cognify Academy API bui
 Global error handling middleware that provides consistent error responses across the API.
 
 **Features:**
+
 - Handles different error types (AppError, Zod validation, Prisma, JWT, etc.)
 - Logs error details with request context
 - Returns structured error responses with request IDs
 - Environment-aware error messages (production vs development)
 
 **Usage:**
+
 ```typescript
 import { errorHandler, AppError } from "./middleware";
 
@@ -30,12 +32,14 @@ app.use(errorHandler);
 Comprehensive request logging middleware that tracks all incoming requests and responses.
 
 **Features:**
+
 - Logs request details (method, URL, user agent, IP)
 - Tracks response status and duration
 - Includes request ID in all logs
 - Different log levels based on response status
 
 **Usage:**
+
 ```typescript
 import { requestLogger } from "./middleware";
 
@@ -47,6 +51,7 @@ app.use(requestLogger);
 Configurable rate limiting middleware to prevent abuse and ensure fair usage.
 
 **Features:**
+
 - Configurable time windows and request limits
 - IP-based rate limiting with custom key generators
 - Rate limit headers in responses
@@ -54,11 +59,13 @@ Configurable rate limiting middleware to prevent abuse and ensure fair usage.
 - Automatic cleanup of expired entries
 
 **Pre-configured Limiters:**
+
 - `authRateLimiter`: 5 attempts per 15 minutes for auth endpoints
 - `generalRateLimiter`: 100 requests per 15 minutes for general endpoints
 - `strictRateLimiter`: 10 requests per minute for sensitive endpoints
 
 **Usage:**
+
 ```typescript
 import { createRateLimiter, authRateLimiter } from "./middleware";
 
@@ -78,12 +85,14 @@ app.use(authRateLimiter);
 Request ID tracking middleware for distributed tracing and debugging.
 
 **Features:**
+
 - Generates unique request IDs if not provided
 - Uses existing request ID from headers
 - Adds request ID to response headers
 - Makes request ID available in context
 
 **Usage:**
+
 ```typescript
 import { requestIdMiddleware, getRequestId } from "./middleware";
 
@@ -107,11 +116,11 @@ const app = new Elysia({ prefix: "/api/v1" })
   .use(errorHandler)           // 3. Handle errors
   .use(cors({...}))           // 4. CORS
   .use(swagger({...}))        // 5. API documentation
-  
+
   // Route-specific rate limiting
   .use(authRateLimiter)       // Auth routes
   .use(authRouter)
-  
+
   .use(generalRateLimiter)    // Other routes
   .use(conceptRouter)
   // ... other routers

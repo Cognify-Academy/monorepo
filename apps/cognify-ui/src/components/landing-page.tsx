@@ -10,7 +10,7 @@ export function LandingPage() {
 
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
         <div className="text-center">
-          <h1 className="mb-6 text-5xl leading-tight font-bold text-gray-900 md:text-6xl dark:text-white">
+          <h1 className="mb-6 text-5xl font-bold leading-tight text-gray-900 dark:text-white md:text-6xl">
             Learn Through
             <span className="text-blue-600 dark:text-blue-400">
               {" "}
@@ -52,19 +52,19 @@ export function LandingPage() {
           <div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-lg dark:border-gray-700 dark:bg-gray-800">
             <div className="relative h-64 overflow-hidden">
               {/* Central Node */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transform">
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform">
                 <div className="animate-float flex h-16 w-16 items-center justify-center rounded-full bg-blue-600 font-semibold text-white dark:bg-blue-500">
                   ML
                 </div>
               </div>
 
               {/* Connected Nodes */}
-              <div className="absolute top-8 left-16">
+              <div className="absolute left-16 top-8">
                 <div className="animate-pulse-subtle flex h-12 w-12 items-center justify-center rounded-full bg-green-500 text-sm font-medium text-white">
                   Stats
                 </div>
               </div>
-              <div className="absolute top-8 right-16">
+              <div className="absolute right-16 top-8">
                 <div className="animate-pulse-subtle flex h-12 w-12 items-center justify-center rounded-full bg-purple-500 text-sm font-medium text-white">
                   Math
                 </div>
@@ -74,7 +74,7 @@ export function LandingPage() {
                   Data
                 </div>
               </div>
-              <div className="absolute right-20 bottom-8">
+              <div className="absolute bottom-8 right-20">
                 <div className="animate-pulse-subtle flex h-12 w-12 items-center justify-center rounded-full bg-red-500 text-sm font-medium text-white">
                   Code
                 </div>

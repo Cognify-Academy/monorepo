@@ -59,7 +59,7 @@ export function VideoCard({
             preload="auto"
             className="hidden aspect-video w-full rounded-lg bg-gray-950 object-cover group-hover:block dark:bg-gray-900"
           />
-          <div className="absolute right-3 bottom-3 rounded-sm bg-gray-950/50 p-1 text-xs/3 font-semibold text-white">
+          <div className="absolute bottom-3 right-3 rounded-sm bg-gray-950/50 p-1 text-xs/3 font-semibold text-white">
             {formatDuration(duration)}
           </div>
         </div>
@@ -72,7 +72,7 @@ export function VideoCard({
             alt=""
             className="aspect-video w-full rounded-lg bg-gray-950 object-cover group-hover:hidden dark:bg-gray-900"
           />
-          <div className="absolute right-3 bottom-3 rounded-sm bg-gray-950/50 p-1 text-xs/3 font-semibold text-white">
+          <div className="absolute bottom-3 right-3 rounded-sm bg-gray-950/50 p-1 text-xs/3 font-semibold text-white">
             {formatDuration(duration)}
           </div>
         </div>

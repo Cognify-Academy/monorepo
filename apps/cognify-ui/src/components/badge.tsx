@@ -22,7 +22,7 @@ export function Badge({
   return (
     <span
       className={clsx(
-        "inline-flex shrink-0 items-center justify-center rounded-md border px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-colors",
+        "inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-md border px-2 py-0.5 text-xs font-medium transition-colors",
         variantStyles[variant],
         className,
       )}

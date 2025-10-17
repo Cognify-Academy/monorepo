@@ -239,7 +239,7 @@ export function Navbar() {
               onClick={() => {
                 setIsMenuOpen(!isMenuOpen);
               }}
-              className="rounded-md p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 md:hidden dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
+              className="rounded-md p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white md:hidden"
               aria-label="Toggle mobile menu"
               data-testid="mobile-menu-button"
             >
@@ -253,7 +253,7 @@ export function Navbar() {
         </div>
 
         {isMenuOpen && (
-          <div className="border-t border-gray-100 pt-4 pb-4 md:hidden dark:border-gray-700">
+          <div className="border-t border-gray-100 pb-4 pt-4 dark:border-gray-700 md:hidden">
             <div className="space-y-3">
               <Link
                 href="/courses"
@@ -265,7 +265,7 @@ export function Navbar() {
 
               {isAuthenticated && hasRole("INSTRUCTOR") && (
                 <>
-                  <div className="px-3 py-2 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">
+                  <div className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                     Instructor
                   </div>
                   <Link
@@ -287,7 +287,7 @@ export function Navbar() {
 
               {isAuthenticated && hasRole("ADMIN") && (
                 <>
-                  <div className="px-3 py-2 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">
+                  <div className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                     Admin
                   </div>
                   <Link

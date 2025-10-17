@@ -58,7 +58,7 @@ export default async function LessonPage({ params }: PageProps) {
           </Breadcrumbs>
         }
       >
-        <div className="mx-auto mt-6 mb-16 max-w-4xl">
+        <div className="mx-auto mb-16 mt-6 max-w-4xl">
           <div className="mb-12">
             <h1 className="text-3xl/9 font-medium tracking-tight text-gray-950 dark:text-white">
               {lesson.title}
@@ -124,7 +124,7 @@ export default async function LessonPage({ params }: PageProps) {
                         View Transcript
                       </summary>
                       <div className="mt-2 rounded-md bg-gray-50 p-3 dark:bg-gray-800">
-                        <p className="text-sm whitespace-pre-wrap text-gray-700 dark:text-gray-300">
+                        <p className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300">
                           {mediaItem.transcript}
                         </p>
                       </div>
@@ -154,7 +154,7 @@ export default async function LessonPage({ params }: PageProps) {
               <div className="group relative flex rounded-2xl bg-gray-50 p-4 transition-colors hover:bg-gray-100 dark:bg-white/5 dark:hover:bg-white/10">
                 <div className="flex min-w-0 flex-1 gap-x-4">
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm leading-6 font-medium text-gray-900 dark:text-white">
+                    <p className="text-sm font-medium leading-6 text-gray-900 dark:text-white">
                       <Link
                         href={`/courses/${slug}/lessons/${nextLesson.id}`}
                         className="hover:underline"
@@ -190,7 +190,7 @@ export default async function LessonPage({ params }: PageProps) {
               <div className="group relative flex rounded-2xl bg-gray-50 p-4 transition-colors hover:bg-gray-100 dark:bg-white/5 dark:hover:bg-white/10">
                 <div className="flex min-w-0 flex-1 gap-x-4">
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm leading-6 font-medium text-gray-900 dark:text-white">
+                    <p className="text-sm font-medium leading-6 text-gray-900 dark:text-white">
                       <Link href="/courses" className="hover:underline">
                         Back to Courses
                       </Link>

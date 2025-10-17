@@ -95,7 +95,7 @@ export default function PublicCoursesPage() {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Navbar />
-        <main className="mx-auto max-w-7xl bg-gray-50 px-4 py-12 text-gray-800 sm:px-6 lg:px-8 dark:bg-gray-900 dark:text-gray-200">
+        <main className="mx-auto max-w-7xl bg-gray-50 px-4 py-12 text-gray-800 dark:bg-gray-900 dark:text-gray-200 sm:px-6 lg:px-8">
           <div className="flex items-center justify-center">
             <div className="text-center">
               <div className="mx-auto h-32 w-32 animate-spin rounded-full border-b-2 border-blue-600"></div>
@@ -114,7 +114,7 @@ export default function PublicCoursesPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
 
-      <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 dark:bg-gray-900">
+      <main className="mx-auto max-w-7xl px-4 py-12 dark:bg-gray-900 sm:px-6 lg:px-8">
         <div className="mb-12 text-center">
           <h1 className="mb-4 text-4xl font-bold text-gray-900 dark:text-white">
             Available Courses

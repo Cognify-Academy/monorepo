@@ -93,13 +93,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const checkAuth = useCallback(async () => {
     try {
       setIsLoading(true);
-      
+
       // If we already have a user and access token, don't call refresh
       if (user && accessToken) {
         setIsLoading(false);
         return;
       }
-      
+
       const response = await apiClient.refresh();
 
       // Only decode token if it exists and is valid

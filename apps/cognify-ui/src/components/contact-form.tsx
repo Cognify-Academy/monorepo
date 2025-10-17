@@ -196,7 +196,7 @@ export function ContactForm({
             onChange={(e) => handleInputChange("message", e.target.value)}
             placeholder="Enter your message"
             rows={6}
-            className={`block w-full resize-none rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-base/6 text-gray-950 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none sm:text-sm/6 ${errors.message ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""} `}
+            className={`block w-full resize-none rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-base/6 text-gray-950 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 sm:text-sm/6 ${errors.message ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""} `}
           />
           {errors.message && (
             <p className="mt-1 text-sm text-red-600">{errors.message}</p>

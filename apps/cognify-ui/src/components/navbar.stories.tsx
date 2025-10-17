@@ -179,7 +179,7 @@ const NavbarWrapper = ({ authState }: { authState: StoryAuthState }) => {
                     </svg>
                   </button>
                   {isInstructorMenuOpen && (
-                    <div className="ring-opacity-5 absolute top-full right-0 z-50 mt-2 w-48 rounded-md bg-white py-2 shadow-lg ring-1 ring-black">
+                    <div className="absolute right-0 top-full z-50 mt-2 w-48 rounded-md bg-white py-2 shadow-lg ring-1 ring-black ring-opacity-5">
                       <Link
                         href="/instructor/courses/new"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -343,7 +343,7 @@ const NavbarWrapper = ({ authState }: { authState: StoryAuthState }) => {
 
           {/* Mobile menu */}
           {isMenuOpen && (
-            <div className="border-t border-gray-100 pt-4 pb-4 md:hidden">
+            <div className="border-t border-gray-100 pb-4 pt-4 md:hidden">
               <div className="space-y-3">
                 <Link
                   href="/"
@@ -371,7 +371,7 @@ const NavbarWrapper = ({ authState }: { authState: StoryAuthState }) => {
 
                 {isAuthenticated && hasRole("INSTRUCTOR") && (
                   <>
-                    <div className="px-3 py-2 text-xs font-semibold tracking-wide text-gray-500 uppercase">
+                    <div className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
                       Instructor
                     </div>
                     <Link
@@ -393,7 +393,7 @@ const NavbarWrapper = ({ authState }: { authState: StoryAuthState }) => {
 
                 {isAuthenticated && hasRole("ADMIN") && (
                   <>
-                    <div className="px-3 py-2 text-xs font-semibold tracking-wide text-gray-500 uppercase">
+                    <div className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
                       Admin
                     </div>
                     <a

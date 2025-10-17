@@ -8,7 +8,7 @@ export default function KnowledgeGraphsPage() {
       <Navbar />
 
       <section className="mx-auto max-w-7xl px-4 py-20 text-center sm:px-6 lg:px-8">
-        <h1 className="mb-6 text-5xl leading-tight font-extrabold text-gray-900 md:text-6xl dark:text-white">
+        <h1 className="mb-6 text-5xl font-extrabold leading-tight text-gray-900 dark:text-white md:text-6xl">
           What Are <span className="text-blue-600">Knowledge Graphs</span>?
         </h1>
         <p className="mx-auto mb-8 max-w-4xl text-xl leading-relaxed text-gray-700">
@@ -47,7 +47,7 @@ export default function KnowledgeGraphsPage() {
             </div>
 
             <div
-              className="absolute top-10 left-10 z-0 flex h-20 w-20 items-center justify-center rounded-full bg-green-500 text-sm text-white shadow"
+              className="absolute left-10 top-10 z-0 flex h-20 w-20 items-center justify-center rounded-full bg-green-500 text-sm text-white shadow"
               style={{
                 animation: "pulse-subtle 2s ease-in-out infinite",
                 animationDelay: "0.5s",
@@ -56,7 +56,7 @@ export default function KnowledgeGraphsPage() {
               Related B
             </div>
             <div
-              className="absolute top-20 right-10 z-0 flex h-20 w-20 items-center justify-center rounded-full bg-purple-500 text-sm text-white shadow"
+              className="absolute right-10 top-20 z-0 flex h-20 w-20 items-center justify-center rounded-full bg-purple-500 text-sm text-white shadow"
               style={{
                 animation: "pulse-subtle 2s ease-in-out infinite",
                 animationDelay: "1s",
@@ -74,7 +74,7 @@ export default function KnowledgeGraphsPage() {
               Related D
             </div>
             <div
-              className="absolute right-20 bottom-20 z-0 flex h-20 w-20 items-center justify-center rounded-full bg-red-500 text-sm text-white shadow"
+              className="absolute bottom-20 right-20 z-0 flex h-20 w-20 items-center justify-center rounded-full bg-red-500 text-sm text-white shadow"
               style={{
                 animation: "pulse-subtle 2s ease-in-out infinite",
                 animationDelay: "2s",
@@ -128,7 +128,7 @@ export default function KnowledgeGraphsPage() {
         </div>
       </section>
 
-      <section className="mx-auto my-10 max-w-7xl rounded-lg bg-gray-100 px-4 py-16 shadow-inner sm:px-6 lg:px-8 dark:bg-gray-800">
+      <section className="mx-auto my-10 max-w-7xl rounded-lg bg-gray-100 px-4 py-16 shadow-inner dark:bg-gray-800 sm:px-6 lg:px-8">
         <div className="mb-12 text-center">
           <h2 className="mb-4 text-4xl font-bold text-gray-900 dark:text-white">
             How We Use Knowledge Graphs at Cognify Academy

@@ -89,7 +89,7 @@ export default function TableOfContents({ contentId }: { contentId: string }) {
             key={heading.id}
             className={clsx(
               "-ml-px border-l border-transparent pl-4",
-              "hover:text-gray-950 hover:not-has-aria-[current=location]:border-gray-400 dark:hover:text-white",
+              "hover:not-has-aria-[current=location]:border-gray-400 hover:text-gray-950 dark:hover:text-white",
               "has-aria-[current=location]:border-gray-950 dark:has-aria-[current=location]:border-white",
             )}
           >
