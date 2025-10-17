@@ -29,14 +29,14 @@ const JWT_SECRET = "testsecret";
 const JWT_REFRESH_SECRET = "testsecret";
 
 const mockCreate = mock(() => ({
-  id: 1,
+  id: "1",
   username: "testuser",
   email: "test@example.com",
   password: bcrypt.hashSync("password123", 10),
 }));
 
 const mockFindFirst = mock((): any => ({
-  id: 1,
+  id: "1",
   username: "testuser",
   email: "test@example.com",
   password: bcrypt.hashSync("password123", 10),
@@ -44,19 +44,19 @@ const mockFindFirst = mock((): any => ({
 }));
 
 const mockUserRole = mock(() => ({
-  userId: 1,
+  userId: "1",
   role: "STUDENT",
 }));
 
 const mockRefreshTokenFindUnique = mock((): any => ({
-  id: 1,
+  id: "1",
   token: "valid_refresh_token",
-  userId: 1,
+  userId: "1",
   expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
 }));
 
 const mockUserFindUnique = mock((): any => ({
-  id: 1,
+  id: "1",
   username: "testuser",
   email: "test@example.com",
   password: bcrypt.hashSync("password123", 10),
@@ -73,7 +73,7 @@ prisma.refreshToken.delete = jest.fn();
 prisma.refreshToken.deleteMany = jest.fn();
 prisma.refreshToken.update = jest.fn();
 prisma.$transaction = jest.fn();
-const mockVerify = mock(() => ({ id: 1, username: "testuser" }));
+const mockVerify = mock(() => ({ id: "1", username: "testuser" }));
 const jwtVerify = jwt.verify;
 
 beforeEach(() => {
@@ -173,7 +173,7 @@ describe("Verify", () => {
     const body = await res.json();
 
     expect(res.status).toBe(200);
-    expect(body.user).toEqual({ id: 1, username: "testuser" });
+    expect(body.user).toEqual({ id: "1", username: "testuser" });
     expect(mockVerify).toHaveBeenCalled();
   });
 
@@ -222,8 +222,8 @@ describe("Refresh Token", () => {
         const mockTx = {
           refreshToken: {
             delete: jest.fn(),
-            deleteMany: jest.fn(),
-            create: jest.fn(),
+            deleteMany: jest.fn().mockResolvedValue({ count: 1 }),
+            create: jest.fn().mockResolvedValue({ id: "2" }),
           },
         };
         return await callback(mockTx);
@@ -239,7 +239,7 @@ describe("Refresh Token", () => {
       where: { token: validRefreshToken },
     });
     expect(mockUserFindUnique).toHaveBeenCalledWith({
-      where: { id: 1 },
+      where: { id: "1" },
       include: { roles: true },
     });
     expect(prisma.$transaction).toHaveBeenCalled();
@@ -272,9 +272,9 @@ describe("Refresh Token", () => {
     );
 
     mockRefreshTokenFindUnique.mockReturnValueOnce({
-      id: 1,
+      id: "1",
       token: validRefreshToken,
-      userId: 1,
+      userId: "1",
       expiresAt: new Date(Date.now() - 1000),
     });
 
@@ -290,13 +290,13 @@ describe("Refresh Token", () => {
 
   test("should return 401 if user not found", async () => {
     const validRefreshToken = jwt.sign(
-      { id: 999, username: "nonexistentuser", roles: ["STUDENT"] },
+      { id: "999", username: "nonexistentuser", roles: ["STUDENT"] },
       JWT_REFRESH_SECRET,
       { expiresIn: "7d" },
     );
 
     mockVerify.mockImplementationOnce(() => ({
-      id: 999,
+      id: "999",
       username: "nonexistentuser",
       roles: ["STUDENT"],
     }));
@@ -309,7 +309,7 @@ describe("Refresh Token", () => {
     expect(res.status).toBe(401);
     expect(body.error).toBe("Unauthorized");
     expect(mockUserFindUnique).toHaveBeenCalledWith({
-      where: { id: 999 },
+      where: { id: "999" },
       include: { roles: true },
     });
   });

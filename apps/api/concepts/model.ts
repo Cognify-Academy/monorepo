@@ -48,8 +48,6 @@ export async function importConcepts(
     }[];
   }[],
 ) {
-  console.log("Concept import. Importing " + concepts.length + " records");
-
   const createdConcepts = new Map();
 
   try {
@@ -140,7 +138,6 @@ export async function importConcepts(
     console.error("Error updating relations", error);
     throw error;
   }
-  console.log("Concept import completed successfully");
   return { message: "Concepts imported successfully!" };
 }
 
@@ -168,7 +165,6 @@ export async function createConcept({
         slug: slugify(name, { lower: true }),
       },
     });
-    console.log(`Created concept: ${concept.name} (${concept.id})`);
     return concept;
   } catch (error) {
     console.error(`Failed to create concept: ${name}`, error);
@@ -198,7 +194,6 @@ export async function updateConcept({
       where: { id },
       data: { name, description, importance },
     });
-    console.log(`Updated concept: ${concept.name} (${concept.id})`);
     return concept;
   } catch (error) {
     console.error(`Failed to update concept: ${id}`, error);
@@ -212,7 +207,6 @@ export async function deleteConcept(id: string) {
     const concept = await prisma.concept.delete({
       where: { id },
     });
-    console.log(`Deleted concept: ${concept.name} (${concept.id})`);
     return concept;
   } catch (error) {
     console.error(`Failed to delete concept: ${id}`, error);

@@ -18,7 +18,10 @@ export default new Elysia({ prefix: "/kanban" })
       return card;
     },
     {
-      detail: { tags: ["Kanban"] },
+      detail: {
+        tags: ["Kanban"],
+        security: [{ bearerAuth: [] }],
+      },
       body: t.Object({
         title: t.String(),
         column: t.String(),
@@ -38,7 +41,10 @@ export default new Elysia({ prefix: "/kanban" })
       return prisma.card.findMany();
     },
     {
-      detail: { tags: ["Kanban"] },
+      detail: {
+        tags: ["Kanban"],
+        security: [{ bearerAuth: [] }],
+      },
       response: {
         200: t.Array(
           t.Object({
@@ -61,7 +67,10 @@ export default new Elysia({ prefix: "/kanban" })
       return card;
     },
     {
-      detail: { tags: ["Kanban"] },
+      detail: {
+        tags: ["Kanban"],
+        security: [{ bearerAuth: [] }],
+      },
       body: t.Object({
         column: t.String(),
       }),
@@ -86,7 +95,10 @@ export default new Elysia({ prefix: "/kanban" })
       return card;
     },
     {
-      detail: { tags: ["Kanban"] },
+      detail: {
+        tags: ["Kanban"],
+        security: [{ bearerAuth: [] }],
+      },
       params: t.Object({
         id: t.String(),
       }),

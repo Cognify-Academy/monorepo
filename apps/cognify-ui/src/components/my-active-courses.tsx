@@ -139,14 +139,25 @@ export function MyActiveCourses({
   const hasFetched = useRef(false);
 
   const fetchInstructorCourses = useCallback(async () => {
-    if (!accessToken) return;
+    if (!accessToken) {
+      console.log("No access token available for instructor courses");
+      return;
+    }
 
+    console.log(
+      "Fetching instructor courses with token:",
+      accessToken.substring(0, 20) + "...",
+    );
     setIsLoading(true);
     setError(null);
 
     try {
       const instructorCourses =
         await apiClient.getInstructorCourses(accessToken);
+      console.log(
+        "Successfully fetched instructor courses:",
+        instructorCourses.length,
+      );
       const transformedCourses = instructorCourses.map((course, index) =>
         transformInstructorCourse(course, index),
       );
@@ -170,14 +181,13 @@ export function MyActiveCourses({
       context === "instructor" &&
       isAuthenticated &&
       accessToken &&
-      hasRole("INSTRUCTOR") &&
       !hasFetched.current
     ) {
       hasFetched.current = true;
       fetchInstructorCourses();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [context, isAuthenticated, accessToken, hasRole]);
+  }, [context, isAuthenticated, accessToken]);
 
   const getProgressPercentage = (completed: number, total: number) => {
     return Math.round((completed / total) * 100);

@@ -83,7 +83,13 @@ export default new Elysia({ prefix: "/instructor/courses" })
       );
     },
     {
-      detail: { tags: ["Instructor Courses"] },
+      detail: {
+        tags: ["Instructor Courses"],
+        security: [{ bearerAuth: [] }],
+      },
+      headers: t.Object({
+        authorization: t.String({ description: "Authorization token" }),
+      }),
       response: {
         200: t.Array(
           t.Object({
@@ -137,7 +143,10 @@ export default new Elysia({ prefix: "/instructor/courses" })
       return createCourse({ ...body, userId: user.id });
     },
     {
-      detail: { tags: ["Instructor Courses"] },
+      detail: {
+        tags: ["Instructor Courses"],
+        security: [{ bearerAuth: [] }],
+      },
       body: t.Object({
         title: t.String(),
         description: t.String(),
@@ -190,7 +199,10 @@ export default new Elysia({ prefix: "/instructor/courses" })
       return await updateCourse(payload);
     },
     {
-      detail: { tags: ["Instructor Courses"] },
+      detail: {
+        tags: ["Instructor Courses"],
+        security: [{ bearerAuth: [] }],
+      },
       body: t.Object({
         title: t.String(),
         description: t.String(),
@@ -257,7 +269,10 @@ export default new Elysia({ prefix: "/instructor/courses" })
       }
     },
     {
-      detail: { tags: ["Instructor Courses"] },
+      detail: {
+        tags: ["Instructor Courses"],
+        security: [{ bearerAuth: [] }],
+      },
       params: t.Object({
         courseId: t.String(),
       }),
@@ -308,7 +323,6 @@ export default new Elysia({ prefix: "/instructor/courses" })
             user: { id: string };
           };
         }) => {
-          console.log("Creating media");
           if (!hasRole("INSTRUCTOR"))
             return new Response(JSON.stringify({ error: "Forbidden" }), {
               status: 403,
@@ -317,7 +331,10 @@ export default new Elysia({ prefix: "/instructor/courses" })
           return createMedia({ ...body, userId: user.id });
         },
         {
-          detail: { tags: ["Instructor Media"] },
+          detail: {
+            tags: ["Instructor Media"],
+            security: [{ bearerAuth: [] }],
+          },
           body: t.Object({
             title: t.String(),
             description: t.String(),
@@ -371,7 +388,10 @@ export default new Elysia({ prefix: "/instructor/courses" })
           });
         },
         {
-          detail: { tags: ["Instructor Media"] },
+          detail: {
+            tags: ["Instructor Media"],
+            security: [{ bearerAuth: [] }],
+          },
           body: t.Object({
             title: t.Optional(t.String()),
             description: t.Optional(t.String()),
@@ -410,7 +430,10 @@ export default new Elysia({ prefix: "/instructor/courses" })
           };
         },
         {
-          detail: { tags: ["Instructor Media"] },
+          detail: {
+            tags: ["Instructor Media"],
+            security: [{ bearerAuth: [] }],
+          },
           params: t.Object({
             mediaId: t.String(),
           }),
@@ -461,7 +484,10 @@ export default new Elysia({ prefix: "/instructor/courses" })
           }));
         },
         {
-          detail: { tags: ["Instructor Media"] },
+          detail: {
+            tags: ["Instructor Media"],
+            security: [{ bearerAuth: [] }],
+          },
           query: t.Object({
             lessonId: t.Optional(t.String()),
           }),
@@ -516,7 +542,10 @@ export default new Elysia({ prefix: "/instructor/courses" })
           });
         },
         {
-          detail: { tags: ["Instructor Media"] },
+          detail: {
+            tags: ["Instructor Media"],
+            security: [{ bearerAuth: [] }],
+          },
           params: t.Object({
             mediaId: t.String(),
           }),
@@ -542,9 +571,15 @@ export default new Elysia({ prefix: "/instructor/courses" })
       };
     },
     {
-      detail: { tags: ["Instructor Courses"] },
+      detail: {
+        tags: ["Instructor Courses"],
+        security: [{ bearerAuth: [] }],
+      },
       params: t.Object({
         identifier: t.String({ description: "The course ID or slug" }),
+      }),
+      headers: t.Object({
+        authorization: t.String({ description: "Authorization token" }),
       }),
       response: {
         200: t.Object({
@@ -639,7 +674,10 @@ export default new Elysia({ prefix: "/instructor/courses" })
       }
     },
     {
-      detail: { tags: ["Instructor Courses"] },
+      detail: {
+        tags: ["Instructor Courses"],
+        security: [{ bearerAuth: [] }],
+      },
       body: t.Object({
         title: t.String(),
         description: t.String(),
@@ -680,7 +718,10 @@ export default new Elysia({ prefix: "/instructor/courses" })
       });
     },
     {
-      detail: { tags: ["Instructor Courses"] },
+      detail: {
+        tags: ["Instructor Courses"],
+        security: [{ bearerAuth: [] }],
+      },
       body: t.Object({
         order: t.Array(
           t.Object({
@@ -736,7 +777,10 @@ export default new Elysia({ prefix: "/instructor/courses" })
       return await updateSection(payload);
     },
     {
-      detail: { tags: ["Instructor Courses"] },
+      detail: {
+        tags: ["Instructor Courses"],
+        security: [{ bearerAuth: [] }],
+      },
       body: t.Object({
         title: t.String(),
         description: t.String(),
@@ -744,6 +788,10 @@ export default new Elysia({ prefix: "/instructor/courses" })
       }),
       headers: t.Object({
         authorization: t.String({ description: "Authorization token" }),
+      }),
+      params: t.Object({
+        courseId: t.String(),
+        sectionId: t.String(),
       }),
     },
   )
@@ -767,10 +815,16 @@ export default new Elysia({ prefix: "/instructor/courses" })
       return await deleteSection({ id: params.sectionId, userId: user.id });
     },
     {
-      detail: { tags: ["Instructor Courses"] },
+      detail: {
+        tags: ["Instructor Courses"],
+        security: [{ bearerAuth: [] }],
+      },
       params: t.Object({
         courseId: t.String(),
         sectionId: t.String(),
+      }),
+      headers: t.Object({
+        authorization: t.String({ description: "Authorization token" }),
       }),
     },
   )
@@ -810,7 +864,23 @@ export default new Elysia({ prefix: "/instructor/courses" })
       });
     },
     {
-      detail: { tags: ["Instructor Courses"] },
+      detail: {
+        tags: ["Instructor Courses"],
+        security: [{ bearerAuth: [] }],
+      },
+      body: t.Object({
+        title: t.String(),
+        description: t.String(),
+        content: t.String(),
+        conceptIds: t.Array(t.String()),
+      }),
+      headers: t.Object({
+        authorization: t.String({ description: "Authorization token" }),
+      }),
+      params: t.Object({
+        courseId: t.String(),
+        sectionId: t.String(),
+      }),
     },
   )
   .patch(
@@ -834,12 +904,6 @@ export default new Elysia({ prefix: "/instructor/courses" })
         });
 
       const { ordering } = body;
-      console.log("Received lesson reorder request:", {
-        courseId: params.courseId,
-        userId: user.id,
-        ordering,
-        orderingLength: ordering.length,
-      });
 
       try {
         const result = await updateCourseLessonOrder({
@@ -847,7 +911,6 @@ export default new Elysia({ prefix: "/instructor/courses" })
           courseId: params.courseId,
           ordering,
         });
-        console.log("Lesson reorder completed successfully:");
         return result;
       } catch (error) {
         console.error("Lesson reorder failed:", error);
@@ -855,7 +918,10 @@ export default new Elysia({ prefix: "/instructor/courses" })
       }
     },
     {
-      detail: { tags: ["Instructor Courses"] },
+      detail: {
+        tags: ["Instructor Courses"],
+        security: [{ bearerAuth: [] }],
+      },
       body: t.Object({
         ordering: t.Array(
           t.Object({
@@ -914,7 +980,10 @@ export default new Elysia({ prefix: "/instructor/courses" })
       });
     },
     {
-      detail: { tags: ["Instructor Courses"] },
+      detail: {
+        tags: ["Instructor Courses"],
+        security: [{ bearerAuth: [] }],
+      },
       body: t.Object({
         title: t.Optional(t.String()),
         description: t.Optional(t.String()),
@@ -956,7 +1025,10 @@ export default new Elysia({ prefix: "/instructor/courses" })
       });
     },
     {
-      detail: { tags: ["Instructor Courses"] },
+      detail: {
+        tags: ["Instructor Courses"],
+        security: [{ bearerAuth: [] }],
+      },
       params: t.Object({
         courseId: t.String(),
         sectionId: t.String(),

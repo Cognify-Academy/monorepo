@@ -18,11 +18,6 @@ const relationRouter = new Elysia({ prefix: "/relation" })
         weighting: number;
       };
     }) => {
-      console.log(
-        "relateConcepts (source, target): ",
-        body.conceptSourceId,
-        body.conceptTargetId,
-      );
       if (!hasRole("ADMIN"))
         return new Response(JSON.stringify({ error: "Forbidden" }), {
           status: 403,

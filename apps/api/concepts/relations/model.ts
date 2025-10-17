@@ -24,7 +24,6 @@ export async function relateConcepts({
     return result;
   } catch (error: any) {
     if (error.code === "P2003") {
-      console.log("invalid concept ids", error.message);
       throw new Error("One or both concepts do not exist");
     }
     console.error(error);

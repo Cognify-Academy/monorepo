@@ -28,13 +28,10 @@ const authRouter = new Elysia({ prefix: "/auth" })
       body: { handle: string; password: string };
       set: any;
     }) => {
-      console.log("Login endpoint called with body:", body);
       const response = await login(body);
-      console.log("Login response status:", response.status);
 
       // Extract data from Response object
       const data = await response.json();
-      console.log("Login response data:", data);
       const setCookieHeader = response.headers.get("Set-Cookie");
 
       if (setCookieHeader) {
@@ -57,11 +54,11 @@ const authRouter = new Elysia({ prefix: "/auth" })
   )
   .post(
     "/refresh",
-    async ({ headers }) => {
+    async ({ headers, request }) => {
       try {
         const cookieHeader = headers.cookie;
         if (!cookieHeader) {
-          console.error("No Cookie header found");
+          console.error("No Cookie header found in request");
           return new Response(
             JSON.stringify({ error: "No refresh token found" }),
             {
@@ -90,7 +87,6 @@ const authRouter = new Elysia({ prefix: "/auth" })
           );
         }
 
-        console.log("Refresh token from cookie:", token);
         return await refreshToken(token);
       } catch (error) {
         console.error("Refresh token error:", error);
@@ -104,7 +100,10 @@ const authRouter = new Elysia({ prefix: "/auth" })
       headers: t.Object({
         cookie: t.Optional(t.String()),
       }),
-      detail: { tags: ["Auth"] },
+      detail: {
+        tags: ["Auth"],
+        security: [{ bearerAuth: [] }],
+      },
     },
   )
   .post(
@@ -134,7 +133,10 @@ const authRouter = new Elysia({ prefix: "/auth" })
       headers: t.Object({
         cookie: t.String(),
       }),
-      detail: { tags: ["Auth"] },
+      detail: {
+        tags: ["Auth"],
+        security: [{ bearerAuth: [] }],
+      },
     },
   );
 

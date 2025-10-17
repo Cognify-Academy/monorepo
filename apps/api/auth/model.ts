@@ -20,7 +20,9 @@ const JWT_REFRESH_EXPIRATION =
 function createRefreshCookie(token: string) {
   const isProduction = process.env.NODE_ENV === "production";
   const secureFlag = isProduction ? "Secure" : "";
-  return `refreshToken=${token}; HttpOnly; ${secureFlag}; Path=/; SameSite=Strict; Max-Age=${7 * 24 * 60 * 60}`.trim();
+  const domainFlag = isProduction ? "; Domain=.cognify.academy" : "";
+  const sameSiteFlag = isProduction ? "SameSite=None" : "SameSite=Lax";
+  return `refreshToken=${token}; HttpOnly; ${secureFlag}; Path=/; ${sameSiteFlag}${domainFlag}; Max-Age=${7 * 24 * 60 * 60}`.trim();
 }
 
 export async function signup({
@@ -34,8 +36,6 @@ export async function signup({
   email: string;
   password: string;
 }) {
-  console.log("Signing up user", username);
-
   try {
     const password = await bcrypt.hash(rawPassword, 10);
     const user = await prisma.user.create({
@@ -44,13 +44,12 @@ export async function signup({
     await prisma.userRole.create({
       data: { userId: user.id, role: "STUDENT" },
     });
-    console.log(`Signup: created user ${user.id}`);
     const token = jwt.sign(
       { id: user.id, username, roles: ["STUDENT"] },
       JWT_SECRET,
       {
-        expiresIn: "1h",
-      },
+        expiresIn: JWT_EXPIRATION,
+      } as jwt.SignOptions,
     );
     console.debug("Signup: created token");
     return new Response(JSON.stringify({ token }), {
@@ -132,12 +131,12 @@ export async function login({
     const token = jwt.sign(
       { id: user.id, username: user.username, roles },
       JWT_SECRET,
-      { expiresIn: JWT_EXPIRATION },
+      { expiresIn: JWT_EXPIRATION } as jwt.SignOptions,
     );
     const refreshToken = jwt.sign(
       { id: user.id, username: user.username, roles },
       JWT_REFRESH_SECRET,
-      { expiresIn: JWT_REFRESH_EXPIRATION },
+      { expiresIn: JWT_REFRESH_EXPIRATION } as jwt.SignOptions,
     );
     await prisma.refreshToken.create({
       data: {
@@ -182,10 +181,8 @@ export async function refreshToken(refreshToken: string) {
     const tokenRecord = await prisma.refreshToken.findUnique({
       where: { token: refreshToken },
     });
-    console.debug("Token record found");
 
     if (!tokenRecord) {
-      console.error("Refresh token not found in DB");
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { "Content-Type": "application/json" },
@@ -193,7 +190,6 @@ export async function refreshToken(refreshToken: string) {
     }
 
     if (new Date() > tokenRecord.expiresAt) {
-      console.error("Refresh token expired");
       await prisma.refreshToken.delete({ where: { token: refreshToken } });
       return new Response(JSON.stringify({ error: "Refresh token expired" }), {
         status: 401,
@@ -207,7 +203,6 @@ export async function refreshToken(refreshToken: string) {
     });
 
     if (!user) {
-      console.error("User not found for refresh token");
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { "Content-Type": "application/json" },
@@ -218,22 +213,19 @@ export async function refreshToken(refreshToken: string) {
     const newAccessToken = jwt.sign(
       { id: user.id, username: user.username, roles },
       JWT_SECRET,
-      { expiresIn: JWT_EXPIRATION },
+      { expiresIn: JWT_EXPIRATION } as jwt.SignOptions,
     );
     const newRefreshToken = jwt.sign(
       { id: user.id, username: user.username, roles },
       JWT_REFRESH_SECRET,
-      { expiresIn: JWT_REFRESH_EXPIRATION },
+      { expiresIn: JWT_REFRESH_EXPIRATION } as jwt.SignOptions,
     );
 
-    console.debug("Refreshing token");
     await prisma.$transaction(async (tx) => {
-      console.debug("Deleting old token");
-      // Try to delete the old token, but don't fail if it doesn't exist
       await tx.refreshToken.deleteMany({
         where: { token: refreshToken },
       });
-      console.debug("Creating new token");
+
       await tx.refreshToken.create({
         data: {
           token: newRefreshToken,
@@ -242,12 +234,8 @@ export async function refreshToken(refreshToken: string) {
         },
       });
     });
-    console.debug("New token created");
+
     const cookieHeader = createRefreshCookie(newRefreshToken);
-    console.debug(
-      "New refresh token created and cookie header set:",
-      cookieHeader,
-    );
 
     return new Response(JSON.stringify({ token: newAccessToken }), {
       headers: {
@@ -271,7 +259,6 @@ export async function logout(token: string) {
     .find((c) => c.trim().startsWith("refreshToken="))
     ?.split("=")[1];
   if (!refreshToken) {
-    console.log("Logout: no refresh token");
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
       headers: { "Content-Type": "application/json" },
@@ -284,8 +271,10 @@ export async function logout(token: string) {
     });
     const isProduction = process.env.NODE_ENV === "production";
     const secureFlag = isProduction ? "Secure" : "";
+    const domainFlag = isProduction ? "; Domain=.cognify.academy" : "";
+    const sameSiteFlag = isProduction ? "SameSite=None" : "SameSite=Lax";
     const cookieHeader =
-      `refreshToken=; HttpOnly; ${secureFlag}; Path=/; SameSite=Strict; Max-Age=0`.trim();
+      `refreshToken=; HttpOnly; ${secureFlag}; Path=/; ${sameSiteFlag}${domainFlag}; Max-Age=0`.trim();
     return new Response(JSON.stringify({ message: "Logged out" }), {
       headers: {
         "Content-Type": "application/json",
@@ -305,7 +294,6 @@ export async function logout(token: string) {
 export async function verify(req: Request) {
   const authHeader = req.headers.get("Authorization");
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    console.log("Verify: no auth header");
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
       headers: { "Content-Type": "application/json" },
@@ -354,10 +342,5 @@ export async function resetPassword({
   uuid: string;
   password: string;
 }) {
-  console.log(
-    "Reset password for uuid:",
-    uuid,
-    "with password length:",
-    rawPassword.length,
-  );
+  // Reset password for uuid with password length: ${rawPassword.length}
 }

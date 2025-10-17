@@ -24,7 +24,6 @@ export async function createContact(data: CreateContactData) {
       },
     });
 
-    console.log(`Contact submission created: ${contact.id} from ${data.email}`);
     return contact;
   } catch (error) {
     console.error("Failed to create contact submission:", error);
@@ -81,7 +80,6 @@ export async function updateContactStatus(
       data: { status },
     });
 
-    console.log(`Contact submission ${id} status updated to: ${status}`);
     return contact;
   } catch (error) {
     console.error(`Failed to update contact submission ${id}:`, error);

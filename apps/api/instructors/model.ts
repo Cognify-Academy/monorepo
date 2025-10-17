@@ -48,7 +48,6 @@ export async function createCourse({
   userId,
   published = false,
 }: CreateCourseInput) {
-  console.log(`Creating course ${title} for user ${userId}`);
   const course = await prisma.course.create({
     data: {
       title,
@@ -69,7 +68,6 @@ export async function createCourse({
     },
   });
 
-  console.log("Adding instructor: " + userId);
   await prisma.courseInstructor.create({
     data: {
       userId,
@@ -94,7 +92,6 @@ export async function updateCourse({
   published?: boolean;
   userId: string;
 }) {
-  console.log(`Updating course id: ${id}`);
   const course = await prisma.course.findUniqueOrThrow({
     where: {
       id,
@@ -154,7 +151,6 @@ export async function deleteCourse({
   id: string;
   userId: string;
 }) {
-  console.log(`Deleting course id: ${id}`);
   const course = await prisma.course.findUniqueOrThrow({
     where: {
       id,
@@ -220,7 +216,6 @@ export async function getCourses(userId: string) {
 }
 
 export async function getCourse(identifier: string) {
-  console.log(`GET course ${identifier}`);
   const course = await prisma.course.findFirst({
     where: {
       OR: [{ id: identifier }, { slug: identifier }],
@@ -344,7 +339,6 @@ export async function createSection({
     throw new Error("Unauthorized to create a section for this course");
   }
 
-  console.log(`Creating section for course id: ${id}`);
   const section = await prisma.section.create({
     data: {
       title,
@@ -376,7 +370,6 @@ export async function updateSection({
   conceptIds?: string[];
   userId: string;
 }) {
-  console.log(`Updating section id: ${id}`);
   const section = await prisma.section.findUniqueOrThrow({
     where: { id },
     include: {
@@ -446,7 +439,6 @@ export async function updateCourseSectionOrder({
   if (!isInstructor) {
     throw new Error("Unauthorized to update sections for this course");
   }
-  console.log(`Updating section order for course id: ${id}`);
   const sectionUpdatePromises = order.map(({ id, order }) =>
     prisma.section.update({
       where: { id },
@@ -465,13 +457,6 @@ export async function updateCourseLessonOrder({
   courseId: string;
   ordering: { id: string; sectionId: string; order: number }[];
 }) {
-  console.log(`Updating lesson order for course id: ${courseId}`, {
-    userId,
-    courseId,
-    ordering,
-    orderingLength: ordering.length,
-  });
-
   const course = await prisma.course.findUniqueOrThrow({
     where: { id: courseId },
     include: {
@@ -486,19 +471,7 @@ export async function updateCourseLessonOrder({
     throw new Error("Unauthorized to update lesson order for this course");
   }
 
-  console.log(
-    "Processing lesson updates:",
-    ordering.map(({ id, sectionId, order }) => ({
-      lessonId: id,
-      sectionId,
-      order,
-    })),
-  );
-
   const lessonUpdatePromises = ordering.map(({ id, sectionId, order }) => {
-    console.log(
-      `Updating lesson ${id} to section ${sectionId} with order ${order}`,
-    );
     return prisma.lesson.update({
       where: { id },
       data: { order, sectionId },
@@ -506,11 +479,6 @@ export async function updateCourseLessonOrder({
   });
 
   const result = await Promise.all(lessonUpdatePromises);
-  console.log(
-    "All lesson updates completed:",
-    result.length,
-    "lessons updated",
-  );
   return result;
 }
 
@@ -522,7 +490,6 @@ export async function createLesson({
   conceptIds,
   userId,
 }: CreateLessionInput) {
-  console.log(`Creating lesson for section id: ${sectionId}`);
   const section = await prisma.section.findUniqueOrThrow({
     where: {
       id: sectionId,
@@ -576,8 +543,6 @@ export async function updateLesson({
   }>;
   userId: string;
 }) {
-  console.log(`Updating lesson id: ${lessonId} in section id: ${sectionId}`);
-
   const section = await prisma.section.findUniqueOrThrow({
     where: { id: sectionId },
     include: {
@@ -587,16 +552,12 @@ export async function updateLesson({
     },
   });
 
-  console.log(section.course.instructors, userId);
-
   const isInstructor = section.course.instructors.some(
     (instructor) => instructor.userId === userId,
   );
   if (!isInstructor) {
     throw new Error("Unauthorized to update this lesson");
   }
-
-  console.log({ lessonId, sectionId });
 
   const updatedLesson = await prisma.lesson.update({
     where: { id: lessonId, sectionId },
@@ -622,7 +583,6 @@ export async function updateLesson({
     }
   }
 
-  console.log(`Lesson updated successfully: ${updatedLesson.id}`);
   return updatedLesson;
 }
 
@@ -633,7 +593,6 @@ export async function deleteSection({
   id: string;
   userId: string;
 }) {
-  console.log(`Deleting section id: ${id}`);
   const section = await prisma.section.findUnique({
     where: { id },
     include: {
@@ -671,7 +630,6 @@ export async function deleteLesson({
   sectionId: string;
   userId: string;
 }) {
-  console.log(`Deleting lesson id: ${id} in section id: ${sectionId}`);
   const section = await prisma.section.findUnique({
     where: { id: sectionId },
     include: {
@@ -726,10 +684,6 @@ export async function createMedia({
   metadata,
   userId,
 }: CreateMediaInput): Promise<Media> {
-  console.log(
-    `Creating media ${title} for user ${userId} for lesson ${lessonId}`,
-  );
-
   if (lessonId) {
     const lesson = await prisma.lesson.findUniqueOrThrow({
       where: { id: lessonId },
@@ -800,8 +754,6 @@ export async function updateMedia({
   metadata?: any;
   userId: string;
 }) {
-  console.log(`Updating media id: ${id}`);
-
   const media = await prisma.media.findUniqueOrThrow({
     where: { id },
   });
@@ -846,8 +798,6 @@ export async function deleteMedia({
   id: string;
   userId: string;
 }) {
-  console.log(`Deleting media id: ${id}`);
-
   const media = await prisma.media.findUnique({
     where: { id },
   });

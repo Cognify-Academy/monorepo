@@ -179,9 +179,6 @@ export async function enrolStudent({
       },
     });
 
-    console.log(
-      `Student enrolled: ${userId} in course ${course.title} (${course.id})`,
-    );
     return enrolment;
   } catch (error) {
     if (

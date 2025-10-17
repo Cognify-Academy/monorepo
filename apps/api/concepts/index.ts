@@ -27,7 +27,6 @@ const conceptRouter = new Elysia({ prefix: "/concepts" })
       };
       body: { name: string; description: string; importance: number };
     }) => {
-      console.log("createConcept", body);
       if (!hasRole("ADMIN"))
         return new Response(JSON.stringify({ error: "Forbidden" }), {
           status: 403,
@@ -44,7 +43,10 @@ const conceptRouter = new Elysia({ prefix: "/concepts" })
         description: t.String(),
         importance: t.Number(),
       }),
-      detail: { tags: ["Concepts"] },
+      detail: {
+        tags: ["Concepts"],
+        security: [{ bearerAuth: [] }],
+      },
     },
   )
   .get(
@@ -69,7 +71,6 @@ const conceptRouter = new Elysia({ prefix: "/concepts" })
     "/import",
     async ({ Auth: { hasRole }, body }) => {
       if (!hasRole("ADMIN")) {
-        console.log("Forbidden");
         return new Response(JSON.stringify({ error: "Forbidden" }), {
           status: 403,
           headers: { "Content-Type": "application/json" },
@@ -112,7 +113,10 @@ const conceptRouter = new Elysia({ prefix: "/concepts" })
           ),
         }),
       ),
-      detail: { tags: ["Concepts"] },
+      detail: {
+        tags: ["Concepts"],
+        security: [{ bearerAuth: [] }],
+      },
     },
   )
   .patch(
@@ -140,7 +144,10 @@ const conceptRouter = new Elysia({ prefix: "/concepts" })
         description: t.String(),
         importance: t.Number(),
       }),
-      detail: { tags: ["Concepts"] },
+      detail: {
+        tags: ["Concepts"],
+        security: [{ bearerAuth: [] }],
+      },
     },
   )
   .delete(
@@ -158,7 +165,10 @@ const conceptRouter = new Elysia({ prefix: "/concepts" })
         authorization: t.String({ description: "Authorization token" }),
       }),
       params: t.Object({ id: t.String() }),
-      detail: { tags: ["Concepts"] },
+      detail: {
+        tags: ["Concepts"],
+        security: [{ bearerAuth: [] }],
+      },
     },
   );
 // .post(

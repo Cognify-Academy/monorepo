@@ -79,6 +79,7 @@ export default new Elysia({ prefix: "/contact" })
       detail: {
         tags: ["Contact"],
         description: "Get all contact submissions (Admin only)",
+        security: [{ bearerAuth: [] }],
       },
       headers: t.Object({
         authorization: t.String({ description: "Authorization token" }),
@@ -136,6 +137,7 @@ export default new Elysia({ prefix: "/contact" })
       detail: {
         tags: ["Contact"],
         description: "Get a specific contact submission (Admin only)",
+        security: [{ bearerAuth: [] }],
       },
       headers: t.Object({
         authorization: t.String({ description: "Authorization token" }),
@@ -201,6 +203,7 @@ export default new Elysia({ prefix: "/contact" })
       detail: {
         tags: ["Contact"],
         description: "Update contact submission status (Admin only)",
+        security: [{ bearerAuth: [] }],
       },
       headers: t.Object({
         authorization: t.String({ description: "Authorization token" }),

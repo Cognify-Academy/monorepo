@@ -39,6 +39,7 @@ const getAllowedOrigins = (): string[] => {
   // Add additional production domains
   origins.push("https://www.cognify.academy");
   origins.push("https://cognify.academy");
+  origins.push("https://monorepo-production-6b5d.up.railway.app");
 
   // Add development domains
   origins.push("http://localhost:3000");
@@ -57,6 +58,21 @@ const app = new Elysia({ prefix: "/api/v1" })
           version: "1.0.0",
           description: "API for Cognify Academy learning platform",
         },
+        components: {
+          securitySchemes: {
+            bearerAuth: {
+              type: "http",
+              scheme: "bearer",
+              bearerFormat: "JWT",
+              description: "Enter JWT token",
+            },
+          },
+        },
+        security: [
+          {
+            bearerAuth: [],
+          },
+        ],
       },
     }),
   )
@@ -72,13 +88,15 @@ const app = new Elysia({ prefix: "/api/v1" })
         "Origin",
         "Access-Control-Request-Method",
         "Access-Control-Request-Headers",
+        "Cookie",
       ],
       methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+      exposeHeaders: ["Set-Cookie"],
     }),
   )
   // Add middleware - temporarily disabled for testing
   // .use(requestIdMiddleware)
-  // .use(requestLogger)
+  .use(requestLogger)
   .get("/", () => ({ message: "Cognify Academy API is running!" }))
   .get("/health", () => ({
     status: "healthy",
@@ -96,6 +114,3 @@ const app = new Elysia({ prefix: "/api/v1" })
   .use(kanban)
   .all("*", () => new Response("Not found", { status: 404 }))
   .listen(Number(PORT));
-
-console.log(`API running on port ${PORT}`);
-console.log(`Swagger Docs available at http://localhost:${PORT}/swagger`);

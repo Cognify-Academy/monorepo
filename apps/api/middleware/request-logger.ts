@@ -30,11 +30,7 @@ export const requestLogger = new Elysia({ name: "request-logger" })
       startTime,
     };
 
-    console.log(`[${requestId}] ${request.method} ${request.url}`, {
-      userAgent: logContext.userAgent,
-      ip: logContext.ip,
-      timestamp: new Date().toISOString(),
-    });
+    // Request logged: [${requestId}] ${request.method} ${request.url}
   })
   .onAfterHandle(({ request, response, requestId, startTime }: any) => {
     const duration = Date.now() - startTime;

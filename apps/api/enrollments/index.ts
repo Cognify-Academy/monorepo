@@ -54,6 +54,7 @@ export default new Elysia({ prefix: "/enrollments" })
         tags: ["Enrollments"],
         description:
           "Create a new enrollment for the authenticated student in a course",
+        security: [{ bearerAuth: [] }],
       },
       headers: t.Object({
         authorization: t.String({ description: "Authorization token" }),
@@ -146,6 +147,7 @@ export default new Elysia({ prefix: "/enrollments" })
         tags: ["Enrollments"],
         description:
           "Get enrollments for the authenticated user with optional course filtering",
+        security: [{ bearerAuth: [] }],
       },
       headers: t.Object({
         authorization: t.String({ description: "Authorization token" }),
@@ -240,6 +242,7 @@ export default new Elysia({ prefix: "/enrollments" })
         tags: ["Enrollments"],
         description:
           "Get a specific enrollment by ID (user can only access their own enrollments)",
+        security: [{ bearerAuth: [] }],
       },
       headers: t.Object({
         authorization: t.String({ description: "Authorization token" }),
@@ -329,6 +332,7 @@ export default new Elysia({ prefix: "/enrollments" })
         tags: ["Enrollments"],
         description:
           "Remove an enrollment by ID (user can only delete their own enrollments)",
+        security: [{ bearerAuth: [] }],
       },
       headers: t.Object({
         authorization: t.String({ description: "Authorization token" }),

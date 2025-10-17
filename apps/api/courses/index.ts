@@ -56,7 +56,6 @@ export default new Elysia({ prefix: "/courses" })
           includeUnpublished = true;
         } catch (error) {
           // If auth fails, continue with published courses only
-          console.log("Auth failed, showing published courses only");
         }
       }
 
@@ -157,7 +156,11 @@ export default new Elysia({ prefix: "/courses" })
       return { message: "Student enrolled successfully", ...enrolment };
     },
     {
-      detail: { tags: ["Courses"], description: "Enrol a student in a course" },
+      detail: {
+        tags: ["Courses"],
+        description: "Enrol a student in a course",
+        security: [{ bearerAuth: [] }],
+      },
       headers: t.Object({
         authorization: t.Optional(
           t.String({ description: "Authorization token" }),

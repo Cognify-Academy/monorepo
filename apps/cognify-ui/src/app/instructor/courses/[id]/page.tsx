@@ -26,38 +26,29 @@ interface CourseData {
 }
 
 export default function EditCoursePage({ params }: { params: { id: string } }) {
-  const {
-    isAuthenticated,
-    hasRole,
-    isLoading: authLoading,
-    accessToken,
-  } = useAuth();
+  const { isAuthenticated, hasRole, accessToken, isInitialized } = useAuth();
   const router = useRouter();
-  const [courseId, setCourseId] = useState<string | null>(null);
   const [course, setCourse] = useState<CourseData | null>(null);
   const [concepts, setConcepts] = useState<ConceptType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [dataLoading, setDataLoading] = useState(true);
+  const [dataLoaded, setDataLoaded] = useState(false);
 
+  // Redirect if not authenticated or not instructor
   useEffect(() => {
-    setCourseId(params.id);
-  }, [params.id]);
-
-  useEffect(() => {
-    if (!authLoading && (!isAuthenticated || !hasRole("INSTRUCTOR"))) {
+    if (isInitialized && (!isAuthenticated || !hasRole("INSTRUCTOR"))) {
       router.push("/");
     }
-  }, [isAuthenticated, hasRole, authLoading, router]);
+  }, [isAuthenticated, hasRole, isInitialized, router]);
 
+  // Fetch course data
   useEffect(() => {
     const fetchData = async () => {
-      if (!courseId || !accessToken) return;
+      if (!isAuthenticated || !hasRole("INSTRUCTOR") || !accessToken) return;
 
       try {
-        setDataLoading(true);
         const [courseData, conceptsData] = await Promise.all([
-          apiClient.getInstructorCourse(courseId, accessToken),
+          apiClient.getInstructorCourse(params.id, accessToken),
           apiClient.getConcepts(),
         ]);
 
@@ -80,17 +71,15 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
         console.error("Failed to fetch course data:", error);
         setError("Failed to load course data. Please try again.");
       } finally {
-        setDataLoading(false);
+        setDataLoaded(true);
       }
     };
 
-    if (isAuthenticated && hasRole("INSTRUCTOR") && courseId && accessToken) {
-      fetchData();
-    }
-  }, [isAuthenticated, hasRole, courseId, accessToken]);
+    fetchData();
+  }, [isAuthenticated, hasRole, accessToken, params.id]);
 
   const handleCourseSubmit = async (data: CourseFormData) => {
-    if (!courseId || !accessToken) {
+    if (!accessToken) {
       setError("Authentication required. Please log in again.");
       return;
     }
@@ -100,7 +89,7 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
 
     try {
       const updatedCourse = await apiClient.updateCourse(
-        courseId,
+        params.id,
         data,
         accessToken,
       );
@@ -123,7 +112,8 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
     }
   };
 
-  if (authLoading || dataLoading) {
+  // Show loading while auth is initializing or data is loading
+  if (!isInitialized || (!dataLoaded && !error)) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
@@ -134,10 +124,7 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
     );
   }
 
-  if (!isAuthenticated || !hasRole("INSTRUCTOR")) {
-    return null;
-  }
-
+  // Show error if course failed to load
   if (error && !course) {
     return (
       <div className="min-h-screen bg-gray-50 text-gray-800 dark:bg-gray-900">
@@ -158,6 +145,7 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
     );
   }
 
+  // Don't render if no course data
   if (!course) {
     return null;
   }
@@ -189,7 +177,7 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
           data-testid="course-structure"
         >
           <CourseStructure
-            courseId={courseId || ""}
+            courseId={params.id}
             sections={course.sections}
             onSectionsChange={handleSectionsChange}
             availableConcepts={concepts}

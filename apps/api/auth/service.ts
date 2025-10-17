@@ -20,7 +20,6 @@ const AuthService = new Elysia({ name: "Service.Auth" }).derive(
         id: string;
         roles: string[];
       };
-      console.log(`User ${user.id} authenticated`);
 
       return {
         Auth: {
