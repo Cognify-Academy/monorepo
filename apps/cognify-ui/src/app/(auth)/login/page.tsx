@@ -24,11 +24,13 @@ export default function LoginPage() {
     clearError();
 
     try {
+      console.log("Login page: Starting login process");
       await login(formData.handle, formData.password);
+      console.log("Login page: Login successful, redirecting to /");
       router.push("/"); // Redirect to home page to show logged-in dashboard
     } catch (error) {
       // Error is handled by the auth context
-      console.error("Login error:", error);
+      console.error("Login page: Login error caught", error);
     }
   };
 

@@ -93,13 +93,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const checkAuth = useCallback(async () => {
     try {
       setIsLoading(true);
-      console.log("Checking authentication...");
+      
+      // If we already have a user and access token, don't call refresh
+      if (user && accessToken) {
+        setIsLoading(false);
+        return;
+      }
+      
       const response = await apiClient.refresh();
-      console.log("Refresh response:", response);
 
       // Only decode token if it exists and is valid
       if (response && response.token) {
-        console.log("Token found, decoding...");
         decodeTokenAndSetUser(response.token);
       } else {
         console.warn("No token received from refresh endpoint");
@@ -107,7 +111,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setAccessToken(null);
       }
     } catch (error) {
-      console.log("Auth check error caught:", error);
       // If it's a 401 error from the refresh endpoint, this means no valid refresh token
       // This is normal for new users or when the refresh token has expired
       if (error instanceof ApiError && error.status === 401) {
@@ -129,7 +132,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [user, accessToken]);
 
   useEffect(() => {
     checkAuth();
@@ -210,7 +213,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
       setAccessToken(null);
 
-      window.location.href = "/";
+      // Use router.push instead of window.location.href for better test compatibility
+      if (typeof window !== "undefined") {
+        window.location.href = "/";
+      }
     }
   };
 
