@@ -115,7 +115,7 @@ class ApiClient {
     >("/api/v1/courses");
   }
 
-  async getCourse(identifier: string) {
+  async getCourse(identifier: string, token?: string) {
     return this.makeRequest<{
       id: string;
       title: string;
@@ -154,7 +154,7 @@ class ApiClient {
           }>;
         }>;
       }>;
-    }>(`/api/v1/courses/${identifier}`);
+    }>(`/api/v1/courses/${identifier}`, {}, token);
   }
 
   async enrollInCourse(identifier: string, token: string) {

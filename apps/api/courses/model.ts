@@ -17,11 +17,18 @@ export async function getCourses() {
   }));
 }
 
-export async function getCourse(identifier: string) {
-  console.debug(`Fetching course with identifier: ${identifier}`);
+export async function getCourse(
+  identifier: string,
+  includeUnpublished: boolean = false,
+) {
+  console.debug(
+    `Fetching course with identifier: ${identifier}, includeUnpublished: ${includeUnpublished}`,
+  );
   const course = await prisma.course.findFirst({
     where: {
       OR: [{ id: identifier }, { slug: identifier }],
+      // Only include published courses unless explicitly requested
+      ...(includeUnpublished ? {} : { published: true }),
     },
     include: {
       conceptCourses: {

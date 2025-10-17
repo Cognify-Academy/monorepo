@@ -55,9 +55,10 @@ export async function getCourses(): Promise<Course[]> {
 
 export async function getCourse(
   identifier: string,
+  token?: string,
 ): Promise<CourseDetail | null> {
   try {
-    const course = await apiClient.getCourse(identifier);
+    const course = await apiClient.getCourse(identifier, token);
     return course;
   } catch (error) {
     console.error(`Failed to fetch course ${identifier}:`, error);

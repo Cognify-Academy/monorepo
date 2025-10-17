@@ -244,6 +244,7 @@ describe("Courses", () => {
       expect(mockFindFirstCourse).toHaveBeenCalledWith({
         where: {
           OR: [{ id: "course-123" }, { slug: "course-123" }],
+          published: true, // Only published courses by default
         },
         include: {
           conceptCourses: {
@@ -309,6 +310,7 @@ describe("Courses", () => {
       expect(mockFindFirstCourse).toHaveBeenCalledWith({
         where: {
           OR: [{ id: "test-course-1" }, { slug: "test-course-1" }],
+          published: true, // Only published courses by default
         },
         include: expect.any(Object),
       });
@@ -438,6 +440,7 @@ describe("Courses", () => {
       expect(mockFindFirstCourse).toHaveBeenCalledWith({
         where: {
           OR: [{ id: "course-with-media" }, { slug: "course-with-media" }],
+          published: true, // Only published courses by default
         },
         include: expect.any(Object),
       });

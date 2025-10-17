@@ -41,6 +41,8 @@ export async function generateMetadata({
 
 export default async function CoursePage({ params }: PageProps) {
   const { slug } = await params;
+  // For now, we'll fetch without token (published courses only)
+  // In a real implementation, you'd get the token from the request headers
   const course = await getCourse(slug);
 
   if (!course) {
@@ -70,22 +72,28 @@ export default async function CoursePage({ params }: PageProps) {
           </Breadcrumbs>
         }
       >
-        <div className="mx-auto mt-6 mb-16 max-w-4xl">
+        <div className="mx-auto mb-16 mt-6 max-w-4xl">
           <div className="mb-12">
-            <h1 className="text-3xl/9 font-medium tracking-tight text-gray-950 dark:text-white">
+            <h1
+              className="text-3xl/9 font-medium tracking-tight text-gray-950 dark:text-white"
+              data-testid="course-title"
+            >
               {course.title}
             </h1>
-            <p className="mt-4 text-base/7 text-gray-700 dark:text-gray-400">
+            <p
+              className="mt-4 text-base/7 text-gray-700 dark:text-gray-400"
+              data-testid="course-description"
+            >
               {course.description}
             </p>
 
-            <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-3 text-sm/7 font-semibold text-gray-950 sm:gap-3 dark:text-white">
+            <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-3 text-sm/7 font-semibold text-gray-950 dark:text-white sm:gap-3">
               <div className="flex items-center gap-1.5">
                 <BookIcon className="stroke-gray-950/40 dark:stroke-white/40" />
                 {course.sections.length} section
                 {course.sections.length !== 1 ? "s" : ""}
               </div>
-              <span className="hidden text-gray-950/25 sm:inline dark:text-white/25">
+              <span className="hidden text-gray-950/25 dark:text-white/25 sm:inline">
                 &middot;
               </span>
               <div className="flex items-center gap-1.5">

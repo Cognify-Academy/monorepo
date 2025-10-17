@@ -18,6 +18,7 @@
     "test:ui:coverage": "bun --cwd apps/cognify-ui run test:coverage",
     "test:e2e": "playwright test",
     "test:e2e:auth": "playwright test e2e/auth/login.spec.ts",
+    "test:e2e:instructor": "playwright test e2e/courses/instructor-workflow.spec.ts",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
     "test:storybook": "bun --cwd apps/cognify-ui run test-storybook",
