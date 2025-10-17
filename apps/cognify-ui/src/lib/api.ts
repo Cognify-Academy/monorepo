@@ -116,7 +116,7 @@ class ApiClient {
   }
 
   async getCourse(identifier: string, token?: string) {
-    return this.makeRequest<{
+    return this.makeAuthenticatedRequest<{
       id: string;
       title: string;
       slug: string;
