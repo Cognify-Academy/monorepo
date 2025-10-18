@@ -35,6 +35,8 @@ interface AuthContextType {
   error: string | null;
   clearError: () => void;
   accessToken: string | null;
+  // new helper to ensure callers get a valid token (refreshes if needed)
+  getAccessToken: () => Promise<string | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -48,7 +50,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const clearError = () => setError(null);
 
-  const decodeTokenAndSetUser = (token: string) => {
+  // single refresh promise to avoid concurrent refreshes
+  let refreshPromise: Promise<string | null> | null = null;
+
+  const base64UrlToBase64 = (input: string) =>
+    input.replace(/-/g, "+").replace(/_/g, "/") +
+    "==".slice(0, (4 - (input.length % 4)) % 4);
+
+  const isTokenExpired = (token: string | null, bufferSeconds = 30) => {
+    if (!token) return true;
+    try {
+      const parts = token.split(".");
+      if (parts.length !== 3) return true;
+      const payload = JSON.parse(atob(base64UrlToBase64(parts[1])));
+      if (!payload.exp) return true;
+      const expMs = payload.exp * 1000;
+      return Date.now() + bufferSeconds * 1000 >= expMs;
+    } catch {
+      return true;
+    }
+  };
+
+  const decodeTokenAndSetUser = (token: string | null) => {
     if (!token || typeof token !== "string") {
       setUser(null);
       setAccessToken(null);
@@ -63,7 +86,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      const payload = JSON.parse(atob(tokenParts[1]));
+      const payload = JSON.parse(atob(base64UrlToBase64(tokenParts[1])));
+      // If token is expired, treat as missing
+      if (
+        !payload ||
+        typeof payload !== "object" ||
+        (payload.exp && payload.exp * 1000 <= Date.now())
+      ) {
+        setUser(null);
+        setAccessToken(null);
+        return;
+      }
+
       const userData: User = {
         id: payload.id,
         name: payload.name || payload.username,
@@ -87,6 +121,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [user?.roles],
   );
 
+  // perform refresh with single-flight locking
+  const doRefresh = async (): Promise<string | null> => {
+    if (refreshPromise) return refreshPromise;
+    refreshPromise = (async () => {
+      try {
+        const response = await apiClient.refresh();
+        const token = response?.token ?? null;
+        decodeTokenAndSetUser(token);
+        return token;
+      } catch (err) {
+        // clear local auth state on refresh failure
+        setUser(null);
+        setAccessToken(null);
+        return null;
+      } finally {
+        refreshPromise = null;
+      }
+    })();
+    return refreshPromise;
+  };
+
+  // exposed helper that ensures a valid token (refreshes if expired)
+  const getAccessToken = async (): Promise<string | null> => {
+    if (accessToken && !isTokenExpired(accessToken)) return accessToken;
+    const newToken = await doRefresh();
+    return newToken;
+  };
+
   // Initialize auth state on mount
   useEffect(() => {
     const initAuth = async () => {
@@ -106,6 +168,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     initAuth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const login = async (handle: string, password: string) => {
@@ -187,6 +250,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     error,
     clearError,
     accessToken,
+    getAccessToken,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

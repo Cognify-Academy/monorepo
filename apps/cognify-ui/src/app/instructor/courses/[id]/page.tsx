@@ -26,7 +26,8 @@ interface CourseData {
 }
 
 export default function EditCoursePage({ params }: { params: { id: string } }) {
-  const { isAuthenticated, hasRole, accessToken, isInitialized } = useAuth();
+  // use getAccessToken so we can await a refresh if needed
+  const { isAuthenticated, hasRole, isInitialized, getAccessToken } = useAuth();
   const router = useRouter();
   const [course, setCourse] = useState<CourseData | null>(null);
   const [concepts, setConcepts] = useState<ConceptType[]>([]);
@@ -44,11 +45,13 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
   // Fetch course data
   useEffect(() => {
     const fetchData = async () => {
-      if (!isAuthenticated || !hasRole("INSTRUCTOR") || !accessToken) return;
+      // obtain a valid token (will refresh if expired)
+      const token = await getAccessToken();
+      if (!token || !isAuthenticated || !hasRole("INSTRUCTOR")) return;
 
       try {
         const [courseData, conceptsData] = await Promise.all([
-          apiClient.getInstructorCourse(params.id, accessToken),
+          apiClient.getInstructorCourse(params.id, token),
           apiClient.getConcepts(),
         ]);
 
@@ -76,10 +79,11 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
     };
 
     fetchData();
-  }, [isAuthenticated, hasRole, accessToken, params.id]);
+  }, [getAccessToken, isAuthenticated, hasRole, params.id]);
 
   const handleCourseSubmit = async (data: CourseFormData) => {
-    if (!accessToken) {
+    const token = await getAccessToken();
+    if (!token) {
       setError("Authentication required. Please log in again.");
       return;
     }
@@ -91,7 +95,7 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
       const updatedCourse = await apiClient.updateCourse(
         params.id,
         data,
-        accessToken,
+        token,
       );
       setCourse((prev) => (prev ? { ...prev, ...updatedCourse } : null));
     } catch (error: unknown) {

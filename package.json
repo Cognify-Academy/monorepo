@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "concurrently \"bun run --cwd apps/api dev\" \"bun run --cwd apps/cognify-ui dev\"",
     "build": "bun run --cwd apps/api build && bun run --cwd apps/cognify-ui build",
-    "test": "bun run test:api",
+    "test": "bun test apps/api apps/cognify-ui/src/__tests__ packages/test-utils/src",
     "test:watch": "bun run test:api && bun run test:ui:watch",
     "test:api": "bun --cwd apps/api test",
     "test:ui": "bun --cwd apps/cognify-ui test",

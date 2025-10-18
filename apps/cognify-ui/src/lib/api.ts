@@ -329,7 +329,7 @@ class ApiClient {
       }>;
       createdAt: string;
       updatedAt: string;
-    }>(`/api/v1/courses/${id}`, {}, token);
+    }>(`/api/v1/instructor/courses/${id}`, {}, token);
   }
 
   async getInstructorCourses(token: string) {

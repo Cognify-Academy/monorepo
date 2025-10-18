@@ -215,7 +215,7 @@ export async function getCourses(userId: string) {
   }));
 }
 
-export async function getCourse(identifier: string) {
+export async function getCourse(identifier: string, userId?: string) {
   const course = await prisma.course.findFirst({
     where: {
       OR: [{ id: identifier }, { slug: identifier }],
@@ -277,6 +277,16 @@ export async function getCourse(identifier: string) {
   });
 
   if (!course) return null;
+
+  // If userId is provided, check if the user is authorized to view this course
+  if (userId) {
+    const isInstructor = course.instructors.some(
+      (instructor) => instructor.userId === userId,
+    );
+    if (!isInstructor) {
+      throw new Error("Unauthorized to view this course");
+    }
+  }
 
   const { conceptCourses, sections, ...rest } = course;
   const courseConceptIds = conceptCourses.map((cc) => cc.conceptId);

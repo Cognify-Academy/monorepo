@@ -557,18 +557,38 @@ export default new Elysia({ prefix: "/instructor/courses" })
   )
   .get(
     "/:identifier",
-    async ({ params }) => {
-      const course = await getCourse(params.identifier);
-
-      if (!course) {
-        throw new NotFoundError("Course not found");
+    async ({ Auth: { user }, params }) => {
+      if (!user?.id) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        });
       }
 
-      return {
-        ...course,
-        createdAt: course.createdAt.toISOString(),
-        updatedAt: course.updatedAt.toISOString(),
-      };
+      try {
+        const course = await getCourse(params.identifier, user.id);
+
+        if (!course) {
+          throw new NotFoundError("Course not found");
+        }
+
+        return {
+          ...course,
+          createdAt: course.createdAt.toISOString(),
+          updatedAt: course.updatedAt.toISOString(),
+        };
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          error.message === "Unauthorized to view this course"
+        ) {
+          return new Response(JSON.stringify({ error: "Forbidden" }), {
+            status: 403,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+        throw error;
+      }
     },
     {
       detail: {
@@ -626,6 +646,12 @@ export default new Elysia({ prefix: "/instructor/courses" })
               ),
             }),
           ),
+        }),
+        401: t.Object({
+          error: t.String(),
+        }),
+        403: t.Object({
+          error: t.String(),
         }),
         404: t.Object({
           error: t.String(),
