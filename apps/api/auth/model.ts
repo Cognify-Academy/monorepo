@@ -19,10 +19,30 @@ const JWT_REFRESH_EXPIRATION =
 // Helper to create an HTTP-only cookie for the refresh token.
 function createRefreshCookie(token: string) {
   const isProduction = process.env.NODE_ENV === "production";
+
+  // For production, we need Secure flag when using SameSite=None
   const secureFlag = isProduction ? "Secure" : "";
-  const domainFlag = isProduction ? "; Domain=.cognify.academy" : "";
+
+  // Use environment variable for domain or default to cognify.academy
+  const domain =
+    process.env.COOKIE_DOMAIN || (isProduction ? ".cognify.academy" : "");
+  const domainFlag = domain ? `; Domain=${domain}` : "";
+
+  // For production with HTTPS, use SameSite=None; for development, use SameSite=Lax
   const sameSiteFlag = isProduction ? "SameSite=None" : "SameSite=Lax";
-  return `refreshToken=${token}; HttpOnly; ${secureFlag}; Path=/; ${sameSiteFlag}${domainFlag}; Max-Age=${7 * 24 * 60 * 60}`.trim();
+
+  // Build cookie string with proper spacing
+  const cookieParts = [
+    `refreshToken=${token}`,
+    "HttpOnly",
+    secureFlag,
+    "Path=/",
+    sameSiteFlag,
+    domainFlag,
+    `Max-Age=${7 * 24 * 60 * 60}`,
+  ].filter(Boolean); // Remove empty strings
+
+  return cookieParts.join("; ");
 }
 
 export async function signup({
@@ -270,11 +290,30 @@ export async function logout(token: string) {
       where: { token: refreshToken },
     });
     const isProduction = process.env.NODE_ENV === "production";
+
+    // For production, we need Secure flag when using SameSite=None
     const secureFlag = isProduction ? "Secure" : "";
-    const domainFlag = isProduction ? "; Domain=.cognify.academy" : "";
+
+    // Use environment variable for domain or default to cognify.academy
+    const domain =
+      process.env.COOKIE_DOMAIN || (isProduction ? ".cognify.academy" : "");
+    const domainFlag = domain ? `; Domain=${domain}` : "";
+
+    // For production with HTTPS, use SameSite=None; for development, use SameSite=Lax
     const sameSiteFlag = isProduction ? "SameSite=None" : "SameSite=Lax";
-    const cookieHeader =
-      `refreshToken=; HttpOnly; ${secureFlag}; Path=/; ${sameSiteFlag}${domainFlag}; Max-Age=0`.trim();
+
+    // Build cookie string with proper spacing for logout (clearing the cookie)
+    const cookieParts = [
+      "refreshToken=",
+      "HttpOnly",
+      secureFlag,
+      "Path=/",
+      sameSiteFlag,
+      domainFlag,
+      "Max-Age=0",
+    ].filter(Boolean); // Remove empty strings
+
+    const cookieHeader = cookieParts.join("; ");
     return new Response(JSON.stringify({ message: "Logged out" }), {
       headers: {
         "Content-Type": "application/json",
