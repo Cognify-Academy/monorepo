@@ -35,19 +35,23 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
   const [error, setError] = useState<string | null>(null);
   const [dataLoaded, setDataLoaded] = useState(false);
 
-  // Redirect if not authenticated or not instructor
-  useEffect(() => {
-    if (isInitialized && (!isAuthenticated || !hasRole("INSTRUCTOR"))) {
-      router.push("/");
-    }
-  }, [isAuthenticated, hasRole, isInitialized, router]);
+  // NOTE: removed the immediate redirect useEffect because it ran before an async refresh could complete.
+  // Instead we attempt to get a valid token and only redirect if auth fails after refresh.
 
   // Fetch course data
   useEffect(() => {
     const fetchData = async () => {
-      // obtain a valid token (will refresh if expired)
+      // attempt to obtain a valid token (will refresh if expired)
       const token = await getAccessToken();
-      if (!token || !isAuthenticated || !hasRole("INSTRUCTOR")) return;
+
+      // after refresh attempt, check auth/role and redirect if unauthorized
+      if (!token || !isAuthenticated || !hasRole("INSTRUCTOR")) {
+        // If initialization not yet finished, avoid immediate redirect; rely on caller to handle UI.
+        if (isInitialized) {
+          router.push("/");
+        }
+        return;
+      }
 
       try {
         const [courseData, conceptsData] = await Promise.all([
@@ -79,7 +83,14 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
     };
 
     fetchData();
-  }, [getAccessToken, isAuthenticated, hasRole, params.id]);
+  }, [
+    getAccessToken,
+    isAuthenticated,
+    hasRole,
+    isInitialized,
+    params.id,
+    router,
+  ]);
 
   const handleCourseSubmit = async (data: CourseFormData) => {
     const token = await getAccessToken();
