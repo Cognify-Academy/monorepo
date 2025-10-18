@@ -23,9 +23,9 @@ function createRefreshCookie(token: string) {
   // For production, we need Secure flag when using SameSite=None
   const secureFlag = isProduction ? "Secure" : "";
 
-  // Use environment variable for domain or default to cognify.academy
-  const domain =
-    process.env.COOKIE_DOMAIN || (isProduction ? ".cognify.academy" : "");
+  // Use environment variable for domain or no domain for production
+  // No domain means cookie works for exact hostname
+  const domain = process.env.COOKIE_DOMAIN || "";
   const domainFlag = domain ? `; Domain=${domain}` : "";
 
   // For production with HTTPS, use SameSite=None; for development, use SameSite=Lax
@@ -294,9 +294,9 @@ export async function logout(token: string) {
     // For production, we need Secure flag when using SameSite=None
     const secureFlag = isProduction ? "Secure" : "";
 
-    // Use environment variable for domain or default to cognify.academy
-    const domain =
-      process.env.COOKIE_DOMAIN || (isProduction ? ".cognify.academy" : "");
+    // Use environment variable for domain or no domain for production
+    // No domain means cookie works for exact hostname
+    const domain = process.env.COOKIE_DOMAIN || "";
     const domainFlag = domain ? `; Domain=${domain}` : "";
 
     // For production with HTTPS, use SameSite=None; for development, use SameSite=Lax
