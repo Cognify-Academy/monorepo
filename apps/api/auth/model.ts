@@ -18,31 +18,7 @@ const JWT_REFRESH_EXPIRATION =
 
 // Helper to create an HTTP-only cookie for the refresh token.
 function createRefreshCookie(token: string) {
-  const isProduction = process.env.NODE_ENV === "production";
-
-  // For production, we need Secure flag when using SameSite=None
-  const secureFlag = isProduction ? "Secure" : "";
-
-  // Use environment variable for domain or no domain for production
-  // No domain means cookie works for exact hostname
-  const domain = process.env.COOKIE_DOMAIN || "";
-  const domainFlag = domain ? `; Domain=${domain}` : "";
-
-  // For production with HTTPS, use SameSite=None; for development, use SameSite=Lax
-  const sameSiteFlag = isProduction ? "SameSite=None" : "SameSite=Lax";
-
-  // Build cookie string with proper spacing
-  const cookieParts = [
-    `refreshToken=${token}`,
-    "HttpOnly",
-    secureFlag,
-    "Path=/",
-    sameSiteFlag,
-    domainFlag,
-    `Max-Age=${7 * 24 * 60 * 60}`,
-  ].filter(Boolean); // Remove empty strings
-
-  return cookieParts.join("; ");
+  return `refreshToken=${token}; HttpOnly; Secure; Path=/; SameSite=Strict; Max-Age=${7 * 24 * 60 * 60}`;
 }
 
 export async function signup({
@@ -289,31 +265,7 @@ export async function logout(token: string) {
     await prisma.refreshToken.deleteMany({
       where: { token: refreshToken },
     });
-    const isProduction = process.env.NODE_ENV === "production";
-
-    // For production, we need Secure flag when using SameSite=None
-    const secureFlag = isProduction ? "Secure" : "";
-
-    // Use environment variable for domain or no domain for production
-    // No domain means cookie works for exact hostname
-    const domain = process.env.COOKIE_DOMAIN || "";
-    const domainFlag = domain ? `; Domain=${domain}` : "";
-
-    // For production with HTTPS, use SameSite=None; for development, use SameSite=Lax
-    const sameSiteFlag = isProduction ? "SameSite=None" : "SameSite=Lax";
-
-    // Build cookie string with proper spacing for logout (clearing the cookie)
-    const cookieParts = [
-      "refreshToken=",
-      "HttpOnly",
-      secureFlag,
-      "Path=/",
-      sameSiteFlag,
-      domainFlag,
-      "Max-Age=0",
-    ].filter(Boolean); // Remove empty strings
-
-    const cookieHeader = cookieParts.join("; ");
+    const cookieHeader = `refreshToken=; HttpOnly; Secure; Path=/; SameSite=Strict; Max-Age=0`;
     return new Response(JSON.stringify({ message: "Logged out" }), {
       headers: {
         "Content-Type": "application/json",
