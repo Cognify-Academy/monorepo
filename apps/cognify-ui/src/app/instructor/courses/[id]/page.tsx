@@ -26,33 +26,32 @@ interface CourseData {
 }
 
 export default function EditCoursePage({ params }: { params: { id: string } }) {
-  // use getAccessToken so we can await a refresh if needed
-  const { isAuthenticated, hasRole, isInitialized, getAccessToken } = useAuth();
+  const { isAuthenticated, hasRole, token, isInitialized } = useAuth();
   const router = useRouter();
   const [course, setCourse] = useState<CourseData | null>(null);
   const [concepts, setConcepts] = useState<ConceptType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [dataLoaded, setDataLoaded] = useState(false);
-
-  // NOTE: removed the immediate redirect useEffect because it ran before an async refresh could complete.
-  // Instead we attempt to get a valid token and only redirect if auth fails after refresh.
 
   // Fetch course data
   useEffect(() => {
-    const fetchData = async () => {
-      // attempt to obtain a valid token (will refresh if expired)
-      const token = await getAccessToken();
+    // Wait for auth to initialize before checking
+    if (!isInitialized) {
+      return;
+    }
 
-      // after refresh attempt, check auth/role and redirect if unauthorized
-      if (!token || !isAuthenticated || !hasRole("INSTRUCTOR")) {
-        // If initialization not yet finished, avoid immediate redirect; rely on caller to handle UI.
-        if (isInitialized) {
-          router.push("/");
-        }
+    // Check auth and redirect if not authorized
+    if (!isAuthenticated || !hasRole("INSTRUCTOR")) {
+      router.push("/");
+      return;
+    }
+
+    const fetchData = async () => {
+      if (!token) {
         return;
       }
 
+      setIsLoading(true);
       try {
         const [courseData, conceptsData] = await Promise.all([
           apiClient.getInstructorCourse(params.id, token),
@@ -78,22 +77,14 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
         console.error("Failed to fetch course data:", error);
         setError("Failed to load course data. Please try again.");
       } finally {
-        setDataLoaded(true);
+        setIsLoading(false);
       }
     };
 
     fetchData();
-  }, [
-    getAccessToken,
-    isAuthenticated,
-    hasRole,
-    isInitialized,
-    params.id,
-    router,
-  ]);
+  }, [isInitialized, token, isAuthenticated, hasRole, params.id, router]);
 
   const handleCourseSubmit = async (data: CourseFormData) => {
-    const token = await getAccessToken();
     if (!token) {
       setError("Authentication required. Please log in again.");
       return;
@@ -127,8 +118,8 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
     }
   };
 
-  // Show loading while auth is initializing or data is loading
-  if (!isInitialized || (!dataLoaded && !error)) {
+  // Show loading while initializing or loading course data
+  if (!isInitialized || (isLoading && !course)) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">

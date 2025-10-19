@@ -25,8 +25,8 @@ class ApiClient {
   private async makeRequest<T>(
     endpoint: string,
     options: RequestInit = {},
+    silent = false,
   ): Promise<T> {
-    // All endpoints now use the backend API directly
     const url = `${this.baseUrl}${endpoint}`;
 
     const config: RequestInit = {
@@ -34,36 +34,28 @@ class ApiClient {
         "Content-Type": "application/json",
         ...options.headers,
       },
-      credentials: "include",
+      credentials: "include", // Important for cookies
       ...options,
     };
 
-    try {
-      const response = await fetch(url, config);
+    const response = await fetch(url, config);
 
-      if (!response.ok) {
-        let errorMessage = "Request failed";
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.error || errorMessage;
-        } catch {
-          // If response is not JSON, use status text
-          errorMessage = response.statusText || errorMessage;
-        }
-        throw new ApiError(errorMessage, response.status);
+    if (!response.ok) {
+      let errorMessage = "Request failed";
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.error || errorMessage;
+      } catch {
+        errorMessage = response.statusText || errorMessage;
       }
+      throw new ApiError(errorMessage, response.status);
+    }
 
-      const contentType = response.headers.get("content-type");
-      if (contentType && contentType.includes("application/json")) {
-        return await response.json();
-      } else {
-        return (await response.text()) as unknown as T;
-      }
-    } catch (error) {
-      if (error instanceof ApiError) {
-        throw error;
-      }
-      throw new ApiError("Network error", 0);
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
+      return await response.json();
+    } else {
+      return (await response.text()) as unknown as T;
     }
   }
 

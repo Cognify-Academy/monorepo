@@ -14,11 +14,10 @@ const JWT_EXPIRATION =
 const JWT_REFRESH_EXPIRATION =
   process.env["REFRESH_TOKEN_EXPIRY"] ||
   process.env["JWT_REFRESH_EXPIRATION"] ||
-  "7d"; // Default to 7 days if not set
+  "7d";
 
-// Helper to create an HTTP-only cookie for the refresh token.
 function createRefreshCookie(token: string) {
-  return `refreshToken=${token}; HttpOnly; Secure; Path=/; SameSite=Strict; Max-Age=${7 * 24 * 60 * 60}`;
+  return `refreshToken=${token}; HttpOnly; Secure; Path=/; SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}`;
 }
 
 export async function signup({
@@ -54,19 +53,16 @@ export async function signup({
     });
   } catch (error: any) {
     console.error("Signup error:", error);
-
-    // Handle database connection errors
     if (
       error.message?.includes("Database not connected") ||
       error.code === "P1001"
     ) {
       return new Response(JSON.stringify({ error: "Database not available" }), {
-        status: 503, // Service Unavailable
+        status: 503,
         headers: { "Content-Type": "application/json" },
       });
     }
 
-    // Handle unique constraint violations
     if (error.code === "P2002") {
       const field = error.meta?.target?.[0];
       let message = "User already exists";
@@ -265,7 +261,7 @@ export async function logout(token: string) {
     await prisma.refreshToken.deleteMany({
       where: { token: refreshToken },
     });
-    const cookieHeader = `refreshToken=; HttpOnly; Secure; Path=/; SameSite=Strict; Max-Age=0`;
+    const cookieHeader = `refreshToken=; HttpOnly; Secure; Path=/; SameSite=Lax; Max-Age=0`;
     return new Response(JSON.stringify({ message: "Logged out" }), {
       headers: {
         "Content-Type": "application/json",

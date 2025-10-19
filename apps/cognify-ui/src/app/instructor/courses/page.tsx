@@ -8,23 +8,23 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export default function InstructorCoursesPage() {
-  const { isAuthenticated, hasRole, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, hasRole, isInitialized } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    console.log("Instructor courses page - auth state:", {
-      authLoading,
-      isAuthenticated,
-      hasInstructorRole: hasRole("INSTRUCTOR"),
-    });
+    // Wait for auth to initialize
+    if (!isInitialized) {
+      return;
+    }
 
-    if (!authLoading && (!isAuthenticated || !hasRole("INSTRUCTOR"))) {
-      console.log("Redirecting to home page due to auth failure");
+    // After initialization, check auth and redirect if needed
+    if (!isAuthenticated || !hasRole("INSTRUCTOR")) {
       router.push("/");
     }
-  }, [isAuthenticated, hasRole, authLoading, router]);
+  }, [isInitialized, isAuthenticated, hasRole, router]);
 
-  if (authLoading) {
+  // Show loading while auth is initializing
+  if (!isInitialized) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
@@ -35,6 +35,7 @@ export default function InstructorCoursesPage() {
     );
   }
 
+  // After initialization, don't render if not authorized
   if (!isAuthenticated || !hasRole("INSTRUCTOR")) {
     return null;
   }

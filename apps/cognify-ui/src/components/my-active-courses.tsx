@@ -140,24 +140,15 @@ export function MyActiveCourses({
 
   const fetchInstructorCourses = useCallback(async () => {
     if (!accessToken) {
-      console.log("No access token available for instructor courses");
       return;
     }
 
-    console.log(
-      "Fetching instructor courses with token:",
-      accessToken.substring(0, 20) + "...",
-    );
     setIsLoading(true);
     setError(null);
 
     try {
       const instructorCourses =
         await apiClient.getInstructorCourses(accessToken);
-      console.log(
-        "Successfully fetched instructor courses:",
-        instructorCourses.length,
-      );
       const transformedCourses = instructorCourses.map((course, index) =>
         transformInstructorCourse(course, index),
       );
@@ -304,15 +295,15 @@ export function MyActiveCourses({
             data-testid="courses-list"
           >
             {coursesToDisplay.map((course) => (
-              <div
+              <Link
                 key={course.id}
                 data-testid="course-card"
-                className="cursor-pointer rounded-lg border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:shadow-lg"
-                onClick={() => {
-                  if (context === "instructor") {
-                    window.location.href = `/instructor/courses/${course.id}`;
-                  }
-                }}
+                href={
+                  context === "instructor"
+                    ? `/instructor/courses/${course.id}`
+                    : `/courses/${course.id}`
+                }
+                className="cursor-pointer rounded-lg border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:shadow-lg block"
               >
                 <div
                   className={`mb-4 flex h-10 w-10 items-center justify-center rounded-lg ${course.iconColor}`}
@@ -362,7 +353,7 @@ export function MyActiveCourses({
                     />
                   </div>
                 )}
-              </div>
+              </Link>
             ))}
           </div>
         )}
