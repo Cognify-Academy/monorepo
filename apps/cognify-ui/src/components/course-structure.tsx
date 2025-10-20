@@ -76,11 +76,21 @@ export function CourseStructure({
   } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [savingLessons, setSavingLessons] = useState<Set<string>>(new Set());
 
   const showError = (message: string) => {
+    console.log("🚨 Error:", message);
     setError(message);
-    setTimeout(() => setError(null), 3000);
+    setSuccess(null); // Clear success message when showing error
+    setTimeout(() => setError(null), 5000);
+  };
+
+  const showSuccess = (message: string) => {
+    console.log("✅ Success:", message);
+    setSuccess(message);
+    setError(null); // Clear error message when showing success
+    setTimeout(() => setSuccess(null), 5000);
   };
 
   const toggleSection = (sectionId: string) => {
@@ -169,6 +179,7 @@ export function CourseStructure({
         },
         accessToken,
       );
+      showSuccess("Section saved successfully");
     } catch (error: unknown) {
       console.error("Failed to update section:", error);
       showError("Failed to update section");
@@ -207,13 +218,19 @@ export function CourseStructure({
 
     setIsLoading(true);
     try {
+      // Generate a unique default title since Lesson.title has a unique constraint
+      const section = sections.find((s) => s.id === sectionId);
+      const lessonCount = section ? section.lessons.length : 0;
+      const timestamp = Date.now();
+      const uniqueTitle = `New Lesson ${lessonCount + 1} - ${timestamp}`;
+
       const newLessonData = await apiClient.createLesson(
         courseId,
         sectionId,
         {
-          title: "",
+          title: uniqueTitle,
           description: "",
-          content: null,
+          content: "",
           conceptIds: [],
         },
         accessToken,
@@ -289,6 +306,7 @@ export function CourseStructure({
         },
         accessToken,
       );
+      showSuccess("Lesson saved successfully");
     } catch {
       showError("Failed to save lesson");
     } finally {
@@ -384,6 +402,7 @@ export function CourseStructure({
             accessToken,
           );
           console.log("Section reorder API call successful");
+          showSuccess("Sections reordered successfully");
         }
       } catch (error: unknown) {
         console.error("Section reorder error:", error);
@@ -541,7 +560,9 @@ export function CourseStructure({
       }));
 
       await apiClient.reorderLessons(courseId, orderingData, accessToken);
+      showSuccess("Lessons reordered successfully");
     } catch (error: unknown) {
+      console.error("Failed to reorder lessons:", error);
       showError("Failed to reorder lessons");
       onSectionsChange(sections);
     }
@@ -611,7 +632,9 @@ export function CourseStructure({
       }));
 
       await apiClient.reorderLessons(courseId, orderingData, accessToken);
+      showSuccess("Lesson moved successfully");
     } catch (error: unknown) {
+      console.error("Failed to move lesson:", error);
       showError("Failed to move lesson");
       onSectionsChange(sections);
     }
@@ -620,8 +643,35 @@ export function CourseStructure({
   return (
     <div>
       {error && (
-        <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-200">
-          {error}
+        <div className="mb-4 flex items-center gap-2 rounded-lg border-2 border-red-200 bg-red-50 p-4 text-sm font-medium text-red-800 shadow-md dark:border-red-800 dark:bg-red-900/30 dark:text-red-200">
+          <svg
+            className="h-5 w-5 flex-shrink-0"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path
+              fillRule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+              clipRule="evenodd"
+            />
+          </svg>
+          <span>{error}</span>
+        </div>
+      )}
+      {success && (
+        <div className="mb-4 flex items-center gap-2 rounded-lg border-2 border-green-200 bg-green-50 p-4 text-sm font-medium text-green-800 shadow-md dark:border-green-800 dark:bg-green-900/30 dark:text-green-200">
+          <svg
+            className="h-5 w-5 flex-shrink-0"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path
+              fillRule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+              clipRule="evenodd"
+            />
+          </svg>
+          <span>{success}</span>
         </div>
       )}
 

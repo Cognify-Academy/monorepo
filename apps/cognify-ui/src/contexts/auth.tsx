@@ -65,13 +65,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [token]);
 
-  // Decode JWT token to extract user info
+  // Decode JWT token to extract user info and check expiration
   const decodeToken = (token: string): User | null => {
     try {
       const parts = token.split(".");
       if (parts.length !== 3) return null;
 
       const payload = JSON.parse(atob(parts[1]));
+
+      // Check if token is expired
+      if (payload.exp) {
+        const now = Math.floor(Date.now() / 1000);
+        if (payload.exp < now) {
+          // Token is expired
+          return null;
+        }
+      }
 
       return {
         id: payload.id,
@@ -132,13 +141,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (token) {
         const decoded = decodeToken(token);
         if (decoded) {
+          // Token is valid and not expired
           setUser(decoded);
           setIsInitialized(true);
-          return; // Token is valid, no need to refresh
+          return;
         }
+        // Token exists but is invalid or expired, clear it
+        setToken(null);
+        localStorage.removeItem("accessToken");
       }
 
-      // No valid token, try to refresh
+      // No valid token, try to refresh using refresh token (httpOnly cookie)
       try {
         const response = await apiClient.refresh();
         if (response?.token) {
