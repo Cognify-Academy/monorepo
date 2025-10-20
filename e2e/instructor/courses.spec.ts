@@ -172,7 +172,7 @@ test.describe("Instructor Courses", () => {
     // Wait for new lesson to appear
     await expect(page.locator('input[placeholder="Lesson title"]')).toHaveCount(
       lessonsBefore + 1,
-      { timeout: 5000 }
+      { timeout: 5000 },
     );
 
     // Fill in the new lesson title
@@ -192,7 +192,7 @@ test.describe("Instructor Courses", () => {
         await btn.click();
         await page.waitForTimeout(300);
         const descTextarea = page.locator(
-          'textarea[placeholder="Lesson description"]'
+          'textarea[placeholder="Lesson description"]',
         );
         if (await descTextarea.isVisible().catch(() => false)) {
           break;
@@ -231,7 +231,7 @@ test.describe("Instructor Courses", () => {
     // Wait for login and get token from localStorage
     await page.waitForTimeout(2000);
     const token = await page.evaluate(() =>
-      localStorage.getItem("accessToken")
+      localStorage.getItem("accessToken"),
     );
     expect(token).toBeTruthy();
 
@@ -249,7 +249,7 @@ test.describe("Instructor Courses", () => {
           conceptIds: [],
           // Note: content is not provided - this should work with the API fix
         },
-      }
+      },
     );
 
     // Should succeed (200-299) and not return 422

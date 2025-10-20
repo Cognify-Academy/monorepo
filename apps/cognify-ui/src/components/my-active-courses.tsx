@@ -303,7 +303,7 @@ export function MyActiveCourses({
                     ? `/instructor/courses/${course.id}`
                     : `/courses/${course.id}`
                 }
-                className="cursor-pointer rounded-lg border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:shadow-lg block"
+                className="block cursor-pointer rounded-lg border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:shadow-lg"
               >
                 <div
                   className={`mb-4 flex h-10 w-10 items-center justify-center rounded-lg ${course.iconColor}`}
