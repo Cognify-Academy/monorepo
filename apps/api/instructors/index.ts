@@ -864,7 +864,7 @@ export default new Elysia({ prefix: "/instructor/courses" })
       body: {
         title: string;
         description: string;
-        content: string;
+        content?: string | null;
         conceptIds: string[];
       };
       Auth: {
@@ -884,7 +884,7 @@ export default new Elysia({ prefix: "/instructor/courses" })
         sectionId: params.sectionId,
         title: body.title,
         description: body.description,
-        content: body.content,
+        content: body.content || "",
         conceptIds: body.conceptIds,
         userId: user.id,
       });
@@ -897,7 +897,7 @@ export default new Elysia({ prefix: "/instructor/courses" })
       body: t.Object({
         title: t.String(),
         description: t.String(),
-        content: t.String(),
+        content: t.Optional(t.String()),
         conceptIds: t.Array(t.String()),
       }),
       headers: t.Object({

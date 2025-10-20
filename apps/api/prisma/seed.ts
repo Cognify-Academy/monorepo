@@ -118,6 +118,19 @@ async function main() {
     },
   });
 
+  // Create a test section for the course
+  const section = await prisma.section.upsert({
+    where: { id: "test-section-e2e" },
+    update: {},
+    create: {
+      id: "test-section-e2e",
+      title: "Introduction Section",
+      description: "An introductory section for the test course",
+      courseId: course.id,
+      order: 1,
+    },
+  });
+
   console.log("✅ Database seeded successfully!");
   console.log("");
   console.log("Test users created:");
