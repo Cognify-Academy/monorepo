@@ -22,7 +22,6 @@ class RateLimiter {
   constructor(config: RateLimitConfig) {
     this.config = config;
 
-    // Clean up expired entries every minute
     setInterval(() => {
       this.cleanup();
     }, 60000);
@@ -42,7 +41,6 @@ class RateLimiter {
       return this.config.keyGenerator(request);
     }
 
-    // Default: use IP address
     const forwarded = request.headers.get("x-forwarded-for");
     const realIP = request.headers.get("x-real-ip");
     const cfConnectingIP = request.headers.get("cf-connecting-ip");
@@ -62,14 +60,11 @@ class RateLimiter {
   } {
     const key = this.getKey(request);
     const now = Date.now();
-    const windowStart = now - this.config.windowMs;
 
-    // Clean up old entries for this key
     if (this.store[key] && this.store[key].resetTime < now) {
       delete this.store[key];
     }
 
-    // Initialize or get current state
     if (!this.store[key]) {
       this.store[key] = {
         count: 0,
@@ -79,13 +74,11 @@ class RateLimiter {
 
     const current = this.store[key];
 
-    // Check if we're in a new window
     if (now > current.resetTime) {
       current.count = 0;
       current.resetTime = now + this.config.windowMs;
     }
 
-    // Check if limit exceeded
     if (current.count >= this.config.maxRequests) {
       return {
         allowed: false,
@@ -129,10 +122,8 @@ export const createRateLimiter = (config: RateLimitConfig) => {
       throw new Error("Rate limit exceeded");
     }
 
-    // Increment counter immediately after checking
     limiter.increment(request);
 
-    // Set rate limit headers
     set.headers = {
       "X-RateLimit-Limit": config.maxRequests.toString(),
       "X-RateLimit-Remaining": result.remaining.toString(),
@@ -141,12 +132,10 @@ export const createRateLimiter = (config: RateLimitConfig) => {
   });
 };
 
-// Pre-configured rate limiters for different use cases
 export const authRateLimiter = createRateLimiter({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  maxRequests: 5, // 5 attempts per window
+  windowMs: 15 * 60 * 1000,
+  maxRequests: 5,
   keyGenerator: (request) => {
-    // Use IP + user agent for auth endpoints
     const ip =
       request.headers.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
     const userAgent = request.headers.get("user-agent") || "unknown";
@@ -155,11 +144,11 @@ export const authRateLimiter = createRateLimiter({
 });
 
 export const generalRateLimiter = createRateLimiter({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  maxRequests: 100, // 100 requests per window
+  windowMs: 15 * 60 * 1000,
+  maxRequests: 100,
 });
 
 export const strictRateLimiter = createRateLimiter({
-  windowMs: 60 * 1000, // 1 minute
-  maxRequests: 10, // 10 requests per minute
+  windowMs: 60 * 1000,
+  maxRequests: 10,
 });

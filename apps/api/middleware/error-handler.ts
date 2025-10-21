@@ -25,16 +25,14 @@ export class AppError extends Error implements ApiError {
   }
 }
 
-export const errorHandler = new Elysia({ name: "error-handler" }).onError(
-  ({ error, set, request }) => {
+export const errorHandler = new Elysia({ name: "error-handler" })
+  .onError(({ error, set, request }) => {
     const requestId = request.headers.get("x-request-id") || "unknown";
 
-    // Type guard to check if error is an Error instance
     const isError = (err: any): err is Error => {
       return err && typeof err === "object" && "message" in err;
     };
 
-    // Log error details
     console.error(`[${requestId}] Error occurred:`, {
       message: isError(error) ? error.message : String(error),
       stack: isError(error) ? error.stack : undefined,
@@ -43,7 +41,6 @@ export const errorHandler = new Elysia({ name: "error-handler" }).onError(
       timestamp: new Date().toISOString(),
     });
 
-    // Handle different error types
     if (error instanceof AppError) {
       set.status = error.statusCode;
       set.headers = {
@@ -59,7 +56,6 @@ export const errorHandler = new Elysia({ name: "error-handler" }).onError(
       };
     }
 
-    // Handle validation errors (Zod)
     if (isError(error) && error.name === "ZodError") {
       set.status = 400;
       set.headers = {
@@ -75,7 +71,6 @@ export const errorHandler = new Elysia({ name: "error-handler" }).onError(
       };
     }
 
-    // Handle Prisma errors
     if (isError(error) && error.name === "PrismaClientKnownRequestError") {
       set.status = 400;
       set.headers = {
@@ -90,7 +85,6 @@ export const errorHandler = new Elysia({ name: "error-handler" }).onError(
       };
     }
 
-    // Handle Prisma validation errors
     if (isError(error) && error.name === "PrismaClientValidationError") {
       set.status = 400;
       set.headers = {
@@ -105,7 +99,6 @@ export const errorHandler = new Elysia({ name: "error-handler" }).onError(
       };
     }
 
-    // Handle JWT errors
     if (isError(error) && error.name === "JsonWebTokenError") {
       set.status = 401;
       set.headers = {
@@ -134,7 +127,6 @@ export const errorHandler = new Elysia({ name: "error-handler" }).onError(
       };
     }
 
-    // Handle rate limit errors
     if (isError(error) && error.message.includes("rate limit")) {
       set.status = 429;
       set.headers = {
@@ -149,7 +141,6 @@ export const errorHandler = new Elysia({ name: "error-handler" }).onError(
       };
     }
 
-    // Default error response
     set.status = 500;
     set.headers = {
       "Content-Type": "application/json",
@@ -166,15 +157,13 @@ export const errorHandler = new Elysia({ name: "error-handler" }).onError(
         requestId,
       },
     };
-  },
-);
+  })
+  .as("plugin");
 
-// Alternative error handler that can be used as a wrapper
 export const createErrorHandler = () => {
   return (error: any, request: Request) => {
     const requestId = request.headers.get("x-request-id") || "unknown";
 
-    // Log error details
     console.error(`[${requestId}] Error occurred:`, {
       message: error.message,
       stack: error.stack,
@@ -183,7 +172,6 @@ export const createErrorHandler = () => {
       timestamp: new Date().toISOString(),
     });
 
-    // Handle different error types
     if (error instanceof AppError) {
       return new Response(
         JSON.stringify({
@@ -203,7 +191,6 @@ export const createErrorHandler = () => {
       );
     }
 
-    // Handle validation errors (Zod)
     if (error.name === "ZodError") {
       return new Response(
         JSON.stringify({
@@ -223,7 +210,6 @@ export const createErrorHandler = () => {
       );
     }
 
-    // Handle Prisma errors
     if (error.name === "PrismaClientKnownRequestError") {
       return new Response(
         JSON.stringify({
@@ -242,7 +228,6 @@ export const createErrorHandler = () => {
       );
     }
 
-    // Handle Prisma validation errors
     if (error.name === "PrismaClientValidationError") {
       return new Response(
         JSON.stringify({
@@ -261,7 +246,6 @@ export const createErrorHandler = () => {
       );
     }
 
-    // Handle JWT errors
     if (error.name === "JsonWebTokenError") {
       return new Response(
         JSON.stringify({
@@ -298,7 +282,6 @@ export const createErrorHandler = () => {
       );
     }
 
-    // Handle rate limit errors
     if (error.message.includes("rate limit")) {
       return new Response(
         JSON.stringify({
@@ -317,7 +300,6 @@ export const createErrorHandler = () => {
       );
     }
 
-    // Default error response
     return new Response(
       JSON.stringify({
         error: {

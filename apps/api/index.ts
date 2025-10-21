@@ -34,6 +34,8 @@ const getAllowedOrigins = (): string[] => [
 ];
 
 const app = new Elysia({ prefix: "/api/v1" })
+  .use(requestIdMiddleware)
+  .use(requestLogger)
   .use(
     swagger({
       documentation: {
@@ -78,7 +80,6 @@ const app = new Elysia({ prefix: "/api/v1" })
       exposeHeaders: ["Set-Cookie"],
     }),
   )
-  .use(requestLogger)
   .get("/", () => ({ message: "Cognify Academy API is running!" }))
   .get("/health", healthCheck)
   .use(authRouter)

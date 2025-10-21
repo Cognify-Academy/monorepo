@@ -1,13 +1,12 @@
 import { Elysia } from "elysia";
 
-export const requestIdMiddleware = new Elysia({ name: "request-id" }).onRequest(
-  ({ request, set }) => {
-    // Check if request ID already exists
+export const requestIdMiddleware = new Elysia({ name: "request-id" })
+  .derive({ as: "global" }, ({ request, set }) => {
     let requestId = request.headers.get("x-request-id") || generateRequestId();
     set.headers["X-Request-ID"] = requestId;
     return { requestId };
-  },
-);
+  })
+  .as("plugin");
 
 function generateRequestId(): string {
   const timestamp = Date.now().toString(36);
