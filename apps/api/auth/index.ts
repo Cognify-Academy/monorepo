@@ -29,8 +29,6 @@ const authRouter = new Elysia({ prefix: "/auth" })
       set: any;
     }) => {
       const response = await login(body);
-
-      // Extract data from Response object
       const data = await response.json();
       const setCookieHeader = response.headers.get("Set-Cookie");
 

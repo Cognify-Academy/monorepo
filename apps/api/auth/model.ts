@@ -64,22 +64,12 @@ export async function signup({
     }
 
     if (error.code === "P2002") {
-      const field = error.meta?.target?.[0];
-      let message = "User already exists";
-
-      if (field === "email") {
-        message = "Email already registered";
-      } else if (field === "username") {
-        message = "Username already taken";
-      }
-
-      return new Response(JSON.stringify({ error: message }), {
-        status: 409, // Conflict
+      return new Response(JSON.stringify({ error: "User already exists" }), {
+        status: 409,
         headers: { "Content-Type": "application/json" },
       });
     }
 
-    // Handle other errors
     return new Response(JSON.stringify({ error: "Failed to create user" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
@@ -303,31 +293,4 @@ export async function verify(req: Request) {
       headers: { "Content-Type": "application/json" },
     });
   }
-}
-
-export async function forgotPassword({ email }: { email: string }) {
-  const user = await prisma.user.findFirst({ where: { email } });
-  if (!user) {
-    return new Response(JSON.stringify({ error: "User not found" }), {
-      status: 404,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-
-  // Send email with reset link
-
-  return new Response(JSON.stringify({ message: "Email sent" }), {
-    status: 200,
-    headers: { "Content-Type": "application/json" },
-  });
-}
-
-export async function resetPassword({
-  uuid,
-  password: rawPassword,
-}: {
-  uuid: string;
-  password: string;
-}) {
-  // Reset password for uuid with password length: ${rawPassword.length}
 }

@@ -109,6 +109,73 @@ describe("Signup", () => {
     expect(body.token).toBeDefined();
     expect(mockCreate).toHaveBeenCalled();
   });
+
+  test("return 409 if user already exists (P2002)", async () => {
+    const prismaError = {
+      code: "P2002",
+      meta: { target: ["email"] },
+      message: "Unique constraint failed",
+    };
+    const errorMock = mock(() => {
+      throw prismaError;
+    });
+    prisma.user.create = errorMock as any;
+
+    const res = await signup({
+      name: "Test User",
+      username: "testuser",
+      email: "test@example.com",
+      password: "password123",
+    });
+    const body = await res.json();
+
+    expect(res.status).toBe(409);
+    expect(body.error).toBe("User already exists");
+    expect(errorMock).toHaveBeenCalled();
+  });
+
+  test("return 500 for generic database error during signup", async () => {
+    const genericError = new Error("Some other database error");
+    const errorMock = mock(() => {
+      throw genericError;
+    });
+    prisma.user.create = errorMock as any;
+
+    const res = await signup({
+      name: "Test User",
+      username: "testuser",
+      email: "test@example.com",
+      password: "password123",
+    });
+    const body = await res.json();
+
+    expect(res.status).toBe(500);
+    expect(body.error).toBe("Failed to create user");
+    expect(errorMock).toHaveBeenCalled();
+  });
+
+  test("return 503 if database is not available", async () => {
+    const dbError = {
+      code: "P1001",
+      message: "Can't reach database server",
+    };
+    const errorMock = mock(() => {
+      throw dbError;
+    });
+    prisma.user.create = errorMock as any;
+
+    const res = await signup({
+      name: "Test User",
+      username: "testuser",
+      email: "test@example.com",
+      password: "password123",
+    });
+    const body = await res.json();
+
+    expect(res.status).toBe(503);
+    expect(body.error).toBe("Database not available");
+    expect(errorMock).toHaveBeenCalled();
+  });
 });
 
 describe("Login", () => {
@@ -143,6 +210,7 @@ describe("Login", () => {
       username: "testuser",
       email: "test@example.com",
       password: bcrypt.hashSync("wrongpassword", 10),
+      roles: [],
     }));
 
     prisma.user.findFirst = wrongPasswordMock as any;
@@ -155,6 +223,45 @@ describe("Login", () => {
     expect(res.status).toBe(401);
     expect(body.error).toBe("Invalid credentials");
     expect(wrongPasswordMock).toHaveBeenCalled();
+  });
+
+  test("return 503 when database is not available during login", async () => {
+    const dbError = {
+      code: "P1001",
+      message: "Can't reach database server",
+    };
+    const errorMock = mock(() => {
+      throw dbError;
+    });
+    prisma.user.findFirst = errorMock as any;
+
+    const res = await login({
+      handle: "testuser",
+      password: "password123",
+    });
+    const body = await res.json();
+
+    expect(res.status).toBe(503);
+    expect(body.error).toBe("Database not available");
+    expect(errorMock).toHaveBeenCalled();
+  });
+
+  test("return 500 for generic error during login", async () => {
+    const genericError = new Error("Some unexpected error");
+    const errorMock = mock(() => {
+      throw genericError;
+    });
+    prisma.user.findFirst = errorMock as any;
+
+    const res = await login({
+      handle: "testuser",
+      password: "password123",
+    });
+    const body = await res.json();
+
+    expect(res.status).toBe(500);
+    expect(body.error).toBe("Login failed");
+    expect(errorMock).toHaveBeenCalled();
   });
 });
 
@@ -380,47 +487,5 @@ describe("Logout", () => {
     expect(prisma.refreshToken.deleteMany).toHaveBeenCalledWith({
       where: { token: "valid_refresh_token" },
     });
-  });
-});
-
-describe("Forgot Password", () => {
-  test("should return success message for existing user", async () => {
-    const originalFindFirst = prisma.user.findFirst;
-    const findFirstMock = mock(() => ({
-      id: 1,
-      username: "testuser",
-      email: "test@example.com",
-      password: bcrypt.hashSync("password123", 10),
-      roles: [],
-    }));
-    prisma.user.findFirst = findFirstMock as any;
-
-    const res = await forgotPassword({ email: "test@example.com" });
-    const body = await res.json();
-
-    expect(res.status).toBe(200);
-    expect(body.message).toBe("Email sent");
-    expect(findFirstMock).toHaveBeenCalledWith({
-      where: { email: "test@example.com" },
-    });
-
-    prisma.user.findFirst = originalFindFirst;
-  });
-
-  test("should return 404 for non-existent user", async () => {
-    const originalFindFirst = prisma.user.findFirst;
-    const findFirstMock = mock(() => null);
-    prisma.user.findFirst = findFirstMock as any;
-
-    const res = await forgotPassword({ email: "nonexistent@example.com" });
-    const body = await res.json();
-
-    expect(res.status).toBe(404);
-    expect(body.error).toBe("User not found");
-    expect(findFirstMock).toHaveBeenCalledWith({
-      where: { email: "nonexistent@example.com" },
-    });
-
-    prisma.user.findFirst = originalFindFirst;
   });
 });
