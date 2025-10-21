@@ -467,6 +467,80 @@ describe("Course Management", () => {
 
       expect(course).toBeNull();
     });
+
+    test("should throw error when userId provided and user is not an instructor", async () => {
+      const mockCourse = {
+        id: "test-course-id",
+        title: "Test Course",
+        conceptCourses: [{ conceptId: "concept-1" }],
+        instructors: [{ userId: "other-user-id" }],
+        sections: [],
+      };
+
+      prisma.course.findFirst = jest.fn().mockResolvedValue(mockCourse);
+
+      await expect(getCourse("test-course-id", "test-user-id")).rejects.toThrow(
+        "Unauthorized to view this course",
+      );
+    });
+
+    test("should transform media dates to ISO strings", async () => {
+      const createdDate = new Date("2024-01-01T10:00:00.000Z");
+      const updatedDate = new Date("2024-01-02T10:00:00.000Z");
+      const mockCourse = {
+        id: "test-course-id",
+        title: "Test Course",
+        conceptCourses: [{ conceptId: "concept-1" }],
+        instructors: [{ userId: "test-user-id" }],
+        sections: [
+          {
+            id: "section-1",
+            title: "Section 1",
+            description: "Section description",
+            order: 1,
+            ConceptSection: [],
+            lessons: [
+              {
+                id: "lesson-1",
+                title: "Lesson 1",
+                content: "Lesson content",
+                description: "Lesson description",
+                order: 1,
+                ConceptLesson: [],
+                media: [
+                  {
+                    id: "media-1",
+                    title: "Media 1",
+                    description: "Media description",
+                    mediaType: "video",
+                    content: "content",
+                    url: "https://example.com/video.mp4",
+                    notes: "notes",
+                    transcript: "transcript",
+                    metadata: {},
+                    createdAt: createdDate,
+                    updatedAt: updatedDate,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+
+      prisma.course.findFirst = jest.fn().mockResolvedValue(mockCourse);
+
+      const course = await getCourse("test-course-id");
+
+      expect(course).toBeDefined();
+      expect(course?.sections[0].lessons[0].media).toHaveLength(1);
+      expect(course?.sections[0].lessons[0].media[0].createdAt).toBe(
+        createdDate.toISOString(),
+      );
+      expect(course?.sections[0].lessons[0].media[0].updatedAt).toBe(
+        updatedDate.toISOString(),
+      );
+    });
   });
 });
 

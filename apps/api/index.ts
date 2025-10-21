@@ -78,7 +78,6 @@ const app = new Elysia({ prefix: "/api/v1" })
       exposeHeaders: ["Set-Cookie"],
     }),
   )
-  // .use(requestIdMiddleware)
   .use(requestLogger)
   .get("/", () => ({ message: "Cognify Academy API is running!" }))
   .get("/health", healthCheck)

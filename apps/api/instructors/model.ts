@@ -165,10 +165,6 @@ export async function deleteCourse({
     },
   });
 
-  if (!course) {
-    throw new Error("Course not found");
-  }
-
   const isInstructor = course.instructors.some(
     (instructor) => instructor.userId === userId,
   );

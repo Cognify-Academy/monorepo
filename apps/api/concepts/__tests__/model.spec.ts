@@ -73,6 +73,7 @@ afterEach(() => {
   jest.restoreAllMocks();
   mockUpsertConcept.mockClear();
   mockUpsertConceptRelation.mockClear();
+  mockCreate.mockClear();
   mockDelete.mockClear();
   mockUpdate.mockClear();
 });
@@ -98,6 +99,20 @@ describe("Concepts", () => {
         importance: 500,
       });
       expect(res).toEqual(mockConcept1);
+    });
+
+    test("should throw when database create fails", async () => {
+      mockCreate.mockImplementationOnce(() => {
+        throw new Error("Database create error");
+      });
+
+      await expect(
+        createConcept({
+          name: "Test Concept",
+          description: "This is a test concept",
+          importance: 500,
+        }),
+      ).rejects.toThrow("Database create error");
     });
   });
 
@@ -280,6 +295,93 @@ describe("Concepts", () => {
 
       expect(importConcepts(concepts)).rejects.toThrow("Upsert error");
     });
+
+    test("should create relations correctly for conceptTarget", async () => {
+      mockUpsertConcept.mockImplementation(({ where }) => ({
+        id: where.id,
+      }));
+      mockUpsertConceptRelation.mockImplementation(() => ({
+        id: "relation-id",
+      }));
+
+      const concepts = [
+        {
+          id: "concept-a-id",
+          name: "Concept A",
+          description: "Description A",
+          importance: 100,
+          conceptSource: [],
+          conceptTarget: [
+            {
+              id: "relation-c-to-a",
+              conceptSourceId: "concept-c-id",
+              conceptTargetId: "concept-a-id",
+              description: "C to A",
+              weighting: 0.7,
+            },
+          ],
+        },
+        {
+          id: "concept-c-id",
+          name: "Concept C",
+          description: "Description C",
+          importance: 300,
+          conceptSource: [],
+        },
+      ];
+
+      await importConcepts(concepts);
+
+      // Should be called once for the conceptTarget relation
+      expect(mockUpsertConceptRelation).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            unique_edge: {
+              conceptSourceId: "concept-c-id",
+              conceptTargetId: "concept-a-id",
+            },
+          },
+        }),
+      );
+    });
+
+    test("should throw when there is an error inserting relations", async () => {
+      mockUpsertConcept.mockImplementation(({ where }) => ({
+        id: where.id,
+      }));
+      mockUpsertConceptRelation.mockImplementationOnce(() => {
+        throw new Error("Relation upsert error");
+      });
+
+      const concepts = [
+        {
+          id: "concept-a-id",
+          name: "Concept A",
+          description: "Description A",
+          importance: 100,
+          conceptSource: [],
+        },
+        {
+          id: "concept-b-id",
+          name: "Concept B",
+          description: "Description B",
+          importance: 200,
+          conceptSource: [
+            {
+              id: "relation-a-to-b",
+              conceptSourceId: "concept-b-id",
+              conceptTargetId: "concept-a-id",
+              description: "A to B",
+              weighting: 0.8,
+            },
+          ],
+        },
+      ];
+
+      await expect(importConcepts(concepts)).rejects.toThrow(
+        "Relation upsert error",
+      );
+    });
   });
 
   describe("Update Concept", () => {
@@ -313,6 +415,21 @@ describe("Concepts", () => {
         "Importance must be one of 100, 101, 102, 200, 201, 202, 300, 301, 302, 400, 401, 402, 500, 501, 502. See /api/concepts/importances for more information.",
       );
     });
+
+    test("should throw when database update fails", async () => {
+      mockUpdate.mockImplementationOnce(() => {
+        throw new Error("Database update error");
+      });
+
+      await expect(
+        updateConcept({
+          id: "concept-a-id",
+          name: "Updated Concept",
+          description: "This is a test concept",
+          importance: 500,
+        }),
+      ).rejects.toThrow("Database update error");
+    });
   });
 
   describe("Delete Concept", () => {
@@ -327,6 +444,16 @@ describe("Concepts", () => {
         createdAt: new Date("2025-03-17T15:52:12.689Z"),
         updatedAt: new Date("2025-03-17T15:52:12.689Z"),
       });
+    });
+
+    test("should throw when database delete fails", async () => {
+      mockDelete.mockImplementationOnce(() => {
+        throw new Error("Database delete error");
+      });
+
+      await expect(deleteConcept("concept-a-id")).rejects.toThrow(
+        "Database delete error",
+      );
     });
   });
 });
