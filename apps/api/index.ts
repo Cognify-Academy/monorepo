@@ -2,8 +2,8 @@ import dotenv from "dotenv";
 import { Elysia } from "elysia";
 import { cors } from "@elysiajs/cors";
 import { swagger } from "@elysiajs/swagger";
+import { version } from "./package.json";
 
-// Import routers
 import authRouter from "./auth";
 import conceptRouter from "./concepts";
 import courseRouter from "./courses";
@@ -11,9 +11,8 @@ import studentRouter from "./students";
 import instructorRouter from "./instructors";
 import enrollmentRouter from "./enrollments";
 import contactRouter from "./contact";
-import kanban from "./kanban";
+import { healthCheck } from "./health";
 
-// Import middleware
 import {
   requestLogger,
   requestIdMiddleware,
@@ -22,40 +21,25 @@ import {
   AppError,
 } from "./middleware";
 
-// Load environment variables
 dotenv.config();
 
 const PORT = process.env["PORT"] || 3333;
 
-// Configure allowed origins for CORS
-const getAllowedOrigins = (): string[] => {
-  const origins: string[] = [];
+const getAllowedOrigins = (): string[] => [
+  "https://www.cognify.academy",
+  "https://cognify.academy",
+  "https://monorepo-production-6b5d.up.railway.app",
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+];
 
-  // Add production domain
-  if (process.env.FRONTEND_URL) {
-    origins.push(process.env.FRONTEND_URL);
-  }
-
-  // Add additional production domains
-  origins.push("https://www.cognify.academy");
-  origins.push("https://cognify.academy");
-  origins.push("https://monorepo-production-6b5d.up.railway.app");
-
-  // Add development domains
-  origins.push("http://localhost:3000");
-  origins.push("http://127.0.0.1:3000");
-
-  return origins;
-};
-
-// Create the main app with working endpoints
 const app = new Elysia({ prefix: "/api/v1" })
   .use(
     swagger({
       documentation: {
         info: {
           title: "Cognify Academy API",
-          version: "1.0.0",
+          version,
           description: "API for Cognify Academy learning platform",
         },
         components: {
@@ -94,16 +78,10 @@ const app = new Elysia({ prefix: "/api/v1" })
       exposeHeaders: ["Set-Cookie"],
     }),
   )
-  // Add middleware - temporarily disabled for testing
   // .use(requestIdMiddleware)
   .use(requestLogger)
   .get("/", () => ({ message: "Cognify Academy API is running!" }))
-  .get("/health", () => ({
-    status: "healthy",
-    timestamp: new Date().toISOString(),
-    version: "1.0.0",
-  }))
-  // Add routers
+  .get("/health", healthCheck)
   .use(authRouter)
   .use(conceptRouter)
   .use(courseRouter)
@@ -111,6 +89,10 @@ const app = new Elysia({ prefix: "/api/v1" })
   .use(studentRouter)
   .use(enrollmentRouter)
   .use(contactRouter)
-  .use(kanban)
   .all("*", () => new Response("Not found", { status: 404 }))
   .listen(Number(PORT));
+
+console.log(`API running on port ${PORT}`);
+console.log(
+  `Swagger Docs available at http://localhost:${PORT}/api/v1/swagger`,
+);

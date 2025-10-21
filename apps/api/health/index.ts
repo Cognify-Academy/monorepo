@@ -1,8 +1,7 @@
-import { Elysia } from "elysia";
+import { version } from "../package.json";
 
-// Simple health check endpoint
 export const healthCheck = () => ({
   status: "healthy",
   timestamp: new Date().toISOString(),
-  version: "1.0.0",
+  version,
 });
