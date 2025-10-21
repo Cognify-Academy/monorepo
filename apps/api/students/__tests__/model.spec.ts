@@ -6,7 +6,18 @@ import {
   recordLessonProgress,
   getLessonProgress,
   getStudentProgress,
+  getConceptsFromCompletedLessons,
 } from "../model";
+
+const testUser = {
+  id: "user-123",
+  username: "testuser",
+  email: "test@example.com",
+  name: "Test User",
+  password: "hashedpassword",
+  createdAt: "2025-03-17T15:52:12.689Z",
+  updatedAt: "2025-03-17T15:52:12.689Z",
+};
 
 const mockFindUniqueUser = mock(() => ({
   id: "user-123",
@@ -137,15 +148,7 @@ describe("Students", () => {
     test("should return user profile when user exists", async () => {
       const result = await getProfile({ userId: "user-123" });
 
-      expect(result).toEqual({
-        id: "user-123",
-        username: "testuser",
-        email: "test@example.com",
-        name: "Test User",
-        password: "hashedpassword",
-        createdAt: "2025-03-17T15:52:12.689Z",
-        updatedAt: "2025-03-17T15:52:12.689Z",
-      });
+      expect(result).toEqual(testUser);
 
       expect(mockFindUniqueUser).toHaveBeenCalledWith({
         where: {
@@ -416,7 +419,6 @@ describe("Students", () => {
     });
 
     test("should handle completed: false", async () => {
-      // Mock the upsert to return the correct completed value
       mockUpsertLessonProgress.mockImplementationOnce(() => ({
         id: "progress-123",
         userId: "user-123",
@@ -639,6 +641,239 @@ describe("Students", () => {
           userId: "user-123",
         }),
       ).rejects.toThrow("Database query failed");
+    });
+  });
+
+  describe("getConceptsFromCompletedLessons", () => {
+    test("should return concepts from completed lessons", async () => {
+      mockFindManyLessonProgress.mockImplementationOnce(
+        () =>
+          [
+            {
+              id: "progress-123",
+              userId: "user-123",
+              lessonId: "lesson-123",
+              completed: true,
+              completedAt: new Date("2025-03-17T15:52:12.689Z"),
+              createdAt: new Date("2025-03-17T15:52:12.689Z"),
+              updatedAt: new Date("2025-03-17T15:52:12.689Z"),
+              lesson: {
+                id: "lesson-123",
+                title: "Test Lesson",
+                description: "This is a test lesson",
+                order: 1,
+                sectionId: "section-123",
+                content: {},
+                createdAt: new Date("2025-03-17T15:52:12.689Z"),
+                updatedAt: new Date("2025-03-17T15:52:12.689Z"),
+                ConceptLesson: [
+                  {
+                    conceptId: "concept-1",
+                    lessonId: "lesson-123",
+                    concept: {
+                      id: "concept-1",
+                      name: "Test Concept",
+                      slug: "test-concept",
+                      createdAt: new Date("2025-03-17T15:52:12.689Z"),
+                      updatedAt: new Date("2025-03-17T15:52:12.689Z"),
+                      conceptSource: [],
+                      conceptTarget: [],
+                    },
+                  },
+                  {
+                    conceptId: "concept-2",
+                    lessonId: "lesson-123",
+                    concept: {
+                      id: "concept-2",
+                      name: "Test Concept 2",
+                      slug: "test-concept-2",
+                      createdAt: new Date("2025-03-17T15:52:12.689Z"),
+                      updatedAt: new Date("2025-03-17T15:52:12.689Z"),
+                      conceptSource: [],
+                      conceptTarget: [],
+                    },
+                  },
+                ],
+              } as any,
+            },
+          ] as any,
+      );
+      const result = await getConceptsFromCompletedLessons({
+        userId: "user-123",
+      });
+
+      expect(result).toEqual([
+        {
+          id: "concept-1",
+          name: "Test Concept",
+          slug: "test-concept",
+          createdAt: "2025-03-17T15:52:12.689Z",
+          updatedAt: "2025-03-17T15:52:12.689Z",
+          conceptSource: [],
+          conceptTarget: [],
+          completedLessons: [
+            {
+              lessonId: "lesson-123",
+              lessonTitle: "Test Lesson",
+              completedAt: "2025-03-17T15:52:12.689Z",
+            },
+          ],
+        },
+        {
+          id: "concept-2",
+          name: "Test Concept 2",
+          slug: "test-concept-2",
+          createdAt: "2025-03-17T15:52:12.689Z",
+          updatedAt: "2025-03-17T15:52:12.689Z",
+          conceptSource: [],
+          conceptTarget: [],
+          completedLessons: [
+            {
+              lessonId: "lesson-123",
+              lessonTitle: "Test Lesson",
+              completedAt: "2025-03-17T15:52:12.689Z",
+            },
+          ],
+        },
+      ]);
+    });
+
+    test("should return empty array when no lessons found", async () => {
+      mockFindManyLessonProgress.mockImplementationOnce(() => []);
+
+      const result = await getConceptsFromCompletedLessons({
+        userId: "user-123",
+      });
+
+      expect(result).toEqual([]);
+    });
+
+    test("should handle database errors", async () => {
+      const dbError = new Error("Database query failed");
+      mockFindManyLessonProgress.mockImplementationOnce(() => {
+        throw dbError;
+      });
+
+      await expect(
+        getConceptsFromCompletedLessons({
+          userId: "user-123",
+        }),
+      ).rejects.toThrow("Database query failed");
+    });
+
+    test("should deduplicate concepts from multiple lessons", async () => {
+      mockFindManyLessonProgress.mockImplementationOnce(
+        () =>
+          [
+            {
+              id: "progress-123",
+              userId: "user-123",
+              lessonId: "lesson-123",
+              completed: true,
+              completedAt: new Date("2025-03-17T15:52:12.689Z"),
+              createdAt: new Date("2025-03-17T15:52:12.689Z"),
+              updatedAt: new Date("2025-03-17T15:52:12.689Z"),
+              lesson: {
+                id: "lesson-123",
+                title: "Test Lesson 1",
+                ConceptLesson: [
+                  {
+                    conceptId: "concept-1",
+                    lessonId: "lesson-123",
+                    concept: {
+                      id: "concept-1",
+                      name: "Test Concept",
+                      slug: "test-concept",
+                      createdAt: new Date("2025-03-17T15:52:12.689Z"),
+                      updatedAt: new Date("2025-03-17T15:52:12.689Z"),
+                      conceptSource: [],
+                      conceptTarget: [],
+                    },
+                  },
+                ],
+              } as any,
+            },
+            {
+              id: "progress-456",
+              userId: "user-123",
+              lessonId: "lesson-456",
+              completed: true,
+              completedAt: new Date("2025-03-18T10:30:00.000Z"),
+              createdAt: new Date("2025-03-18T10:30:00.000Z"),
+              updatedAt: new Date("2025-03-18T10:30:00.000Z"),
+              lesson: {
+                id: "lesson-456",
+                title: "Test Lesson 2",
+                ConceptLesson: [
+                  {
+                    conceptId: "concept-1",
+                    lessonId: "lesson-456",
+                    concept: {
+                      id: "concept-1",
+                      name: "Test Concept",
+                      slug: "test-concept",
+                      createdAt: new Date("2025-03-17T15:52:12.689Z"),
+                      updatedAt: new Date("2025-03-17T15:52:12.689Z"),
+                      conceptSource: [],
+                      conceptTarget: [],
+                    },
+                  },
+                ],
+              } as any,
+            },
+          ] as any,
+      );
+
+      const result = await getConceptsFromCompletedLessons({
+        userId: "user-123",
+      });
+
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe("concept-1");
+      expect(result[0].completedLessons).toHaveLength(2);
+      expect(result[0].completedLessons).toEqual([
+        {
+          lessonId: "lesson-123",
+          lessonTitle: "Test Lesson 1",
+          completedAt: "2025-03-17T15:52:12.689Z",
+        },
+        {
+          lessonId: "lesson-456",
+          lessonTitle: "Test Lesson 2",
+          completedAt: "2025-03-18T10:30:00.000Z",
+        },
+      ]);
+    });
+
+    test("should query with correct parameters", async () => {
+      mockFindManyLessonProgress.mockImplementationOnce(() => []);
+
+      await getConceptsFromCompletedLessons({
+        userId: "user-123",
+      });
+
+      expect(mockFindManyLessonProgress).toHaveBeenCalledWith({
+        where: {
+          userId: "user-123",
+          completed: true,
+        },
+        include: {
+          lesson: {
+            include: {
+              ConceptLesson: {
+                include: {
+                  concept: {
+                    include: {
+                      conceptSource: true,
+                      conceptTarget: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
     });
   });
 });

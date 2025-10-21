@@ -148,7 +148,6 @@ export async function recordLessonProgress({
   );
 
   try {
-    // Verify the lesson exists
     const lesson = await prisma.lesson.findUnique({
       where: { id: lessonId },
     });
@@ -157,7 +156,6 @@ export async function recordLessonProgress({
       throw new Error("Lesson not found");
     }
 
-    // Verify the user exists
     const user = await prisma.user.findUnique({
       where: { id: userId },
     });
@@ -166,7 +164,6 @@ export async function recordLessonProgress({
       throw new Error("User not found");
     }
 
-    // Upsert the lesson progress
     const progress = await prisma.lessonProgress.upsert({
       where: {
         userId_lessonId: {
@@ -318,7 +315,6 @@ export async function getConceptsFromCompletedLessons({
   console.debug(`Fetching concepts from completed lessons for user: ${userId}`);
 
   try {
-    // Get all completed lessons for the user
     const completedLessons = await prisma.lessonProgress.findMany({
       where: {
         userId,
@@ -342,7 +338,6 @@ export async function getConceptsFromCompletedLessons({
       },
     });
 
-    // Extract unique concepts from completed lessons
     const conceptMap = new Map();
 
     completedLessons.forEach((progress: any) => {
@@ -357,7 +352,6 @@ export async function getConceptsFromCompletedLessons({
           });
         }
 
-        // Add the lesson info to the concept's completed lessons
         conceptMap.get(concept.id).completedLessons.push({
           lessonId: progress.lesson.id,
           lessonTitle: progress.lesson.title,
