@@ -36,6 +36,7 @@ const getAllowedOrigins = (): string[] => [
 const app = new Elysia({ prefix: "/api/v1" })
   .use(requestIdMiddleware)
   .use(requestLogger)
+  .use(generalRateLimiter)
   .use(
     swagger({
       documentation: {

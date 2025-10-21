@@ -6,6 +6,7 @@ interface RateLimitConfig {
   skipSuccessfulRequests?: boolean;
   skipFailedRequests?: boolean;
   keyGenerator?: (request: Request) => string;
+  cleanupIntervalMs?: number;
 }
 
 interface RateLimitStore {
@@ -24,7 +25,7 @@ class RateLimiter {
 
     setInterval(() => {
       this.cleanup();
-    }, 60000);
+    }, config.cleanupIntervalMs || 60000);
   }
 
   private cleanup() {
@@ -105,31 +106,38 @@ class RateLimiter {
 export const createRateLimiter = (config: RateLimitConfig) => {
   const limiter = new RateLimiter(config);
 
-  return new Elysia({ name: "rate-limiter" }).onRequest(({ request, set }) => {
-    const result = limiter.check(request);
+  return new Elysia({ name: "rate-limiter" })
+    .onRequest(({ request, set }) => {
+      // Skip rate limiting for OPTIONS requests (CORS preflight)
+      if (request.method === "OPTIONS") {
+        return;
+      }
 
-    if (!result.allowed) {
-      set.status = 429;
-      set.headers = {
-        "X-RateLimit-Limit": config.maxRequests.toString(),
-        "X-RateLimit-Remaining": "0",
-        "X-RateLimit-Reset": new Date(result.resetTime).toISOString(),
-        "Retry-After": Math.ceil(
+      const result = limiter.check(request);
+
+      if (!result.allowed) {
+        set.status = 429;
+        set.headers["X-RateLimit-Limit"] = config.maxRequests.toString();
+        set.headers["X-RateLimit-Remaining"] = "0";
+        set.headers["X-RateLimit-Reset"] = new Date(
+          result.resetTime,
+        ).toISOString();
+        set.headers["Retry-After"] = Math.ceil(
           (result.resetTime - Date.now()) / 1000,
-        ).toString(),
-      };
+        ).toString();
 
-      throw new Error("Rate limit exceeded");
-    }
+        throw new Error("Rate limit exceeded");
+      }
 
-    limiter.increment(request);
+      limiter.increment(request);
 
-    set.headers = {
-      "X-RateLimit-Limit": config.maxRequests.toString(),
-      "X-RateLimit-Remaining": result.remaining.toString(),
-      "X-RateLimit-Reset": new Date(result.resetTime).toISOString(),
-    };
-  });
+      set.headers["X-RateLimit-Limit"] = config.maxRequests.toString();
+      set.headers["X-RateLimit-Remaining"] = result.remaining.toString();
+      set.headers["X-RateLimit-Reset"] = new Date(
+        result.resetTime,
+      ).toISOString();
+    })
+    .as("plugin");
 };
 
 export const authRateLimiter = createRateLimiter({
