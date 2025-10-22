@@ -38,7 +38,6 @@ COPY --from=base /api/students ./students
 COPY --from=base /api/instructors ./instructors
 COPY --from=base /api/enrollments ./enrollments
 COPY --from=base /api/contact ./contact
-COPY --from=base /api/kanban ./kanban
 COPY --from=base /api/middleware ./middleware
 COPY --from=base /api/prisma ./prisma
 COPY --from=base /api/prisma.ts ./
