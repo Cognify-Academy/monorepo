@@ -1,5 +1,5 @@
 import { transformerColorizedBrackets } from "@shikijs/colorized-brackets";
-import type { MDXComponents } from "mdx/types";
+import type { MDXComponents } from "mdx-js/react";
 import Image from "next/image";
 import React, { type ReactNode } from "react";
 import { createHighlighter, type Highlighter } from "shiki";
