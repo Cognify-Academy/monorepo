@@ -132,7 +132,7 @@ export function MyActiveCourses({
   courses,
   context = "student",
 }: MyActiveCoursesProps) {
-  const { isAuthenticated, accessToken, hasRole } = useAuth();
+  const { isAuthenticated, accessToken } = useAuth();
   const [dynamicCourses, setDynamicCourses] = useState<Course[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

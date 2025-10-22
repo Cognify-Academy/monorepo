@@ -40,11 +40,9 @@ export const SidebarContext = createContext<{
 
 function CourseNavigation({
   modules,
-  onNavigate,
   className,
 }: {
   modules: Module[];
-  onNavigate?: () => void;
   className?: string;
 }) {
   const pathname = usePathname();
@@ -106,7 +104,6 @@ function MobileNavigation({
         </div>
         <CourseNavigation
           modules={modules}
-          onNavigate={onClose}
           className="px-4 pb-4 sm:px-6"
         />
       </DialogPanel>

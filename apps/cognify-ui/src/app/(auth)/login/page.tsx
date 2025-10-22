@@ -26,7 +26,7 @@ export default function LoginPage() {
     try {
       await login(formData.handle, formData.password);
       router.push("/");
-    } catch (error) {
+    } catch {
       // Error handled by auth context
     }
   };

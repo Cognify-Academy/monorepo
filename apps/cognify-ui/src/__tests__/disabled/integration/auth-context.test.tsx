@@ -1,6 +1,5 @@
 import { AuthProvider, useAuth } from "@/contexts/auth";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { createMockUser } from "../../mocks/test-utils";
+import { render, screen, waitFor } from "@testing-library/react";
 
 // Mock the API module
 global.mock("@/lib/api", () => ({

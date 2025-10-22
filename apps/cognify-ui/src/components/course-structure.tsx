@@ -788,7 +788,7 @@ interface SectionEditorProps {
 }
 
 function SectionEditor({
-  courseId,
+  courseId: _courseId,
   section,
   availableConcepts,
   isExpanded,

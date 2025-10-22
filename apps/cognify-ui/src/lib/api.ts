@@ -25,7 +25,7 @@ class ApiClient {
   private async makeRequest<T>(
     endpoint: string,
     options: RequestInit = {},
-    silent = false,
+    _silent = false,
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
 

@@ -122,7 +122,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(decodeToken(response.token));
           return response.token;
         }
-      } catch (error) {
+      } catch {
         // Refresh failed
         return null;
       } finally {
@@ -158,7 +158,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setToken(response.token);
           setUser(decodeToken(response.token));
         }
-      } catch (error) {
+      } catch {
         // Not logged in, that's ok - suppress error
         // 401 is expected when user is not logged in
       } finally {
@@ -166,6 +166,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
     init();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const login = async (handle: string, password: string) => {
