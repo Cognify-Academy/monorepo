@@ -1,9 +1,12 @@
 import { transformerColorizedBrackets } from "@shikijs/colorized-brackets";
-import type { MDXComponents } from "mdx-js/react";
 import Image from "next/image";
 import React, { type ReactNode } from "react";
 import { createHighlighter, type Highlighter } from "shiki";
 import theme from "./src/app/syntax-theme.json";
+
+type MDXComponents = {
+  [key: string]: React.ComponentType<any>;
+};
 
 function getTextContent(node: ReactNode): string {
   if (typeof node === "string") return node;
