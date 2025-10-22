@@ -298,7 +298,7 @@ function LayoutFlow() {
     );
   };
 
-  const onEdgeClick = (_: React.MouseEvent, edge: Edge) => {
+  const onEdgeDoubleClick = (_: React.MouseEvent, edge: Edge) => {
     setSelectedEdge(edge as IdeaEdge);
     setIsEdgeDialogOpen(true);
   };
@@ -469,7 +469,7 @@ function LayoutFlow() {
           edges={edges}
           onEdgesChange={handleEdgesChange}
           onNodeDoubleClick={onNodeDoubleClick}
-          onEdgeClick={onEdgeClick}
+          onEdgeDoubleClick={onEdgeDoubleClick}
           onNodesDelete={onNodesDelete}
           onConnect={onConnect}
           fitView
