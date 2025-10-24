@@ -35,57 +35,6 @@ interface MyActiveCoursesProps {
   context?: "student" | "instructor";
 }
 
-const defaultCourses: Course[] = [
-  {
-    id: "1",
-    title: "Data Science Fundamentals",
-    description:
-      "Continue your exploration of statistics, programming, and data analysis.",
-    completedConcepts: 6,
-    totalConcepts: 12,
-    estimatedTimeLeft: "2 weeks left",
-    iconColor: "bg-blue-600",
-    iconPath:
-      "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z",
-    isCompleted: false,
-  },
-  {
-    id: "2",
-    title: "Modern Web Development",
-    description: "Currently working on advanced JavaScript frameworks.",
-    completedConcepts: 10,
-    totalConcepts: 18,
-    estimatedTimeLeft: "4 weeks left",
-    iconColor: "bg-green-600",
-    iconPath:
-      "M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253",
-    isCompleted: false,
-  },
-  {
-    id: "3",
-    title: "Machine Learning Essentials",
-    description: "Explore your next concept in supervised learning models.",
-    completedConcepts: 3,
-    totalConcepts: 15,
-    estimatedTimeLeft: "7 weeks left",
-    iconColor: "bg-purple-600",
-    iconPath: "M13 10V3L4 14h7v7l9-11h-7z",
-    isCompleted: false,
-  },
-  {
-    id: "4",
-    title: "Introduction to Algorithms",
-    description:
-      "You've successfully completed this course! Review concepts or explore related paths.",
-    completedConcepts: 10,
-    totalConcepts: 10,
-    estimatedTimeLeft: "Completed!",
-    iconColor: "bg-gray-400",
-    iconPath: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",
-    isCompleted: true,
-  },
-];
-
 const instructorColors = [
   "bg-blue-600",
   "bg-green-600",
@@ -166,16 +115,41 @@ export function MyActiveCourses({
     }
   }, [accessToken]);
 
+  const fetchStudentCourses = useCallback(async () => {
+    if (!accessToken) {
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const enrolledCourses = await apiClient.getStudentCourses(accessToken);
+      const transformedCourses = enrolledCourses.map((course, index) =>
+        transformInstructorCourse(course, index),
+      );
+      setDynamicCourses(transformedCourses);
+    } catch (error) {
+      console.error("Failed to fetch student courses:", error);
+      if (error instanceof ApiError && error.status === 401) {
+        setError("You don't have permission to access student courses.");
+      } else {
+        setError("Failed to load courses. Please try again.");
+      }
+      setDynamicCourses([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [accessToken]);
+
   useEffect(() => {
-    // Only fetch courses if we have all required authentication state and haven't fetched yet
-    if (
-      context === "instructor" &&
-      isAuthenticated &&
-      accessToken &&
-      !hasFetched.current
-    ) {
+    if (isAuthenticated && accessToken && !hasFetched.current) {
       hasFetched.current = true;
-      fetchInstructorCourses();
+      if (context === "instructor") {
+        fetchInstructorCourses();
+      } else {
+        fetchStudentCourses();
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [context, isAuthenticated, accessToken]);
@@ -189,8 +163,7 @@ export function MyActiveCourses({
     return course.iconColor.replace("bg-", "bg-");
   };
 
-  const coursesToDisplay =
-    courses || (context === "instructor" ? dynamicCourses : defaultCourses);
+  const coursesToDisplay = courses || dynamicCourses;
 
   const getTitle = () => {
     switch (context) {
@@ -210,7 +183,7 @@ export function MyActiveCourses({
     }
   };
 
-  if (context === "instructor" && isLoading) {
+  if (isLoading && !courses) {
     return (
       <section className="bg-gray-50 py-20 dark:bg-gray-900">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -233,7 +206,7 @@ export function MyActiveCourses({
     );
   }
 
-  if (context === "instructor" && error) {
+  if (error && !courses) {
     return (
       <section className="bg-gray-50 py-20 dark:bg-gray-900">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -278,14 +251,21 @@ export function MyActiveCourses({
             <p className="text-lg text-gray-600 dark:text-gray-400">
               {context === "instructor"
                 ? "You haven't created any courses yet. Start by creating your first course!"
-                : "No courses available."}
+                : "You haven't enrolled in any courses yet. Browse available courses to get started!"}
             </p>
-            {context === "instructor" && (
+            {context === "instructor" ? (
               <Link
                 href="/instructor/courses/new"
                 className="mt-4 inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
               >
                 Create your first course
+              </Link>
+            ) : (
+              <Link
+                href="/courses"
+                className="mt-4 inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+              >
+                Browse courses
               </Link>
             )}
           </div>
