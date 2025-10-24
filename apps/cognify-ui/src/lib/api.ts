@@ -649,6 +649,17 @@ class ApiClient {
       }>;
     }>("/api/v1/student/concepts/completed", {}, token);
   }
+
+  async getProfile(token: string) {
+    return this.makeAuthenticatedRequest<{
+      id?: string;
+      email?: string;
+      username?: string;
+      name?: string;
+      createdAt?: string;
+      updatedAt?: string;
+    }>("/api/v1/student/profile", {}, token);
+  }
 }
 
 export const apiClient = new ApiClient();
