@@ -1,4 +1,4 @@
-export { AppError, type ApiError } from "./error-handler";
+export { AppError, type ApiError, errorHandler } from "./error-handler";
 export { requestLogger } from "./request-logger";
 export {
   createRateLimiter,

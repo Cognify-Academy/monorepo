@@ -16,9 +16,8 @@ import { healthCheck } from "./health";
 import {
   requestLogger,
   requestIdMiddleware,
+  errorHandler,
   generalRateLimiter,
-  authRateLimiter,
-  AppError,
 } from "./middleware";
 
 dotenv.config();
@@ -36,6 +35,7 @@ const getAllowedOrigins = (): string[] => [
 const app = new Elysia({ prefix: "/api/v1" })
   .use(requestIdMiddleware)
   .use(requestLogger)
+  .use(errorHandler)
   .use(generalRateLimiter)
   .use(
     swagger({
@@ -43,24 +43,30 @@ const app = new Elysia({ prefix: "/api/v1" })
         info: {
           title: "Cognify Academy API",
           version,
-          description: "API for Cognify Academy learning platform",
+          description: "API for the Cognify Academy learning platform",
+          contact: {
+            name: "Cognify Academy Support",
+          },
         },
+        tags: [
+          { name: "Auth", description: "Authentication endpoints" },
+          { name: "Students", description: "Student-related endpoints" },
+          { name: "Instructors", description: "Instructor-related endpoints" },
+          { name: "Courses", description: "Course management endpoints" },
+          { name: "Concepts", description: "Concept-related endpoints" },
+        ],
         components: {
           securitySchemes: {
             bearerAuth: {
               type: "http",
               scheme: "bearer",
               bearerFormat: "JWT",
-              description: "Enter JWT token",
+              description: "Enter your JWT token without 'Bearer ' prefix",
             },
           },
         },
-        security: [
-          {
-            bearerAuth: [],
-          },
-        ],
       },
+      autoDarkMode: true,
     }),
   )
   .use(

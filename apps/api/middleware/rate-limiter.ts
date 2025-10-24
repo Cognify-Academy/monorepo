@@ -108,7 +108,6 @@ export const createRateLimiter = (config: RateLimitConfig) => {
 
   return new Elysia({ name: "rate-limiter" })
     .onRequest(({ request, set }) => {
-      // Skip rate limiting for OPTIONS requests (CORS preflight)
       if (request.method === "OPTIONS") {
         return;
       }

@@ -197,30 +197,18 @@ export default new Elysia({ prefix: "/student" })
         user: { id: string } | null;
       };
     }) => {
-      try {
-        if (!hasRole("STUDENT") || !user?.id) {
-          return new Response(
-            JSON.stringify({
-              error: "Forbidden - User must have STUDENT role",
-            }),
-            { status: 403, headers: { "Content-Type": "application/json" } },
-          );
-        }
-
-        const { lessonId } = params;
-
-        const progress = await getLessonProgress({
-          userId: user.id,
-          lessonId,
-        });
-
-        return { progress };
-      } catch (error) {
-        if (error instanceof Error) {
-          throw new Error(error.message);
-        }
-        throw new Error("Internal server error");
+      if (!hasRole("STUDENT") || !user?.id) {
+        throw new Error("Forbidden - User must have STUDENT role");
       }
+
+      const { lessonId } = params;
+
+      const progress = await getLessonProgress({
+        userId: user.id,
+        lessonId,
+      });
+
+      return { progress };
     },
     {
       detail: {
@@ -270,30 +258,18 @@ export default new Elysia({ prefix: "/student" })
         user: { id: string } | null;
       };
     }) => {
-      try {
-        if (!hasRole("STUDENT") || !user?.id) {
-          return new Response(
-            JSON.stringify({
-              error: "Forbidden - User must have STUDENT role",
-            }),
-            { status: 403, headers: { "Content-Type": "application/json" } },
-          );
-        }
-
-        const { courseId } = query;
-
-        const progress = await getStudentProgress({
-          userId: user.id,
-          courseId: courseId || undefined,
-        });
-
-        return { progress };
-      } catch (error) {
-        if (error instanceof Error) {
-          throw new Error(error.message);
-        }
-        throw new Error("Internal server error");
+      if (!hasRole("STUDENT") || !user?.id) {
+        throw new Error("Forbidden - User must have STUDENT role");
       }
+
+      const { courseId } = query;
+
+      const progress = await getStudentProgress({
+        userId: user.id,
+        courseId: courseId || undefined,
+      });
+
+      return { progress };
     },
     {
       detail: {
@@ -369,27 +345,15 @@ export default new Elysia({ prefix: "/student" })
         user: { id: string } | null;
       };
     }) => {
-      try {
-        if (!hasRole("STUDENT") || !user?.id) {
-          return new Response(
-            JSON.stringify({
-              error: "Forbidden - User must have STUDENT role",
-            }),
-            { status: 403, headers: { "Content-Type": "application/json" } },
-          );
-        }
-
-        const concepts = await getConceptsFromCompletedLessons({
-          userId: user.id,
-        });
-
-        return { concepts };
-      } catch (error) {
-        if (error instanceof Error) {
-          throw new Error(error.message);
-        }
-        throw new Error("Internal server error");
+      if (!hasRole("STUDENT") || !user?.id) {
+        throw new Error("Forbidden - User must have STUDENT role");
       }
+
+      const concepts = await getConceptsFromCompletedLessons({
+        userId: user.id,
+      });
+
+      return { concepts };
     },
     {
       detail: {

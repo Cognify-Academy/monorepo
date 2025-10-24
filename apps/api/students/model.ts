@@ -75,65 +75,6 @@ export async function getCourses({ userId }: { userId?: string } = {}) {
   }
 }
 
-// export async function updateProgress({
-//   lessonId,
-//   courseId,
-//   userId,
-//   progress,
-// }: {
-//   lessonId: string;
-//   courseId: string;
-//   userId: string;
-//   progress: number;
-// }) {
-//   const lesson = await prisma.lesson.findUnique({
-//     where: {
-//       id: lessonId,
-//     },
-//   });
-
-//   if (!lesson) {
-//     throw new Error("Lesson not found");
-//   }
-
-//   const course = await prisma.course.findUnique({
-//     where: {
-//       id: courseId,
-//     },
-//   });
-
-//   if (!course) {
-//     throw new Error("Course not found");
-//   }
-
-//   const student = await prisma.student.findUnique({
-//     where: {
-//       userId_courseId: {
-//         userId,
-//         courseId,
-//       },
-//     },
-//   });
-
-//   if (!student) {
-//     throw new Error("Student not found");
-//   }
-
-//   return await prisma.student.update({
-//     where: {
-//       id: student.id,
-//     },
-//     data: {
-//       progress: {
-//         upsert: {
-//           create: { lessonId, progress },
-//           update: { progress },
-//         },
-//       },
-//     },
-//   });
-// }
-
 export async function recordLessonProgress({
   userId,
   lessonId,
