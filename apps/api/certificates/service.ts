@@ -15,7 +15,7 @@ export async function issueCertificate({
   studentDid: string;
   studentWallet: string;
   txSignature: string;
-  nftAddress: string;
+  nftAddress?: string;
 }) {
   const course = await getCourseTitle(courseId);
   if (!course) throw new Error("Course not found");
@@ -47,7 +47,7 @@ export async function issueCertificate({
     issuerDid: issuerDID,
     vcJson: signedVC,
     vcHash,
-    nftAddress,
+    nftAddress: nftAddress || null,
   });
 
   return cert;

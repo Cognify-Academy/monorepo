@@ -52,7 +52,7 @@ export async function createCertificate(data: {
   issuerDid: string;
   vcJson: any;
   vcHash: string;
-  nftAddress: string;
+  nftAddress: string | null;
 }) {
   return await prisma.issuedCertificate.create({
     data,

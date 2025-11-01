@@ -26,7 +26,7 @@ export default new Elysia({ prefix: "/certificates" })
         studentDid: string;
         studentWallet: string;
         txSignature: string;
-        nftAddress: string;
+        nftAddress?: string;
       };
       set: any;
     }) => {
@@ -78,15 +78,20 @@ export default new Elysia({ prefix: "/certificates" })
       }
     },
     {
+      headers: t.Object({
+        authorization: t.String({ description: "Authorization token" }),
+      }),
       body: t.Object({
         userId: t.String({ description: "User ID of the student" }),
         courseId: t.String({ description: "Course ID" }),
         studentDid: t.String({
           description: "Student's DID (Decentralized Identifier)",
         }),
-        nftAddress: t.String({
-          description: "NFT address",
-        }),
+        nftAddress: t.Optional(
+          t.String({
+            description: "NFT address (optional)",
+          }),
+        ),
         txSignature: t.String({
           description: "Transaction signature",
         }),
@@ -94,6 +99,34 @@ export default new Elysia({ prefix: "/certificates" })
           description: "Student wallet address",
         }),
       }),
+      response: {
+        200: t.Object({
+          success: t.Boolean(),
+          certificate: t.Object({
+            id: t.String(),
+            userId: t.String(),
+            courseId: t.String(),
+            studentDid: t.String(),
+            issuerDid: t.String(),
+            vcJson: t.Any(),
+            vcHash: t.String(),
+            nftAddress: t.Union([t.String(), t.Null()]),
+            createdAt: t.Any(),
+          }),
+        }),
+        401: t.Object({
+          error: t.String(),
+        }),
+        403: t.Object({
+          error: t.String(),
+        }),
+        404: t.Object({
+          error: t.String(),
+        }),
+        500: t.Object({
+          error: t.String(),
+        }),
+      },
       detail: {
         tags: ["Certificates"],
         security: [{ bearerAuth: [] }],
@@ -134,9 +167,40 @@ export default new Elysia({ prefix: "/certificates" })
       }
     },
     {
+      headers: t.Object({
+        authorization: t.String({ description: "Authorization token" }),
+      }),
       params: t.Object({
         userId: t.String({ description: "User ID of the student" }),
       }),
+      response: {
+        200: t.Object({
+          certificates: t.Array(
+            t.Object({
+              id: t.String(),
+              userId: t.String(),
+              courseId: t.String(),
+              studentDid: t.String(),
+              issuerDid: t.String(),
+              vcJson: t.Any(),
+              vcHash: t.String(),
+              nftAddress: t.Union([t.String(), t.Null()]),
+              createdAt: t.Any(),
+              course: t.Object({
+                id: t.String(),
+                title: t.String(),
+                description: t.String(),
+              }),
+            }),
+          ),
+        }),
+        403: t.Object({
+          error: t.String(),
+        }),
+        500: t.Object({
+          error: t.String(),
+        }),
+      },
       detail: {
         tags: ["Certificates"],
         security: [{ bearerAuth: [] }],
@@ -159,9 +223,22 @@ export default new Elysia({ prefix: "/certificates" })
       params: t.Object({
         vcHash: t.String({ description: "Hash of the verifiable credential" }),
       }),
+      response: {
+        200: t.Object({
+          valid: t.Boolean(),
+          certificate: t.Optional(
+            t.Object({
+              vcJson: t.Any(),
+              nftAddress: t.Union([t.String(), t.Null()]),
+            }),
+          ),
+          error: t.Optional(t.String()),
+        }),
+      },
       detail: {
         tags: ["Certificates"],
-        description: "Verify a verifiable credential certificate",
+        description:
+          "Verify a verifiable credential certificate (Public endpoint - no authentication required)",
       },
     },
   );
