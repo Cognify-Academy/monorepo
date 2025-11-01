@@ -102,10 +102,7 @@ function MobileNavigation({
             </CloseButton>
           </div>
         </div>
-        <CourseNavigation
-          modules={modules}
-          className="px-4 pb-4 sm:px-6"
-        />
+        <CourseNavigation modules={modules} className="px-4 pb-4 sm:px-6" />
       </DialogPanel>
     </Dialog>
   );

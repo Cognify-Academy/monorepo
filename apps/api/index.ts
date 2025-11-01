@@ -11,7 +11,9 @@ import studentRouter from "./students";
 import instructorRouter from "./instructors";
 import enrollmentRouter from "./enrollments";
 import contactRouter from "./contact";
+import certificatesRouter from "./certificates";
 import { healthCheck } from "./health";
+import didDocument from "./certificates/did.json";
 
 import {
   requestLogger,
@@ -32,7 +34,15 @@ const getAllowedOrigins = (): string[] => [
   "http://127.0.0.1:3000",
 ];
 
-const app = new Elysia({ prefix: "/api/v1" })
+const publicApp = new Elysia().get(
+  "/.well-known/did.json",
+  () =>
+    new Response(JSON.stringify(didDocument), {
+      headers: { "Content-Type": "application/json" },
+    }),
+);
+
+const apiApp = new Elysia({ prefix: "/api/v1" })
   .use(requestIdMiddleware)
   .use(requestLogger)
   .use(errorHandler)
@@ -54,6 +64,10 @@ const app = new Elysia({ prefix: "/api/v1" })
           { name: "Instructors", description: "Instructor-related endpoints" },
           { name: "Courses", description: "Course management endpoints" },
           { name: "Concepts", description: "Concept-related endpoints" },
+          {
+            name: "Certificates",
+            description: "Verifiable credential certificate endpoints",
+          },
         ],
         components: {
           securitySchemes: {
@@ -96,8 +110,10 @@ const app = new Elysia({ prefix: "/api/v1" })
   .use(studentRouter)
   .use(enrollmentRouter)
   .use(contactRouter)
-  .all("*", () => new Response("Not found", { status: 404 }))
-  .listen(Number(PORT));
+  .use(certificatesRouter)
+  .all("*", () => new Response("Not found", { status: 404 }));
+
+publicApp.use(apiApp).listen(Number(PORT));
 
 console.log(`API running on port ${PORT}`);
 console.log(

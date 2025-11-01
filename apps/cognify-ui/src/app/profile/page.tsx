@@ -173,7 +173,7 @@ export default function ProfilePage() {
                     <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">
                       User ID
                     </dt>
-                    <dd className="mt-1 text-sm font-mono text-gray-900 dark:text-white">
+                    <dd className="mt-1 font-mono text-sm text-gray-900 dark:text-white">
                       {profile.id || "Not available"}
                     </dd>
                   </div>
@@ -206,4 +206,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-

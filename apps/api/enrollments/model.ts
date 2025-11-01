@@ -63,12 +63,8 @@ export async function createEnrollment({
     where: { id: courseId },
   });
 
-  if (!course) {
+  if (!course || !course.published) {
     throw new Error("Course not found");
-  }
-
-  if (!course.published) {
-    throw new Error("Cannot enroll in unpublished course");
   }
 
   const existingEnrollment = await prisma.enrollment.findUnique({
