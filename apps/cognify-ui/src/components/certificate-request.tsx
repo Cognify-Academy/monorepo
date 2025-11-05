@@ -394,8 +394,8 @@ export function CertificateRequestV2({
           </h3>
           <p className="mt-2 text-sm text-purple-800 dark:text-purple-200">
             Click below to mint your completion certificate as a soulbound NFT.
-            <strong> You'll pay for the minting cost</strong> (~0.0015 SOL or
-            ~$0.20).
+            <strong> You&apos;ll pay for the minting cost</strong> (~0.0015 SOL
+            or ~$0.20).
           </p>
           <p className="mt-2 text-xs text-purple-700 dark:text-purple-300">
             Connected: {publicKey.toBase58().slice(0, 4)}...

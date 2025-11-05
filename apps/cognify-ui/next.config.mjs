@@ -18,7 +18,6 @@ const nextConfig = {
     // Enable ESLint checking
     ignoreDuringBuilds: false,
   },
-  turbopack: {},
   pageExtensions: ["ts", "tsx", "js", "jsx", "md", "mdx"],
   images: {
     remotePatterns: [
