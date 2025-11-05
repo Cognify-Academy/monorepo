@@ -23,8 +23,9 @@ export function Video({ className, ...props }: React.ComponentProps<"video">) {
     if (!videoContainer) return;
 
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting) {
+      (entries) => {
+        const entry = entries[0];
+        if (!entry?.isIntersecting) {
           videoContainer.setAttribute("data-offscreen", "");
         } else {
           videoContainer.removeAttribute("data-offscreen");

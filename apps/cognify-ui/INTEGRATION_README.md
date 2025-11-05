@@ -108,13 +108,11 @@ src/
 ## Next Steps
 
 1. **Test the Integration**
-
    - Create a test user via signup
    - Login and browse courses
    - Try enrolling in a course
 
 2. **Additional Features to Consider**
-
    - User dashboard showing enrolled courses
    - Course progress tracking
    - Search and filtering functionality

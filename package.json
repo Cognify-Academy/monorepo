@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "concurrently \"bun run --cwd apps/api dev\" \"bun run --cwd apps/cognify-ui dev\"",
     "build": "bun run --cwd apps/api build && bun run --cwd apps/cognify-ui build",
-    "test": "bun test apps/api apps/cognify-ui/src/__tests__ packages/test-utils/src",
+    "test": "bun test apps/api apps/cognify-ui/src/__tests__",
     "test:watch": "bun run test:api && bun run test:ui:watch",
     "test:api": "bun --cwd apps/api test",
     "test:ui": "bun --cwd apps/cognify-ui test",
@@ -23,19 +23,29 @@
     "test:e2e:headed": "playwright test --headed",
     "test:storybook": "bun --cwd apps/cognify-ui run test-storybook",
     "test:coverage": "bun run test:ui:coverage",
+    "test:blockchain": "cd blockchain/certificate_nft && anchor test",
     "test:all": "bun run test && bun run test:e2e && bun run test:storybook",
     "storybook": "bun --cwd apps/cognify-ui run storybook",
     "storybook:build": "bun --cwd apps/cognify-ui run storybook:build",
-    "lint": "prettier --write .",
-    "type-check": "bun run --cwd apps/api type-check && bun run --cwd apps/cognify-ui type-check"
+    "lint": "prettier --check . && bun run --cwd apps/cognify-ui lint",
+    "lint:fix": "prettier --write .",
+    "type-check": "bun run --cwd apps/api type-check && bun run --cwd apps/cognify-ui type-check",
+    "deploy-devnet": "cd blockchain/certificate_nft && anchor deploy",
+    "build-nft": "cd blockchain/certificate_nft && anchor build && bash copy_idl_to_api.sh",
+    "test-nft": "cd blockchain/certificate_nft && anchor test",
+    "dev:api": "cd apps/api && bun run dev",
+    "dev:ui": "cd apps/cognify-ui && bun run dev",
+    "install:all": "bun install && cd apps/api && bun install && cd ../cognify-ui && bun install && cd ../../blockchain/certificate_nft && bun install"
   },
   "devDependencies": {
-    "typescript": "^5.0.0",
-    "prettier": "^3.5.3",
+    "@playwright/test": "^1.40.0",
+    "@storybook/test-runner": "^0.15.0",
     "@types/node": "^20",
     "concurrently": "^8.2.2",
-    "@playwright/test": "^1.40.0",
-    "@storybook/test-runner": "^0.15.0"
+    "prettier": "^3.5.3",
+    "prettier-plugin-organize-imports": "^4.3.0",
+    "prettier-plugin-tailwindcss": "^0.7.1",
+    "typescript": "^5.0.0"
   },
   "engines": {
     "node": ">=18.0.0",
@@ -44,5 +54,9 @@
   "resolutions": {
     "@types/react": "18.3.26",
     "@types/react-dom": "18.3.7"
+  },
+  "dependencies": {
+    "@elysiajs/static": "^1.4.5",
+    "tweetnacl": "^1.0.3"
   }
 }

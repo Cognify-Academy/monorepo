@@ -1,0 +1,19 @@
+{
+  "@context": "https://www.w3.org/ns/did/v1",
+  "id": "did:sol:AJeN7RzEQpHmRLvhsp6wV5vFrzVUjQTMY1BPP5phEuW6",
+  "verificationMethod": [
+    {
+      "id": "did:sol:AJeN7RzEQpHmRLvhsp6wV5vFrzVUjQTMY1BPP5phEuW6#key-1",
+      "type": "Ed25519VerificationKey2018",
+      "controller": "did:sol:AJeN7RzEQpHmRLvhsp6wV5vFrzVUjQTMY1BPP5phEuW6",
+      "publicKeyBase58": "AJeN7RzEQpHmRLvhsp6wV5vFrzVUjQTMY1BPP5phEuW6"
+    }
+  ],
+  "service": [
+    {
+      "id": "did:sol:AJeN7RzEQpHmRLvhsp6wV5vFrzVUjQTMY1BPP5phEuW6#issuer",
+      "type": "CredentialIssuerService",
+      "serviceEndpoint": "https://api.cognify.academy/certificates/verify"
+    }
+  ]
+}

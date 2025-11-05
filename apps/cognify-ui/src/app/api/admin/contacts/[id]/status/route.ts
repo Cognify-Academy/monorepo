@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333/api/v1";
 
 export async function PATCH(
   request: NextRequest,
@@ -28,17 +29,14 @@ export async function PATCH(
     }
 
     // Forward the request to the backend API
-    const response = await fetch(
-      `${API_BASE_URL}/api/v1/contact/${id}/status`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: authHeader,
-        },
-        body: JSON.stringify({ status }),
+    const response = await fetch(`${API_BASE_URL}/contact/${id}/status`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: authHeader,
       },
-    );
+      body: JSON.stringify({ status }),
+    });
 
     if (!response.ok) {
       if (response.status === 401) {

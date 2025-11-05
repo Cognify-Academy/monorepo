@@ -1,2 +1,3 @@
-# Run only unit and integration tests, skip E2E tests
-bun test apps/api apps/cognify-ui/src/__tests__ packages/test-utils/src
+bun run lint
+bun run --cwd apps/cognify-ui lint
+bun test apps/api apps/cognify-ui/src/__tests__

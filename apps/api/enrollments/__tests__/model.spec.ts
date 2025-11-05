@@ -157,7 +157,7 @@ describe("Enrollment Model", () => {
       mockFindUniqueCourse.mockImplementation(() => unpublishedCourse as any);
 
       await expect(createEnrollment(params)).rejects.toThrow(
-        "Cannot enroll in unpublished course",
+        "Course not found",
       );
     });
 

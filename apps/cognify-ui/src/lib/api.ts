@@ -1,4 +1,5 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333/api/v1";
 
 class ApiError extends Error {
   constructor(
@@ -34,7 +35,7 @@ class ApiClient {
         "Content-Type": "application/json",
         ...options.headers,
       },
-      credentials: "include", // Important for cookies
+      credentials: "include",
       ...options,
     };
 
@@ -60,7 +61,7 @@ class ApiClient {
   }
 
   async login(handle: string, password: string) {
-    return this.makeRequest<{ token: string }>("/api/v1/auth/login", {
+    return this.makeRequest<{ token: string }>("/auth/login", {
       method: "POST",
       body: JSON.stringify({ handle, password }),
     });
@@ -72,20 +73,20 @@ class ApiClient {
     email: string,
     password: string,
   ) {
-    return this.makeRequest<{ token: string }>("/api/v1/auth/signup", {
+    return this.makeRequest<{ token: string }>("/auth/signup", {
       method: "POST",
       body: JSON.stringify({ name, username, email, password }),
     });
   }
 
   async refresh() {
-    return this.makeRequest<{ token: string }>("/api/v1/auth/refresh", {
+    return this.makeRequest<{ token: string }>("/auth/refresh", {
       method: "POST",
     });
   }
 
   async logout() {
-    return this.makeRequest<{ message: string }>("/api/v1/auth/logout", {
+    return this.makeRequest<{ message: string }>("/auth/logout", {
       method: "POST",
     });
   }
@@ -104,7 +105,7 @@ class ApiClient {
         instructors: Array<{ id: string }>;
         conceptIds: string[];
       }>
-    >("/api/v1/courses");
+    >("/courses");
   }
 
   async getCourse(identifier: string, token?: string) {
@@ -146,12 +147,12 @@ class ApiClient {
           }>;
         }>;
       }>;
-    }>(`/api/v1/courses/${identifier}`, {}, token);
+    }>(`/courses/${identifier}`, {}, token);
   }
 
   async enrollInCourse(identifier: string, token: string) {
     return this.makeAuthenticatedRequest<{ message: string }>(
-      `/api/v1/courses/${identifier}/students`,
+      `/courses/${identifier}/students`,
       {
         method: "POST",
       },
@@ -164,7 +165,7 @@ class ApiClient {
       message: string;
       enrollment: Record<string, unknown>;
     }>(
-      "/api/v1/enrollments",
+      "/enrollments",
       {
         method: "POST",
         body: JSON.stringify({ courseId }),
@@ -186,8 +187,9 @@ class ApiClient {
         userId: string;
         instructors: Array<{ id: string }>;
         conceptIds: string[];
+        completed: boolean;
       }>
-    >("/api/v1/student/courses", {}, token);
+    >("/student/courses", {}, token);
   }
 
   // Authenticated requests
@@ -222,7 +224,7 @@ class ApiClient {
         createdAt: string;
         updatedAt: string;
       }>
-    >("/api/v1/concepts");
+    >("/concepts");
   }
 
   // Instructor course methods
@@ -245,7 +247,7 @@ class ApiClient {
       createdAt: string;
       updatedAt: string;
     }>(
-      "/api/v1/instructor/courses",
+      "/instructor/courses",
       {
         method: "POST",
         body: JSON.stringify(data),
@@ -274,7 +276,7 @@ class ApiClient {
       createdAt: string;
       updatedAt: string;
     }>(
-      `/api/v1/instructor/courses/${id}`,
+      `/instructor/courses/${id}`,
       {
         method: "PATCH",
         body: JSON.stringify(data),
@@ -321,7 +323,7 @@ class ApiClient {
       }>;
       createdAt: string;
       updatedAt: string;
-    }>(`/api/v1/instructor/courses/${id}`, {}, token);
+    }>(`/instructor/courses/${id}`, {}, token);
   }
 
   async getInstructorCourses(token: string) {
@@ -338,7 +340,7 @@ class ApiClient {
         instructors: Array<{ id: string }>;
         conceptIds: string[];
       }>
-    >("/api/v1/instructor/courses", {}, token);
+    >("/instructor/courses", {}, token);
   }
 
   // Section management methods
@@ -358,7 +360,7 @@ class ApiClient {
       order: number;
       conceptIds: string[];
     }>(
-      `/api/v1/instructor/courses/${courseId}/sections`,
+      `/instructor/courses/${courseId}/sections`,
       {
         method: "POST",
         body: JSON.stringify(data),
@@ -384,7 +386,7 @@ class ApiClient {
       order: number;
       conceptIds: string[];
     }>(
-      `/api/v1/instructor/courses/${courseId}/sections/${sectionId}`,
+      `/instructor/courses/${courseId}/sections/${sectionId}`,
       {
         method: "PATCH",
         body: JSON.stringify(data),
@@ -395,7 +397,7 @@ class ApiClient {
 
   async deleteSection(courseId: string, sectionId: string, token: string) {
     return this.makeAuthenticatedRequest<{ message: string }>(
-      `/api/v1/instructor/courses/${courseId}/sections/${sectionId}`,
+      `/instructor/courses/${courseId}/sections/${sectionId}`,
       {
         method: "DELETE",
       },
@@ -409,7 +411,7 @@ class ApiClient {
     token: string,
   ) {
     return this.makeAuthenticatedRequest<{ message: string }>(
-      `/api/v1/instructor/courses/${courseId}/sections/order`,
+      `/instructor/courses/${courseId}/sections/order`,
       {
         method: "PATCH",
         body: JSON.stringify({ order }),
@@ -438,7 +440,7 @@ class ApiClient {
       order: number;
       conceptIds: string[];
     }>(
-      `/api/v1/instructor/courses/${courseId}/sections/${sectionId}/lessons`,
+      `/instructor/courses/${courseId}/sections/${sectionId}/lessons`,
       {
         method: "POST",
         body: JSON.stringify(data),
@@ -467,7 +469,7 @@ class ApiClient {
       order: number;
       conceptIds: string[];
     }>(
-      `/api/v1/instructor/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}`,
+      `/instructor/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}`,
       {
         method: "PATCH",
         body: JSON.stringify(data),
@@ -483,7 +485,7 @@ class ApiClient {
     token: string,
   ) {
     return this.makeAuthenticatedRequest<{ message: string }>(
-      `/api/v1/instructor/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}`,
+      `/instructor/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}`,
       {
         method: "DELETE",
       },
@@ -501,7 +503,7 @@ class ApiClient {
     token: string,
   ) {
     return this.makeAuthenticatedRequest<{ message: string }>(
-      `/api/v1/instructor/courses/${courseId}/lessons/order`,
+      `/instructor/courses/${courseId}/lessons/order`,
       {
         method: "PATCH",
         body: JSON.stringify({ ordering }),
@@ -529,7 +531,7 @@ class ApiClient {
       url: string;
       lessonId: string;
     }>(
-      "/api/v1/instructor/courses/media",
+      "/instructor/courses/media",
       {
         method: "POST",
         body: JSON.stringify(data),
@@ -557,7 +559,7 @@ class ApiClient {
       url: string;
       lessonId: string;
     }>(
-      `/api/v1/instructor/courses/media/${data.mediaId}`,
+      `/instructor/courses/media/${data.mediaId}`,
       {
         method: "PATCH",
         body: JSON.stringify(data),
@@ -568,7 +570,7 @@ class ApiClient {
 
   async deleteMedia(mediaId: string, token: string) {
     return this.makeAuthenticatedRequest<{ message: string }>(
-      `/api/v1/instructor/courses/media/${mediaId}`,
+      `/instructor/courses/media/${mediaId}`,
       {
         method: "DELETE",
       },
@@ -594,7 +596,7 @@ class ApiClient {
         updatedAt: string;
       };
     }>(
-      "/api/v1/student/lessons/progress",
+      "/student/lessons/progress",
       {
         method: "POST",
         body: JSON.stringify({ lessonId, completed }),
@@ -614,7 +616,7 @@ class ApiClient {
         createdAt: string;
         updatedAt: string;
       } | null;
-    }>(`/api/v1/student/lessons/${lessonId}/progress`, {}, token);
+    }>(`/student/lessons/${lessonId}/progress`, {}, token);
   }
 
   async getConceptsFromCompletedLessons(token: string) {
@@ -647,7 +649,7 @@ class ApiClient {
           completedAt?: string;
         }>;
       }>;
-    }>("/api/v1/student/concepts/completed", {}, token);
+    }>("/student/concepts/completed", {}, token);
   }
 
   async getProfile(token: string) {
@@ -658,7 +660,28 @@ class ApiClient {
       name?: string;
       createdAt?: string;
       updatedAt?: string;
-    }>("/api/v1/student/profile", {}, token);
+    }>("/student/profile", {}, token);
+  }
+
+  async getCertificates(token: string, userId: string) {
+    return this.makeAuthenticatedRequest<{
+      certificates: Array<{
+        id: string;
+        userId: string;
+        courseId: string;
+        studentDid: string;
+        issuerDid: string;
+        vcJson: any;
+        vcHash: string;
+        nftAddress: string | null;
+        createdAt: any;
+        course: {
+          id: string;
+          title: string;
+          description: string;
+        };
+      }>;
+    }>(`/certificates/student/${userId}`, {}, token);
   }
 }
 

@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider      = "prisma-client-js"
   binaryTargets = ["native", "darwin-arm64", "linux-arm64-openssl-3.0.x", "debian-openssl-3.0.x"]
@@ -14,42 +8,33 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-//// 🧑‍🏫 USERS ////
+/// / 🧑‍🏫 USERS ////
 model User {
-  id       String @id @default(uuid())
-  email    String @unique
-  username String @unique
-  name     String
-  password String
-
-  roles          UserRole[]
-  enrollments    Enrollment[]
+  id             String              @id @default(uuid())
+  email          String              @unique
+  username       String              @unique
+  name           String
+  password       String
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @default(now()) @updatedAt
+  instructor     CourseInstructor[]
   coursesCreated Course[]
-  refreshTokens  RefreshToken[]
-  media          Media[]
+  enrollments    Enrollment[]
   lessonProgress LessonProgress[]
-
-  createdAt  DateTime           @default(now())
-  updatedAt  DateTime           @default(now()) @updatedAt
-  instructor CourseInstructor[]
+  media          Media[]
+  refreshTokens  RefreshToken[]
+  roles          UserRole[]
+  certificates   IssuedCertificate[]
 
   @@map("users")
 }
 
-enum Role {
-  INSTRUCTOR
-  STUDENT
-  ADMIN
-}
-
 model UserRole {
-  id     String @id @unique @default(cuid())
-  userId String
-  role   Role
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  id        String   @id @unique @default(cuid())
+  userId    String
+  role      Role
   createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, role])
   @@map("user_roles")
@@ -59,196 +44,173 @@ model RefreshToken {
   id        String   @id @default(cuid())
   token     String   @unique
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("refresh_tokens")
 }
 
-//// 📚 CURRICULUM ////
+/// / 📚 CURRICULUM ////
 model Course {
-  id          String  @id @default(cuid())
-  title       String
-  slug        String  @unique
-  description String
-  published   Boolean @default(false)
-
-  instructors CourseInstructor[]
-
-  sections       Section[]
-  enrollments    Enrollment[]
+  id             String              @id @default(cuid())
+  title          String
+  description    String
+  published      Boolean             @default(false)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @default(now()) @updatedAt
+  userId         String
+  slug           String              @unique
   conceptCourses ConceptCourse[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String
+  instructors    CourseInstructor[]
+  user           User                @relation(fields: [userId], references: [id])
+  enrollments    Enrollment[]
+  sections       Section[]
+  certificates   IssuedCertificate[]
 
   @@map("courses")
 }
 
 model CourseInstructor {
-  id       String @id @default(cuid())
-  courseId String
-  userId   String
-
-  course     Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  instructor User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
+  id         String   @id @default(cuid())
+  courseId   String
+  userId     String
+  createdAt  DateTime @default(now())
+  course     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  instructor User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([courseId, userId])
   @@map("course_instructors")
 }
 
 model Section {
-  id          String   @id @default(cuid())
-  title       String
-  description String
-  courseId    String
-  order       Int      @default(0)
-  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  lessons     Lesson[]
-
+  id             String           @id @default(cuid())
+  title          String
+  description    String
+  courseId       String
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @default(now()) @updatedAt
+  order          Int              @default(0)
   ConceptSection ConceptSection[]
+  lessons        Lesson[]
+  course         Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   @@map("sections")
 }
 
 model Lesson {
-  id          String  @id @default(cuid())
-  title       String  @unique
-  description String
-  order       Int     @default(0)
-  sectionId   String
-  section     Section @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-
-  content       Json
-  media         Media[]
-  ConceptLesson ConceptLesson[]
+  id             String           @id @default(cuid())
+  title          String           @unique
+  description    String
+  sectionId      String
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @default(now()) @updatedAt
+  order          Int              @default(0)
+  content        Json
+  ConceptLesson  ConceptLesson[]
   lessonProgress LessonProgress[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  section        Section          @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  media          Media[]
 
   @@map("lessons")
 }
 
-//// 🎓 ENROLLMENT ////
+/// / 🎓 ENROLLMENT ////
 model Enrollment {
-  id       String @id @default(cuid())
-  userId   String
-  courseId String
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-
+  id        String   @id @default(cuid())
+  userId    String
+  courseId  String
+  completed Boolean  @default(false)
   createdAt DateTime @default(now())
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, courseId])
   @@map("enrollments")
 }
 
 model LessonProgress {
-  id         String   @id @default(cuid())
-  userId     String
-  lessonId   String
-  completed  Boolean  @default(false)
+  id          String    @id @default(cuid())
+  userId      String
+  lessonId    String
+  completed   Boolean   @default(false)
   completedAt DateTime?
-
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now()) @updatedAt
+  lesson      Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, lessonId])
   @@map("lesson_progress")
 }
 
-//// 📖 CONCEPT META ////
+/// / 📖 CONCEPT META ////
 model Concept {
   id            String            @id @default(cuid())
   name          String            @unique
-  slug          String            @unique
   description   String
   importance    Int
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @default(now()) @updatedAt
+  slug          String            @unique
+  courses       ConceptCourse[]
+  lessons       ConceptLesson[]
   conceptSource ConceptRelation[] @relation("conceptSource")
   conceptTarget ConceptRelation[] @relation("conceptTarget")
-  courses       ConceptCourse[]
   sections      ConceptSection[]
-  lessons       ConceptLesson[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
 
   @@map("concepts")
 }
 
 model ConceptRelation {
-  id              String @id @default(cuid())
+  id              String   @id @default(cuid())
+  description     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
   conceptSourceId String
   conceptTargetId String
-  description     String
   weighting       Float?
-
-  conceptSource Concept @relation("conceptSource", fields: [conceptSourceId], references: [id], onDelete: Cascade)
-  conceptTarget Concept @relation("conceptTarget", fields: [conceptTargetId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  conceptSource   Concept  @relation("conceptSource", fields: [conceptSourceId], references: [id], onDelete: Cascade)
+  conceptTarget   Concept  @relation("conceptTarget", fields: [conceptTargetId], references: [id], onDelete: Cascade)
 
   @@unique([conceptSourceId, conceptTargetId], name: "unique_edge")
   @@map("concept_relations")
 }
 
 model ConceptCourse {
-  id        String @id @default(cuid())
-  courseId  String
+  id        String   @id @default(cuid())
   conceptId String
-
-  concept Concept @relation(fields: [conceptId], references: [id], onDelete: Cascade)
-  course  Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
-
+  courseId  String
   createdAt DateTime @default(now())
+  concept   Concept  @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   @@unique([conceptId, courseId])
   @@map("concept_courses")
 }
 
 model ConceptSection {
-  id        String  @id @default(cuid())
+  id        String   @id @default(cuid())
   conceptId String
   sectionId String
-  concept   Concept @relation(fields: [conceptId], references: [id], onDelete: Cascade)
-  section   Section @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-
   createdAt DateTime @default(now())
+  concept   Concept  @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+  section   Section  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
 
   @@unique([conceptId, sectionId])
   @@map("concept_sections")
 }
 
 model ConceptLesson {
-  id        String  @id @default(cuid())
+  id        String   @id @default(cuid())
   conceptId String
   lessonId  String
-  concept   Concept @relation(fields: [conceptId], references: [id], onDelete: Cascade)
-  lesson    Lesson  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-
   createdAt DateTime @default(now())
+  concept   Concept  @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
   @@unique([conceptId, lessonId])
   @@map("concept_lessons")
-}
-
-//// 🎥 MEDIA ////
-enum Audience {
-  BEGINNERS
-  INTERMEDIATE
-  ADVANCED
 }
 
 model Media {
@@ -260,32 +222,43 @@ model Media {
   url         String?
   notes       String?
   transcript  String?
-  audience    Audience @default(BEGINNERS)
   lessonId    String?
-  userId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
   metadata    Json?
+  userId      String
+  audience    Audience @default(BEGINNERS)
   lesson      Lesson?  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
 
   @@map("media")
 }
 
-//// 📞 CONTACT ////
+/// / 📞 CONTACT ////
 model Contact {
-  id        String @id @default(cuid())
+  id        String        @id @default(cuid())
   name      String
   email     String
   subject   String
   message   String
   status    ContactStatus @default(PENDING)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @default(now()) @updatedAt
 
   @@map("contacts")
+}
+
+enum Role {
+  INSTRUCTOR
+  STUDENT
+  ADMIN
+}
+
+/// / 🎥 MEDIA ////
+enum Audience {
+  BEGINNERS
+  INTERMEDIATE
+  ADVANCED
 }
 
 enum ContactStatus {
@@ -293,4 +266,30 @@ enum ContactStatus {
   IN_PROGRESS
   COMPLETED
   ARCHIVED
+}
+
+enum Column {
+  BACKLOG
+  TODO
+  IN_PROGRESS
+  COMPLETE
+}
+
+//// SSIDs/Certificates ////
+
+model IssuedCertificate {
+  id         String   @id @default(uuid())
+  userId     String // 🔗 relational link to your internal user
+  studentDid String // 🌐 DID string for decentralized verification
+  issuerDid  String
+  courseId   String
+  vcJson     Json
+  vcHash     String
+  nftAddress String?
+  createdAt  DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@map("issued_certificates")
 }
