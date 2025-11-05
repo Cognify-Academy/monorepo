@@ -10,7 +10,7 @@ import {
   SolflareWalletAdapter,
 } from "@solana/wallet-adapter-wallets";
 import { clusterApiUrl } from "@solana/web3.js";
-import React, { FC, ReactNode, useMemo } from "react";
+import React, { type FC, type ReactNode, useMemo } from "react";
 
 // Import wallet adapter CSS (must be done at component level for Next.js)
 import "@solana/wallet-adapter-react-ui/styles.css";
