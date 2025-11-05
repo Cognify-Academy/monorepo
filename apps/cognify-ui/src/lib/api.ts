@@ -147,12 +147,12 @@ class ApiClient {
           }>;
         }>;
       }>;
-    }>(`/api/v1/courses/${identifier}`, {}, token);
+    }>(`/courses/${identifier}`, {}, token);
   }
 
   async enrollInCourse(identifier: string, token: string) {
     return this.makeAuthenticatedRequest<{ message: string }>(
-      `/api/v1/courses/${identifier}/students`,
+      `/courses/${identifier}/students`,
       {
         method: "POST",
       },
@@ -276,7 +276,7 @@ class ApiClient {
       createdAt: string;
       updatedAt: string;
     }>(
-      `/api/v1/instructor/courses/${id}`,
+      `/instructor/courses/${id}`,
       {
         method: "PATCH",
         body: JSON.stringify(data),
@@ -323,7 +323,7 @@ class ApiClient {
       }>;
       createdAt: string;
       updatedAt: string;
-    }>(`/api/v1/instructor/courses/${id}`, {}, token);
+    }>(`/instructor/courses/${id}`, {}, token);
   }
 
   async getInstructorCourses(token: string) {
@@ -360,7 +360,7 @@ class ApiClient {
       order: number;
       conceptIds: string[];
     }>(
-      `/api/v1/instructor/courses/${courseId}/sections`,
+      `/instructor/courses/${courseId}/sections`,
       {
         method: "POST",
         body: JSON.stringify(data),
@@ -386,7 +386,7 @@ class ApiClient {
       order: number;
       conceptIds: string[];
     }>(
-      `/api/v1/instructor/courses/${courseId}/sections/${sectionId}`,
+      `/instructor/courses/${courseId}/sections/${sectionId}`,
       {
         method: "PATCH",
         body: JSON.stringify(data),
@@ -397,7 +397,7 @@ class ApiClient {
 
   async deleteSection(courseId: string, sectionId: string, token: string) {
     return this.makeAuthenticatedRequest<{ message: string }>(
-      `/api/v1/instructor/courses/${courseId}/sections/${sectionId}`,
+      `/instructor/courses/${courseId}/sections/${sectionId}`,
       {
         method: "DELETE",
       },
@@ -411,7 +411,7 @@ class ApiClient {
     token: string,
   ) {
     return this.makeAuthenticatedRequest<{ message: string }>(
-      `/api/v1/instructor/courses/${courseId}/sections/order`,
+      `/instructor/courses/${courseId}/sections/order`,
       {
         method: "PATCH",
         body: JSON.stringify({ order }),
@@ -440,7 +440,7 @@ class ApiClient {
       order: number;
       conceptIds: string[];
     }>(
-      `/api/v1/instructor/courses/${courseId}/sections/${sectionId}/lessons`,
+      `/instructor/courses/${courseId}/sections/${sectionId}/lessons`,
       {
         method: "POST",
         body: JSON.stringify(data),
@@ -469,7 +469,7 @@ class ApiClient {
       order: number;
       conceptIds: string[];
     }>(
-      `/api/v1/instructor/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}`,
+      `/instructor/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}`,
       {
         method: "PATCH",
         body: JSON.stringify(data),
@@ -485,7 +485,7 @@ class ApiClient {
     token: string,
   ) {
     return this.makeAuthenticatedRequest<{ message: string }>(
-      `/api/v1/instructor/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}`,
+      `/instructor/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}`,
       {
         method: "DELETE",
       },
@@ -503,7 +503,7 @@ class ApiClient {
     token: string,
   ) {
     return this.makeAuthenticatedRequest<{ message: string }>(
-      `/api/v1/instructor/courses/${courseId}/lessons/order`,
+      `/instructor/courses/${courseId}/lessons/order`,
       {
         method: "PATCH",
         body: JSON.stringify({ ordering }),
@@ -559,7 +559,7 @@ class ApiClient {
       url: string;
       lessonId: string;
     }>(
-      `/api/v1/instructor/courses/media/${data.mediaId}`,
+      `/instructor/courses/media/${data.mediaId}`,
       {
         method: "PATCH",
         body: JSON.stringify(data),
@@ -570,7 +570,7 @@ class ApiClient {
 
   async deleteMedia(mediaId: string, token: string) {
     return this.makeAuthenticatedRequest<{ message: string }>(
-      `/api/v1/instructor/courses/media/${mediaId}`,
+      `/instructor/courses/media/${mediaId}`,
       {
         method: "DELETE",
       },
@@ -616,7 +616,7 @@ class ApiClient {
         createdAt: string;
         updatedAt: string;
       } | null;
-    }>(`/api/v1/student/lessons/${lessonId}/progress`, {}, token);
+    }>(`/student/lessons/${lessonId}/progress`, {}, token);
   }
 
   async getConceptsFromCompletedLessons(token: string) {
