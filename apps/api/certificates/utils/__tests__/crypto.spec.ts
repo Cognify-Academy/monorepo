@@ -1,13 +1,24 @@
-import { describe, it, expect, beforeAll } from "bun:test";
+import { describe, it, expect } from "bun:test";
 import { Keypair } from "@solana/web3.js";
 import bs58 from "bs58";
+
+// Set required environment variable for tests BEFORE importing crypto
+// crypto.ts decodes SOLANA_PRIVATE_KEY at module load time
+if (
+  !process.env.SOLANA_PRIVATE_KEY ||
+  typeof process.env.SOLANA_PRIVATE_KEY !== "string"
+) {
+  const testKeypair = Keypair.generate();
+  process.env.SOLANA_PRIVATE_KEY = bs58.encode(testKeypair.secretKey);
+}
+
 import {
   hashVC,
   buildVC,
   signVC,
   verifyVC,
   issuerKeypair,
-  issuerDID,
+  issuerDid,
 } from "../crypto";
 
 describe("hashVC", () => {
@@ -106,19 +117,19 @@ describe("issuerKeypair", () => {
   });
 });
 
-describe("issuerDID", () => {
+describe("issuerDid", () => {
   it("should be a valid DID string", () => {
-    expect(issuerDID).toBeString();
-    expect(issuerDID).toMatch(/^did:sol:.+$/);
+    expect(issuerDid).toBeString();
+    expect(issuerDid).toMatch(/^did:sol:.+$/);
   });
 
   it("should match the issuer keypair public key", () => {
     const expectedDID = `did:sol:${issuerKeypair.publicKey.toBase58()}`;
-    expect(issuerDID).toBe(expectedDID);
+    expect(issuerDid).toBe(expectedDID);
   });
 
   it("should start with did:sol: prefix", () => {
-    expect(issuerDID.startsWith("did:sol:")).toBe(true);
+    expect(issuerDid.startsWith("did:sol:")).toBe(true);
   });
 });
 
@@ -283,7 +294,7 @@ describe("signVC", () => {
   const mockVC = {
     "@context": ["https://www.w3.org/2018/credentials/v1"],
     type: ["VerifiableCredential", "CourseCompletionCertificate"],
-    issuer: issuerDID,
+    issuer: issuerDid,
     issuanceDate: new Date().toISOString(),
     credentialSubject: {
       id: "did:sol:student123",
@@ -326,7 +337,7 @@ describe("signVC", () => {
 
   it("should set the correct verification method", () => {
     const proof = signVC(mockVC);
-    expect(proof.verificationMethod).toBe(`${issuerDID}#key-1`);
+    expect(proof.verificationMethod).toBe(`${issuerDid}#key-1`);
   });
 
   it("should produce a valid base58 encoded signature", () => {
@@ -375,7 +386,7 @@ describe("verifyVC", () => {
   const mockVC = {
     "@context": ["https://www.w3.org/2018/credentials/v1"],
     type: ["VerifiableCredential", "CourseCompletionCertificate"],
-    issuer: issuerDID,
+    issuer: issuerDid,
     issuanceDate: new Date().toISOString(),
     credentialSubject: {
       id: "did:sol:student123",

@@ -1,4 +1,4 @@
-import { signVC, hashVC, buildVC, issuerDID } from "./utils/crypto";
+import { signVC, hashVC, buildVC, issuerDid } from "./utils/crypto";
 import { Connection } from "@solana/web3.js";
 import { getCourseTitle, createCertificate } from "./model";
 
@@ -20,6 +20,7 @@ export async function issueCertificate({
   const course = await getCourseTitle(courseId);
   if (!course) throw new Error("Course not found");
 
+  // Verify the transaction exists on-chain
   const connection = new Connection(process.env.SOLANA_RPC_URL!, "confirmed");
   const tx = await connection.getTransaction(txSignature, {
     maxSupportedTransactionVersion: 0,
@@ -27,10 +28,11 @@ export async function issueCertificate({
   });
   if (!tx) throw new Error("Invalid Solana transaction");
 
+  // Build and sign the verifiable credential
   const vcJson = buildVC({
     studentDid,
     studentWallet,
-    issuerDid: issuerDID,
+    issuerDid,
     courseId,
     courseTitle: course.title,
     txSignature: txSignature,
@@ -40,11 +42,13 @@ export async function issueCertificate({
   const signedVC = { ...vcJson, proof };
   const vcHash = hashVC(signedVC);
 
+  // Store the certificate record in database
+  // Note: NFT was minted by the student in their browser
   const cert = await createCertificate({
     userId,
     courseId,
     studentDid,
-    issuerDid: issuerDID,
+    issuerDid,
     vcJson: signedVC,
     vcHash,
     nftAddress: nftAddress || null,

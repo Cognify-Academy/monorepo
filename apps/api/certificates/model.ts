@@ -45,6 +45,13 @@ export async function getCertificateByVcHash(vcHash: string) {
   });
 }
 
+export async function getCertificateByNftAddress(nftAddress: string) {
+  return await prisma.issuedCertificate.findFirstOrThrow({
+    where: { nftAddress },
+    select: { vcJson: true, nftAddress: true, vcHash: true },
+  });
+}
+
 export async function createCertificate(data: {
   userId: string;
   courseId: string;

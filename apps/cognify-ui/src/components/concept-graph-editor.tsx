@@ -27,7 +27,7 @@ import { useAuth } from "@/contexts/auth";
 import "@xyflow/react/dist/style.css";
 
 const getApiUrl = () =>
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333/api/v1";
 
 interface Concept {
   id: string;
@@ -157,14 +157,14 @@ async function fetchNodesAndConceptsFromAPI(
   token: string | null,
 ): Promise<GraphData> {
   try {
-    const response = await fetch(`${getApiUrl()}/api/v1/concepts/`, {
+    const response = await fetch(`${getApiUrl()}/concepts/`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (!response.ok) {
       console.error(
         `Failed to fetch concepts: ${response.status} ${response.statusText}`,
       );
-      console.error("Request URL:", `${getApiUrl()}/api/v1/concepts/`);
+      console.error("Request URL:", `${getApiUrl()}/concepts/`);
       throw new Error(
         `Failed to fetch concepts: ${response.status} ${response.statusText}`,
       );
@@ -262,16 +262,13 @@ function LayoutFlow() {
     async function loadImportances() {
       try {
         const importancesResponse = await fetch(
-          `${getApiUrl()}/api/v1/concepts/importances/`,
+          `${getApiUrl()}/concepts/importances/`,
         );
         if (!importancesResponse.ok) {
           console.error(
             `Failed to fetch importances: ${importancesResponse.status} ${importancesResponse.statusText}`,
           );
-          console.error(
-            "Request URL:",
-            `${getApiUrl()}/api/v1/concepts/importances/`,
-          );
+          console.error("Request URL:", `${getApiUrl()}/concepts/importances/`);
           return;
         }
         const importanceObject = await importancesResponse.json();
@@ -286,7 +283,7 @@ function LayoutFlow() {
 
   const onNodesDelete = (nodesToDelete: Node[]) => {
     nodesToDelete.forEach(async (node) => {
-      await fetch(`${getApiUrl()}/api/v1/concepts/${node.id}/`, {
+      await fetch(`${getApiUrl()}/concepts/${node.id}/`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -304,7 +301,7 @@ function LayoutFlow() {
   };
 
   const onConnect: OnConnect = async (connection) => {
-    await fetch(`${getApiUrl()}/api/v1/concepts/relation/`, {
+    await fetch(`${getApiUrl()}/concepts/relation/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -325,7 +322,7 @@ function LayoutFlow() {
   const handleEdgesChange = (changes: EdgeChange[]) => {
     changes.forEach(async (change: EdgeChange) => {
       if (change.type === "remove") {
-        await fetch(`${getApiUrl()}/api/v1/concepts/relation/${change.id}/`, {
+        await fetch(`${getApiUrl()}/concepts/relation/${change.id}/`, {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -365,17 +362,14 @@ function LayoutFlow() {
     setIsEdgeDialogOpen(false);
 
     try {
-      await fetch(
-        `${getApiUrl()}/api/v1/concepts/relation/${selectedEdge.id}/`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({ description, weighting }),
+      await fetch(`${getApiUrl()}/concepts/relation/${selectedEdge.id}/`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
         },
-      );
+        body: JSON.stringify({ description, weighting }),
+      });
     } catch (error) {
       console.error("Failed to update edge:", error);
     }
@@ -406,7 +400,7 @@ function LayoutFlow() {
     setNodes((prev) => [...prev, newNode]);
 
     try {
-      const response = await fetch(`${getApiUrl()}/api/v1/concepts/`, {
+      const response = await fetch(`${getApiUrl()}/concepts/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

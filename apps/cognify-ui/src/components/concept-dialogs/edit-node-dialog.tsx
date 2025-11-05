@@ -51,10 +51,11 @@ export function EditNodeDialog({
   const handleSave = async () => {
     if (node) {
       const token = localStorage.getItem("token");
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+      const apiUrl =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333/api/v1";
 
       try {
-        const result = await fetch(`${apiUrl}/api/v1/concepts/${node.id}/`, {
+        const result = await fetch(`${apiUrl}/concepts/${node.id}/`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",

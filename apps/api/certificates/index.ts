@@ -5,6 +5,7 @@ import {
   getEnrollment,
   getCertificatesByUserId,
   getCertificateByVcHash,
+  getCertificateByNftAddress,
 } from "./model";
 
 export default new Elysia({ prefix: "/certificates" })
@@ -239,6 +240,40 @@ export default new Elysia({ prefix: "/certificates" })
         tags: ["Certificates"],
         description:
           "Verify a verifiable credential certificate (Public endpoint - no authentication required)",
+      },
+    },
+  )
+  .get(
+    "/nft/:nftAddress",
+    async ({ params }: { params: { nftAddress: string } }) => {
+      try {
+        const certificate = await getCertificateByNftAddress(params.nftAddress);
+        return { valid: true, certificate };
+      } catch (error) {
+        return { valid: false, error: "Certificate not found" };
+      }
+    },
+    {
+      params: t.Object({
+        nftAddress: t.String({ description: "NFT mint address on Solana" }),
+      }),
+      response: {
+        200: t.Object({
+          valid: t.Boolean(),
+          certificate: t.Optional(
+            t.Object({
+              vcJson: t.Any(),
+              nftAddress: t.Union([t.String(), t.Null()]),
+              vcHash: t.String(),
+            }),
+          ),
+          error: t.Optional(t.String()),
+        }),
+      },
+      detail: {
+        tags: ["Certificates"],
+        description:
+          "Retrieve certificate by NFT address (Public endpoint - no authentication required)",
       },
     },
   );

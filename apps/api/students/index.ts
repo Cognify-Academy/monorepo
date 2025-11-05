@@ -80,6 +80,7 @@ export default new Elysia({ prefix: "/student" })
             createdAt: t.String(),
             updatedAt: t.String(),
             conceptIds: t.Array(t.String()),
+            completed: t.Boolean(),
           }),
         ),
         403: t.Object({

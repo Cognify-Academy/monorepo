@@ -1,4 +1,5 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333/api/v1";
 
 class ApiError extends Error {
   constructor(
@@ -34,7 +35,7 @@ class ApiClient {
         "Content-Type": "application/json",
         ...options.headers,
       },
-      credentials: "include", // Important for cookies
+      credentials: "include",
       ...options,
     };
 
@@ -60,7 +61,7 @@ class ApiClient {
   }
 
   async login(handle: string, password: string) {
-    return this.makeRequest<{ token: string }>("/api/v1/auth/login", {
+    return this.makeRequest<{ token: string }>("/auth/login", {
       method: "POST",
       body: JSON.stringify({ handle, password }),
     });
@@ -72,20 +73,20 @@ class ApiClient {
     email: string,
     password: string,
   ) {
-    return this.makeRequest<{ token: string }>("/api/v1/auth/signup", {
+    return this.makeRequest<{ token: string }>("/auth/signup", {
       method: "POST",
       body: JSON.stringify({ name, username, email, password }),
     });
   }
 
   async refresh() {
-    return this.makeRequest<{ token: string }>("/api/v1/auth/refresh", {
+    return this.makeRequest<{ token: string }>("/auth/refresh", {
       method: "POST",
     });
   }
 
   async logout() {
-    return this.makeRequest<{ message: string }>("/api/v1/auth/logout", {
+    return this.makeRequest<{ message: string }>("/auth/logout", {
       method: "POST",
     });
   }
@@ -104,7 +105,7 @@ class ApiClient {
         instructors: Array<{ id: string }>;
         conceptIds: string[];
       }>
-    >("/api/v1/courses");
+    >("/courses");
   }
 
   async getCourse(identifier: string, token?: string) {
@@ -164,7 +165,7 @@ class ApiClient {
       message: string;
       enrollment: Record<string, unknown>;
     }>(
-      "/api/v1/enrollments",
+      "/enrollments",
       {
         method: "POST",
         body: JSON.stringify({ courseId }),
@@ -187,7 +188,7 @@ class ApiClient {
         instructors: Array<{ id: string }>;
         conceptIds: string[];
       }>
-    >("/api/v1/student/courses", {}, token);
+    >("/student/courses", {}, token);
   }
 
   // Authenticated requests
@@ -222,7 +223,7 @@ class ApiClient {
         createdAt: string;
         updatedAt: string;
       }>
-    >("/api/v1/concepts");
+    >("/concepts");
   }
 
   // Instructor course methods
@@ -245,7 +246,7 @@ class ApiClient {
       createdAt: string;
       updatedAt: string;
     }>(
-      "/api/v1/instructor/courses",
+      "/instructor/courses",
       {
         method: "POST",
         body: JSON.stringify(data),
@@ -338,7 +339,7 @@ class ApiClient {
         instructors: Array<{ id: string }>;
         conceptIds: string[];
       }>
-    >("/api/v1/instructor/courses", {}, token);
+    >("/instructor/courses", {}, token);
   }
 
   // Section management methods
@@ -529,7 +530,7 @@ class ApiClient {
       url: string;
       lessonId: string;
     }>(
-      "/api/v1/instructor/courses/media",
+      "/instructor/courses/media",
       {
         method: "POST",
         body: JSON.stringify(data),
@@ -594,7 +595,7 @@ class ApiClient {
         updatedAt: string;
       };
     }>(
-      "/api/v1/student/lessons/progress",
+      "/student/lessons/progress",
       {
         method: "POST",
         body: JSON.stringify({ lessonId, completed }),
@@ -647,7 +648,7 @@ class ApiClient {
           completedAt?: string;
         }>;
       }>;
-    }>("/api/v1/student/concepts/completed", {}, token);
+    }>("/student/concepts/completed", {}, token);
   }
 
   async getProfile(token: string) {
@@ -658,7 +659,7 @@ class ApiClient {
       name?: string;
       createdAt?: string;
       updatedAt?: string;
-    }>("/api/v1/student/profile", {}, token);
+    }>("/student/profile", {}, token);
   }
 }
 

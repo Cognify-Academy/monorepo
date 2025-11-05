@@ -5,7 +5,7 @@ import nacl from "tweetnacl";
 
 const secretKey = bs58.decode(process.env.SOLANA_PRIVATE_KEY!);
 export const issuerKeypair = Keypair.fromSecretKey(secretKey);
-export const issuerDID = `did:sol:${issuerKeypair.publicKey.toBase58()}`;
+export const issuerDid = `did:sol:${issuerKeypair.publicKey.toBase58()}`;
 
 export const signVC = (vcJson: Record<string, any>) => {
   const message = new TextEncoder().encode(JSON.stringify(vcJson));
@@ -16,7 +16,7 @@ export const signVC = (vcJson: Record<string, any>) => {
     type: "Ed25519Signature2020",
     created: new Date().toISOString(),
     proofPurpose: "assertionMethod",
-    verificationMethod: `${issuerDID}#key-1`,
+    verificationMethod: `${issuerDid}#key-1`,
     proofValue: encodedSig,
   };
 };

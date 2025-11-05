@@ -190,7 +190,7 @@ describe("Students", () => {
       });
     });
 
-    test("should handle empty parameters", async () => {
+    test("should handle empty parameters for getProfile", async () => {
       mockFindUniqueUser.mockImplementationOnce(() => null as any);
       const result = await getProfile();
 
@@ -231,6 +231,8 @@ describe("Students", () => {
           published: true,
           userId: "user-123",
           conceptCourses: undefined,
+          completed: false,
+          enrollments: undefined,
           conceptIds: ["concept-1", "concept-2"],
           createdAt: "2025-03-17T15:52:12.689Z",
           updatedAt: "2025-03-17T15:52:12.689Z",
@@ -243,6 +245,8 @@ describe("Students", () => {
           published: true,
           userId: "user-123",
           conceptCourses: undefined,
+          completed: false,
+          enrollments: undefined,
           conceptIds: ["concept-3"],
           createdAt: "2025-03-17T15:52:12.689Z",
           updatedAt: "2025-03-17T15:52:12.689Z",
@@ -255,6 +259,7 @@ describe("Students", () => {
           conceptCourses: {
             select: { conceptId: true },
           },
+          enrollments: false,
         },
       });
     });
@@ -273,6 +278,10 @@ describe("Students", () => {
           conceptCourses: {
             select: { conceptId: true },
           },
+          enrollments: {
+            where: { userId: "user-456" },
+            select: { completed: true },
+          },
         },
       });
     });
@@ -287,11 +296,12 @@ describe("Students", () => {
           conceptCourses: {
             select: { conceptId: true },
           },
+          enrollments: false,
         },
       });
     });
 
-    test("should handle empty parameters", async () => {
+    test("should handle empty parameters for getCourses", async () => {
       const result = await getCourses();
 
       expect(result).toHaveLength(2);
@@ -301,6 +311,7 @@ describe("Students", () => {
           conceptCourses: {
             select: { conceptId: true },
           },
+          enrollments: false,
         },
       });
     });

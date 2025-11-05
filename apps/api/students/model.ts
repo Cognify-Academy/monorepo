@@ -50,6 +50,12 @@ export async function getCourses({ userId }: { userId?: string } = {}) {
         conceptCourses: {
           select: { conceptId: true },
         },
+        enrollments: userId
+          ? {
+              where: { userId: userId },
+              select: { completed: true },
+            }
+          : false,
       },
     });
 
@@ -57,9 +63,10 @@ export async function getCourses({ userId }: { userId?: string } = {}) {
       `Retrieved ${courses.length} courses${userId ? ` for student ${userId}` : ""}`,
     );
 
-    const transformedCourses = courses.map((course) => ({
-      ...{ ...course, conceptCourses: undefined },
-      conceptIds: course.conceptCourses?.map((cc) => cc.conceptId) || [],
+    const transformedCourses = courses.map((course: any) => ({
+      ...{ ...course, conceptCourses: undefined, enrollments: undefined },
+      conceptIds: course.conceptCourses?.map((cc: any) => cc.conceptId) || [],
+      completed: course.enrollments?.[0]?.completed || false,
       createdAt: course.createdAt.toISOString(),
       updatedAt: course.updatedAt.toISOString(),
     }));
@@ -173,7 +180,7 @@ export async function getLessonProgress({
       ...progress,
       createdAt: progress.createdAt.toISOString(),
       updatedAt: progress.updatedAt.toISOString(),
-      completedAt: progress.completedAt?.toISOString() || null,
+      completedAt: progress.completedAt?.toISOString(),
     };
   } catch (error) {
     console.error(

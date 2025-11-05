@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/auth";
 import { apiClient } from "@/lib/api";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { CertificateRequestV2 } from "./certificate-request";
 
 interface EnrolledCourse {
   id: string;
@@ -15,6 +16,7 @@ interface EnrolledCourse {
   conceptCount: number;
   progressPercentage: number;
   estimatedTimeLeft: string;
+  completed: boolean;
 }
 
 interface Course {
@@ -23,6 +25,7 @@ interface Course {
   slug: string;
   description: string;
   conceptIds?: string[];
+  completed: boolean;
 }
 
 interface EnrolledCoursesProps {
@@ -60,8 +63,10 @@ function transformEnrolledCourse(
   const colorIndex = index % enrolledColors.length;
   const iconIndex = index % enrolledIcons.length;
 
-  // Mock progress - in a real app, this would come from the API
-  const progressPercentage = Math.floor(Math.random() * 100);
+  // Use completed status from API, or mock progress for testing
+  const progressPercentage = course.completed
+    ? 100
+    : Math.floor(Math.random() * 100);
   const conceptCount = course.conceptIds?.length || 0;
 
   // Estimate time left based on progress
@@ -86,6 +91,7 @@ function transformEnrolledCourse(
     conceptCount,
     progressPercentage,
     estimatedTimeLeft,
+    completed: course.completed,
   };
 }
 
@@ -237,10 +243,16 @@ export function EnrolledCourses({
             {courses.map((course) => (
               <div
                 key={course.id}
-                className="cursor-pointer rounded-lg border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
-                onClick={() => {
-                  window.location.href = `/courses/${course.slug}`;
-                }}
+                className={`rounded-lg border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md ${
+                  !course.completed ? "cursor-pointer" : ""
+                }`}
+                onClick={
+                  !course.completed
+                    ? () => {
+                        window.location.href = `/courses/${course.slug}`;
+                      }
+                    : undefined
+                }
               >
                 <div className="mb-3 flex items-start justify-between">
                   <div
@@ -292,13 +304,28 @@ export function EnrolledCourses({
                   <span className="text-sm text-gray-500">
                     {course.progressPercentage}% complete
                   </span>
-                  <Link
-                    href={`/courses/${course.slug}`}
-                    className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-green-700"
-                  >
-                    Resume Course
-                  </Link>
+                  {!course.completed && (
+                    <Link
+                      href={`/courses/${course.slug}`}
+                      className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-green-700"
+                    >
+                      Resume Course
+                    </Link>
+                  )}
                 </div>
+
+                {/* Show certificate request when course is completed */}
+                {course.completed && (
+                  <div className="mt-4">
+                    <CertificateRequestV2
+                      courseId={course.id}
+                      courseTitle={course.title}
+                      onSuccess={(data) => {
+                        console.log("Certificate issued:", data);
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             ))}
           </div>

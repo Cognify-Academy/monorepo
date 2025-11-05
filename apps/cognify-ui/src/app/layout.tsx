@@ -1,8 +1,8 @@
 import { AuthProvider } from "@/contexts/auth";
+import { SolanaWalletProvider } from "@/contexts/solana-wallet";
 import { clsx } from "clsx";
 import { GeistMono } from "geist/font/mono";
 import localFont from "next/font/local";
-import React from "react";
 import "./globals.css";
 
 const InterVariable = localFont({
@@ -26,7 +26,9 @@ export default function RootLayout({ children }: { children: any }) {
     >
       <body className="bg-white dark:bg-gray-950">
         <AuthProvider>
-          <div className="isolate bg-white dark:bg-gray-950">{children}</div>
+          <SolanaWalletProvider>
+            <div className="isolate bg-white dark:bg-gray-950">{children}</div>
+          </SolanaWalletProvider>
         </AuthProvider>
       </body>
     </html>

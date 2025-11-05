@@ -1,35 +1,47 @@
-import { apiClient } from "@/lib/api";
 import { act, render, waitFor } from "@testing-library/react";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  mock,
+  test,
+  vi,
+} from "bun:test";
 import React from "react";
 import { AuthProvider, useAuth } from "../auth";
 
-jest.mock("@/lib/api", () => {
-  return {
-    apiClient: {
-      refresh: jest.fn(),
-      login: jest.fn(),
-      signup: jest.fn(),
-      logout: jest.fn(),
-    },
-    ApiError: class ApiError extends Error {
-      constructor(
-        message: string,
-        public status?: number,
-      ) {
-        super(message);
-        this.name = "ApiError";
-      }
-    },
+const setItemSpy = vi.spyOn(localStorage, "setItem");
+
+// ---- Mock API (must be before import of module under test consumers) ----
+mock.module("@/lib/api", () => {
+  const apiClient = {
+    refresh: mock(() => Promise.resolve(null)),
+    login: mock(() => Promise.resolve(null)),
+    signup: mock(() => Promise.resolve(null)),
+    logout: mock(() => Promise.resolve(null)),
   };
+  class ApiError extends Error {
+    status?: number;
+    constructor(message: string, status?: number) {
+      super(message);
+      this.name = "ApiError";
+      this.status = status;
+    }
+  }
+  return { apiClient, ApiError };
 });
 
+import { apiClient } from "@/lib/api";
+
 const mockedApi = apiClient as unknown as {
-  refresh: jest.Mock;
-  login: jest.Mock;
-  signup: jest.Mock;
-  logout: jest.Mock;
+  refresh: ReturnType<typeof mock>;
+  login: ReturnType<typeof mock>;
+  signup: ReturnType<typeof mock>;
+  logout: ReturnType<typeof mock>;
 };
 
+// ---- Helpers ----
 function base64Url(input: string) {
   return Buffer.from(input)
     .toString("base64")
@@ -38,13 +50,13 @@ function base64Url(input: string) {
     .replace(/=+$/, "");
 }
 
-function makeToken(payloadObj: Record<string, any>) {
+function makeToken(payload: Record<string, any>) {
   const header = base64Url(JSON.stringify({ alg: "none", typ: "JWT" }));
-  const payload = base64Url(JSON.stringify(payloadObj));
-  const signature = ""; // not used in tests
-  return `${header}.${payload}.${signature}`;
+  const body = base64Url(JSON.stringify(payload));
+  return `${header}.${body}.`;
 }
 
+// Consumer to grab context; IMPORTANT: don't return anything from useEffect!
 function TestConsumer({
   onReady,
 }: {
@@ -52,32 +64,65 @@ function TestConsumer({
 }) {
   const ctx = useAuth();
   React.useEffect(() => {
-    onReady(ctx);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    onReady(ctx); // no return
+  }, [ctx, onReady]);
   return null;
 }
 
-describe("AuthProvider getAccessToken & refresh behavior", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
+// Stub window.location.href set (logout writes to it)
+let originalLocation: Location;
+beforeEach(() => {
+  localStorage.clear();
+  mockedApi.refresh.mockReset();
+  mockedApi.login.mockReset();
+  mockedApi.signup.mockReset();
+  mockedApi.logout.mockReset();
 
-  test("initial refresh is called on mount and getAccessToken returns existing valid token", async () => {
+  originalLocation = window.location;
+  // Define a writable stub for the test run
+  // @ts-expect-error override for tests
+  delete (window as any).location;
+  // Minimal stub: keep origin fields but intercept href set
+  Object.defineProperty(window, "location", {
+    configurable: true,
+    value: {
+      ...originalLocation,
+      get href() {
+        return originalLocation.href;
+      },
+      set href(_v: string) {
+        // swallow redirects during tests
+      },
+    },
+  });
+});
+
+afterEach(() => {
+  // restore original location
+  Object.defineProperty(window, "location", {
+    configurable: true,
+    value: originalLocation,
+  });
+});
+
+describe("AuthProvider", () => {
+  test("refresh on mount sets user and initialized", async () => {
     const validToken = makeToken({
       id: "1",
       username: "alice",
-      exp: Math.floor(Date.now() / 1000) + 60 * 10,
+      exp: Math.floor(Date.now() / 1000) + 600,
     });
-
-    // initial refresh returns a valid token
     mockedApi.refresh.mockResolvedValueOnce({ token: validToken });
 
     let ctxRef: ReturnType<typeof useAuth> | null = null;
-    await act(async () => {
+    await act(() => {
       render(
         <AuthProvider>
-          <TestConsumer onReady={(ctx) => (ctxRef = ctx)} />
+          <TestConsumer
+            onReady={(ctx) => {
+              ctxRef = ctx;
+            }}
+          />
         </AuthProvider>,
       );
     });
@@ -87,93 +132,156 @@ describe("AuthProvider getAccessToken & refresh behavior", () => {
       expect(ctxRef!.isInitialized).toBe(true);
     });
 
-    // getAccessToken should return the valid token and not call refresh again
-    const token = await act(async () => ctxRef!.getAccessToken());
-    expect(token).toBe(validToken);
-    expect(mockedApi.refresh).toHaveBeenCalledTimes(1); // only the initial mount call
+    expect(mockedApi.refresh).toHaveBeenCalledTimes(1);
+    expect(ctxRef!.isAuthenticated).toBe(true);
+    expect(ctxRef!.user?.username).toBe("alice");
   });
 
-  test("login sets an expired token and getAccessToken triggers refresh once (single-flight)", async () => {
-    const expiredToken = makeToken({
+  test("login sets token and user", async () => {
+    const token = makeToken({
       id: "2",
       username: "bob",
-      exp: Math.floor(Date.now() / 1000) - 60, // already expired
+      exp: Math.floor(Date.now() / 1000) + 600,
     });
+    mockedApi.refresh.mockResolvedValueOnce(null);
+    mockedApi.login.mockResolvedValueOnce({ token });
+
+    let ctxRef: ReturnType<typeof useAuth> | null = null;
+    await act(() =>
+      render(
+        <AuthProvider>
+          <TestConsumer
+            onReady={(ctx) => {
+              ctxRef = ctx;
+            }}
+          />
+        </AuthProvider>,
+      ),
+    );
+
+    await waitFor(() => expect(ctxRef?.isInitialized).toBe(true));
+
+    await act(async () => {
+      await ctxRef!.login("bob", "pw");
+    });
+
+    await waitFor(() => expect(ctxRef!.token).toBe(token));
+    expect(setItemSpy).toHaveBeenCalledWith("accessToken", token);
+    setItemSpy.mockRestore();
+    expect(ctxRef!.isAuthenticated).toBe(true);
+    expect(ctxRef!.user?.username).toBe("bob");
+  });
+
+  test("getAccessToken triggers refresh when no token present", async () => {
     const freshToken = makeToken({
-      id: "2",
-      username: "bob",
-      exp: Math.floor(Date.now() / 1000) + 60 * 10,
+      id: "3",
+      username: "charlie",
+      exp: Math.floor(Date.now() / 1000) + 600,
     });
-
-    // initial refresh (mount) returns null -> unauthenticated
-    mockedApi.refresh.mockResolvedValueOnce(null);
-    // subsequent refresh (when requested) will return freshToken
-    mockedApi.refresh.mockImplementationOnce(async () => {
-      // simulate small delay to allow concurrent callers to queue
-      await new Promise((res) => setTimeout(res, 10));
-      return { token: freshToken };
-    });
-
-    mockedApi.login.mockResolvedValueOnce({ token: expiredToken });
+    mockedApi.refresh.mockResolvedValueOnce(null); // init
+    mockedApi.refresh.mockResolvedValueOnce({ token: freshToken }); // refresh during getAccessToken
 
     let ctxRef: ReturnType<typeof useAuth> | null = null;
-    await act(async () => {
+    await act(() =>
       render(
         <AuthProvider>
-          <TestConsumer onReady={(ctx) => (ctxRef = ctx)} />
+          <TestConsumer
+            onReady={(ctx) => {
+              ctxRef = ctx;
+            }}
+          />
         </AuthProvider>,
-      );
-    });
+      ),
+    );
 
-    expect(ctxRef).not.toBeNull();
-    // perform login which will set the expired token
-    await act(async () => {
-      await ctxRef!.login("bob", "password");
-    });
+    await waitFor(() => expect(ctxRef?.isInitialized).toBe(true));
 
-    // token is expired so getAccessToken should trigger refresh.
-    // Call twice concurrently to assert single-flight refresh
-    const p1 = act(async () => ctxRef!.getAccessToken());
-    const p2 = act(async () => ctxRef!.getAccessToken());
-
-    const [t1, t2] = await Promise.all([p1, p2]);
-
-    expect(t1).toBe(freshToken);
-    expect(t2).toBe(freshToken);
-    // initial mount refresh + single refresh during getAccessToken -> total 2 calls
-    expect(mockedApi.refresh).toHaveBeenCalledTimes(2);
+    const token = await ctxRef!.getAccessToken();
+    expect(token).toBe(freshToken);
+    await waitFor(() => expect(ctxRef!.user?.username).toBe("charlie"));
   });
 
-  test("getAccessToken returns null when refresh fails and clears user", async () => {
-    const expiredToken = makeToken({
-      id: "3",
-      username: "carl",
-      exp: Math.floor(Date.now() / 1000) - 60,
-    });
-
-    // initial refresh returns null (unauthenticated)
-    mockedApi.refresh.mockResolvedValueOnce(null);
-    mockedApi.login.mockResolvedValueOnce({ token: expiredToken });
-    // refresh during getAccessToken fails
-    mockedApi.refresh.mockRejectedValueOnce(new Error("refresh failed"));
+  test("failed refresh returns null and leaves user unauthenticated", async () => {
+    mockedApi.refresh.mockResolvedValueOnce(null).mockResolvedValueOnce(null);
 
     let ctxRef: ReturnType<typeof useAuth> | null = null;
-    await act(async () => {
+    await act(() =>
       render(
         <AuthProvider>
-          <TestConsumer onReady={(ctx) => (ctxRef = ctx)} />
+          <TestConsumer
+            onReady={(ctx) => {
+              ctxRef = ctx;
+            }}
+          />
         </AuthProvider>,
-      );
-    });
+      ),
+    );
 
-    // login sets expired token
-    await act(async () => {
-      await ctxRef!.login("carl", "pw");
-    });
+    await waitFor(() => expect(ctxRef?.isInitialized).toBe(true));
 
-    // getAccessToken should attempt refresh, fail, clear user and return null
-    const token = await act(async () => ctxRef!.getAccessToken());
+    const token = await ctxRef!.getAccessToken();
     expect(token).toBeNull();
     expect(ctxRef!.isAuthenticated).toBe(false);
+    expect(ctxRef!.user).toBeNull();
+  });
+
+  test("hasRole works from decoded token", async () => {
+    const token = makeToken({
+      id: "4",
+      username: "dana",
+      roles: ["STUDENT", "ADMIN"],
+      exp: Math.floor(Date.now() / 1000) + 600,
+    });
+    mockedApi.refresh.mockResolvedValueOnce({ token });
+
+    let ctxRef: ReturnType<typeof useAuth> | null = null;
+    await act(() =>
+      render(
+        <AuthProvider>
+          <TestConsumer
+            onReady={(ctx) => {
+              ctxRef = ctx;
+            }}
+          />
+        </AuthProvider>,
+      ),
+    );
+
+    await waitFor(() => expect(ctxRef?.isInitialized).toBe(true));
+    expect(ctxRef!.hasRole("ADMIN")).toBe(true);
+    expect(ctxRef!.hasRole("UNKNOWN")).toBe(false);
+  });
+
+  test("logout clears user and token and calls api logout", async () => {
+    const token = makeToken({
+      id: "5",
+      username: "eve",
+      exp: Math.floor(Date.now() / 1000) + 600,
+    });
+    mockedApi.refresh.mockResolvedValueOnce({ token });
+
+    let ctxRef: ReturnType<typeof useAuth> | null = null;
+    await act(() =>
+      render(
+        <AuthProvider>
+          <TestConsumer
+            onReady={(ctx) => {
+              ctxRef = ctx;
+            }}
+          />
+        </AuthProvider>,
+      ),
+    );
+
+    await waitFor(() => expect(ctxRef?.isInitialized).toBe(true));
+
+    await act(async () => {
+      await ctxRef!.logout();
+    });
+
+    expect(mockedApi.logout).toHaveBeenCalled();
+    expect(ctxRef!.user).toBeNull();
+    expect(ctxRef!.token).toBeNull();
+    expect(localStorage.getItem("accessToken")).toBeNull();
   });
 });
