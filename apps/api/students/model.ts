@@ -255,6 +255,57 @@ export async function getStudentProgress({
   }
 }
 
+export async function getStudentCourseProgress({
+  userId,
+  courseId,
+}: {
+  userId: string;
+  courseId: string;
+}) {
+  console.debug(
+    `Fetching course progress for user: ${userId}, course: ${courseId}`,
+  );
+
+  try {
+    const completedCount = await prisma.lessonProgress.count({
+      where: {
+        userId,
+        completed: true,
+        lesson: {
+          section: {
+            courseId,
+          },
+        },
+      },
+    });
+
+    const totalCount = await prisma.lesson.count({
+      where: {
+        section: {
+          courseId,
+        },
+      },
+    });
+
+    const percentComplete =
+      totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+    console.debug(
+      `Course progress: ${completedCount}/${totalCount} lessons completed (${percentComplete}%) for user: ${userId}, course: ${courseId}`,
+    );
+
+    return {
+      percentComplete,
+    };
+  } catch (error) {
+    console.error(
+      `Failed to fetch course progress for user: ${userId}, course: ${courseId}`,
+      error,
+    );
+    throw error;
+  }
+}
+
 export async function getConceptsFromCompletedLessons({
   userId,
 }: {

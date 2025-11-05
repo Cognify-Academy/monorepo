@@ -7,6 +7,7 @@ import {
   getLessonProgress,
   getStudentProgress,
   getConceptsFromCompletedLessons,
+  getStudentCourseProgress,
 } from "../model";
 
 const testUser = {
@@ -126,11 +127,35 @@ const mockFindManyCourses = mock(() => [
   },
 ]);
 
+const mockFindUniqueCourse = mock(() => ({
+  id: "course-123",
+  title: "Test Course 1",
+  description: "This is a test course",
+  slug: "test-course-1",
+  published: true,
+  userId: "user-123",
+}));
+
+const mockFindUniqueEnrollment = mock(() => ({
+  id: "enrollment-123",
+  userId: "user-123",
+  courseId: "course-123",
+  completed: false,
+  createdAt: new Date("2025-03-17T15:52:12.689Z"),
+}));
+
+const mockCountLessonProgress = mock(() => 0);
+const mockCountLesson = mock(() => 0);
+
+prisma.course.findUnique = mockFindUniqueCourse as any;
+prisma.enrollment.findUnique = mockFindUniqueEnrollment as any;
 prisma.user.findUnique = mockFindUniqueUser as any;
 prisma.lesson.findUnique = mockFindUniqueLesson as any;
 prisma.lessonProgress.upsert = mockUpsertLessonProgress as any;
 prisma.lessonProgress.findUnique = mockFindUniqueLessonProgress as any;
 prisma.lessonProgress.findMany = mockFindManyLessonProgress as any;
+prisma.lessonProgress.count = mockCountLessonProgress as any;
+prisma.lesson.count = mockCountLesson as any;
 prisma.course.findMany = mockFindManyCourses as any;
 
 afterEach(() => {
@@ -141,6 +166,8 @@ afterEach(() => {
   mockFindUniqueLessonProgress.mockClear();
   mockFindManyLessonProgress.mockClear();
   mockFindManyCourses.mockClear();
+  mockCountLessonProgress.mockClear();
+  mockCountLesson.mockClear();
 });
 
 describe("Students", () => {
@@ -483,6 +510,71 @@ describe("Students", () => {
           completed: true,
         }),
       ).rejects.toThrow("Database connection failed");
+    });
+  });
+
+  describe("getStudentCourseProgress", () => {
+    test("should return course progress when found", async () => {
+      // Mock: 1 completed lesson out of 2 total lessons = 50%
+      mockCountLessonProgress.mockImplementationOnce(() => 1);
+      mockCountLesson.mockImplementationOnce(() => 2);
+
+      const result = await getStudentCourseProgress({
+        userId: "user-123",
+        courseId: "course-456",
+      });
+      expect(result).toEqual({
+        percentComplete: 50,
+      });
+
+      // Verify the count queries were called with correct parameters
+      expect(mockCountLessonProgress).toHaveBeenCalledWith({
+        where: {
+          userId: "user-123",
+          completed: true,
+          lesson: {
+            section: {
+              courseId: "course-456",
+            },
+          },
+        },
+      });
+
+      expect(mockCountLesson).toHaveBeenCalledWith({
+        where: {
+          section: {
+            courseId: "course-456",
+          },
+        },
+      });
+    });
+
+    test("should return 0 when no progress found", async () => {
+      // Mock: 0 completed lessons out of 0 total lessons = 0%
+      mockCountLessonProgress.mockImplementationOnce(() => 0);
+      mockCountLesson.mockImplementationOnce(() => 0);
+
+      const result = await getStudentCourseProgress({
+        userId: "user-123",
+        courseId: "course-123",
+      });
+      expect(result).toEqual({
+        percentComplete: 0,
+      });
+    });
+
+    test("should handle database errors", async () => {
+      const dbError = new Error("Database query failed");
+      mockCountLessonProgress.mockImplementationOnce(() => {
+        throw dbError;
+      });
+
+      await expect(
+        getStudentCourseProgress({
+          userId: "user-123",
+          courseId: "course-123",
+        }),
+      ).rejects.toThrow("Database query failed");
     });
   });
 
