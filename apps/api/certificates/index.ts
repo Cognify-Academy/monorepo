@@ -6,6 +6,7 @@ import {
   getCertificatesByUserId,
   getCertificateByVcHash,
   getCertificateByNftAddress,
+  getCertificateByUserIdAndCourseId,
 } from "./model";
 
 export default new Elysia({ prefix: "/certificates" })
@@ -41,14 +42,22 @@ export default new Elysia({ prefix: "/certificates" })
       if (!isAdmin && user.id !== body.userId) {
         set.status = 403;
         return {
-          error: "Forbidden: You can only issue certificates for yourself",
+          error:
+            "Forbidden: Admin or you can only issue certificates for yourself",
         };
       }
 
       try {
-        // Check if the student has enrolled and completed the course
-        const enrollment = await getEnrollment(body.userId, body.courseId);
+        const existingCertificate = await getCertificateByUserIdAndCourseId({
+          userId: body.userId,
+          courseId: body.courseId,
+        });
+        if (existingCertificate) {
+          set.status = 400;
+          return { error: "Certificate already exists" };
+        }
 
+        const enrollment = await getEnrollment(body.userId, body.courseId);
         if (!enrollment) {
           set.status = 404;
           return { error: "Enrollment not found for this course" };

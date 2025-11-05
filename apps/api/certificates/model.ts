@@ -22,6 +22,19 @@ export async function getCertificateById(id: string) {
   });
 }
 
+export async function getCertificateByUserIdAndCourseId({
+  userId,
+  courseId,
+}: {
+  userId: string;
+  courseId: string;
+}) {
+  return await prisma.issuedCertificate.findFirst({
+    where: { userId, courseId },
+    select: { vcJson: true, nftAddress: true, vcHash: true },
+  });
+}
+
 export async function getCertificatesByUserId(userId: string) {
   return await prisma.issuedCertificate.findMany({
     where: { userId },

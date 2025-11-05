@@ -10,8 +10,10 @@ import {
 
 import {
   getCertificateById,
+  getCertificateByUserIdAndCourseId,
   getCertificatesByUserId,
   getCertificateByVcHash,
+  getCertificateByNftAddress,
   createCertificate,
   getCourseTitle,
   getEnrollment,
@@ -64,6 +66,8 @@ const mockEnrollment = {
   createdAt: new Date("2025-01-01"),
 };
 
+const mockFindFirst = mock((): any => null);
+
 const mockFindUnique = mock((): any => mockCertificateWithRelations);
 const mockFindMany = mock((): any => [mockCertificateWithRelations]);
 const mockFindFirstOrThrow = mock((): any => ({
@@ -76,6 +80,7 @@ const mockEnrollmentFindUnique = mock((): any => mockEnrollment);
 
 prisma.issuedCertificate.findUnique = mockFindUnique as any;
 prisma.issuedCertificate.findMany = mockFindMany as any;
+prisma.issuedCertificate.findFirst = mockFindFirst as any;
 prisma.issuedCertificate.findFirstOrThrow = mockFindFirstOrThrow as any;
 prisma.issuedCertificate.create = mockCreate as any;
 prisma.course.findUnique = mockCourseFindUnique as any;
@@ -84,6 +89,7 @@ prisma.enrollment.findUnique = mockEnrollmentFindUnique as any;
 beforeEach(() => {
   mockFindUnique.mockClear();
   mockFindMany.mockClear();
+  mockFindFirst.mockClear();
   mockFindFirstOrThrow.mockClear();
   mockCreate.mockClear();
   mockCourseFindUnique.mockClear();
@@ -198,6 +204,55 @@ describe("getCertificatesByUserId", () => {
     await expect(getCertificatesByUserId("user-1")).rejects.toThrow(
       "Database timeout",
     );
+  });
+});
+
+describe("getCertificateByUserIdAndCourseId", () => {
+  test("should return null if certificate not found", async () => {
+    mockFindFirst.mockImplementationOnce(() => null);
+
+    const result = await getCertificateByUserIdAndCourseId({
+      userId: "user-1",
+      courseId: "course-1",
+    });
+
+    expect(result).toBeNull();
+    expect(mockFindFirst).toHaveBeenCalled();
+  });
+
+  test("should return certificate by user ID and course ID", async () => {
+    mockFindFirst.mockImplementationOnce(() => mockCertificate);
+    const result = await getCertificateByUserIdAndCourseId({
+      userId: "user-1",
+      courseId: "course-1",
+    });
+
+    expect(result).toEqual(mockCertificate);
+    expect(mockFindFirst).toHaveBeenCalledWith({
+      where: { userId: "user-1", courseId: "course-1" },
+      select: { vcJson: true, nftAddress: true, vcHash: true },
+    });
+  });
+});
+
+describe("getCertificateByNftAddress", () => {
+  test("should return null if certificate not found", async () => {
+    mockFindFirstOrThrow.mockImplementationOnce(() => null);
+    const result = await getCertificateByNftAddress("solana:abc123");
+
+    expect(result).toBeNull();
+    expect(mockFindFirstOrThrow).toHaveBeenCalled();
+  });
+
+  test("should return certificate by NFT address", async () => {
+    mockFindFirstOrThrow.mockImplementationOnce(() => mockCertificate);
+    const result = await getCertificateByNftAddress("solana:abc123");
+
+    expect(result).toEqual(mockCertificate);
+    expect(mockFindFirstOrThrow).toHaveBeenCalledWith({
+      where: { nftAddress: "solana:abc123" },
+      select: { vcJson: true, nftAddress: true, vcHash: true },
+    });
   });
 });
 
