@@ -31,6 +31,7 @@ COPY --from=base /api/node_modules ./node_modules
 # Copy application files
 COPY --from=base /api/index.ts ./
 COPY --from=base /api/health ./health
+COPY --from=base /api/certificates ./certificates
 COPY --from=base /api/auth ./auth
 COPY --from=base /api/concepts ./concepts
 COPY --from=base /api/courses ./courses
