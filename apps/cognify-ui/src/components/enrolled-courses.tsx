@@ -100,14 +100,17 @@ export function EnrolledCourses({
   subtitle = "Continue your learning journey",
   className = "",
 }: EnrolledCoursesProps) {
-  const { isAuthenticated, accessToken } = useAuth();
+  const { isAuthenticated, accessToken, user } = useAuth();
   const [courses, setCourses] = useState<EnrolledCourse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [certificates, setCertificates] = useState<
+    Map<string, { nftAddress: string | null; vcHash: string }>
+  >(new Map());
 
   useEffect(() => {
     const fetchEnrolledCourses = async () => {
-      if (!isAuthenticated || !accessToken) {
+      if (!isAuthenticated || !accessToken || !user) {
         setCourses([]);
         setIsLoading(false);
         return;
@@ -117,9 +120,40 @@ export function EnrolledCourses({
         setIsLoading(true);
         setError(null);
 
-        const enrolledData = await apiClient.getStudentCourses(accessToken);
+        // Fetch courses and certificates in parallel
+        const [enrolledData, certificatesData] = await Promise.all([
+          apiClient.getStudentCourses(accessToken),
+          apiClient.getCertificates(accessToken, user.id).catch(() => ({
+            certificates: [],
+          })),
+        ]);
+
+        // Create a map of courseId -> certificate info
+        const certificateMap = new Map<
+          string,
+          { nftAddress: string | null; vcHash: string }
+        >();
+        certificatesData.certificates.forEach((cert) => {
+          certificateMap.set(cert.courseId, {
+            nftAddress: cert.nftAddress,
+            vcHash: cert.vcHash,
+          });
+        });
+
+        setCertificates(certificateMap);
+
         const transformedCourses = enrolledData.map((course, index) =>
-          transformEnrolledCourse(course, index),
+          transformEnrolledCourse(
+            {
+              id: course.id,
+              title: course.title,
+              slug: course.slug,
+              description: course.description,
+              conceptIds: course.conceptIds,
+              completed: course.completed,
+            },
+            index,
+          ),
         );
 
         setCourses(transformedCourses);
@@ -132,7 +166,7 @@ export function EnrolledCourses({
     };
 
     fetchEnrolledCourses();
-  }, [isAuthenticated, accessToken]);
+  }, [isAuthenticated, accessToken, user]);
 
   if (!isAuthenticated) {
     return (
@@ -314,14 +348,34 @@ export function EnrolledCourses({
                   )}
                 </div>
 
-                {/* Show certificate request when course is completed */}
+                {/* Show certificate request or link when course is completed */}
                 {course.completed && (
                   <div className="mt-4">
                     <CertificateRequestV2
                       courseId={course.id}
                       courseTitle={course.title}
+                      existingCertificate={certificates.get(course.id)}
                       onSuccess={(data) => {
                         console.log("Certificate issued:", data);
+                        // Refresh certificates after successful issuance
+                        if (user && accessToken) {
+                          apiClient
+                            .getCertificates(accessToken, user.id)
+                            .then((data) => {
+                              const certificateMap = new Map<
+                                string,
+                                { nftAddress: string | null; vcHash: string }
+                              >();
+                              data.certificates.forEach((cert) => {
+                                certificateMap.set(cert.courseId, {
+                                  nftAddress: cert.nftAddress,
+                                  vcHash: cert.vcHash,
+                                });
+                              });
+                              setCertificates(certificateMap);
+                            })
+                            .catch(console.error);
+                        }
                       }}
                     />
                   </div>

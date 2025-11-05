@@ -38,12 +38,14 @@ function findMetadataPDA(mint: PublicKey): [PublicKey, number] {
 interface CertificateRequestProps {
   courseId: string;
   courseTitle: string;
+  existingCertificate?: { nftAddress: string | null; vcHash: string } | null;
   onSuccess?: (certificateData: any) => void;
 }
 
 export function CertificateRequestV2({
   courseId,
   courseTitle,
+  existingCertificate,
   onSuccess,
 }: CertificateRequestProps) {
   const { publicKey, signTransaction } = useWallet();
@@ -213,6 +215,81 @@ export function CertificateRequestV2({
       setIsRequesting(false);
     }
   };
+
+  // If certificate already exists, show link to view it
+  if (existingCertificate) {
+    const apiUrl =
+      process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333/api/v1";
+    const certificateUrl = existingCertificate.nftAddress
+      ? `${apiUrl}/certificates/nft/${existingCertificate.nftAddress}`
+      : `${apiUrl}/certificates/verify/${existingCertificate.vcHash}`;
+
+    return (
+      <div className="rounded-lg border border-green-200 bg-green-50 p-6 dark:border-green-800 dark:bg-green-900/20">
+        <div className="flex items-start space-x-3">
+          <svg
+            className="mt-0.5 h-6 w-6 flex-shrink-0 text-green-600 dark:text-green-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <div className="flex-1">
+            <h3 className="font-semibold text-green-900 dark:text-green-100">
+              Certificate Issued! 🎉
+            </h3>
+            <p className="mt-2 text-sm text-green-800 dark:text-green-200">
+              Your completion certificate for{" "}
+              <span className="font-medium">{courseTitle}</span> has been issued
+              as a soulbound NFT.
+            </p>
+            <a
+              href={certificateUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 inline-flex items-center rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-green-700"
+            >
+              <svg
+                className="mr-2 h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                />
+              </svg>
+              View Certificate
+            </a>
+            {existingCertificate.nftAddress && (
+              <p className="mt-3 text-xs text-green-700 dark:text-green-300">
+                NFT Address:{" "}
+                <span className="font-mono">
+                  {existingCertificate.nftAddress.slice(0, 8)}...
+                  {existingCertificate.nftAddress.slice(-8)}
+                </span>
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (success) {
     return (

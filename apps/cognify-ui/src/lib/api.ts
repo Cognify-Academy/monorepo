@@ -187,6 +187,7 @@ class ApiClient {
         userId: string;
         instructors: Array<{ id: string }>;
         conceptIds: string[];
+        completed: boolean;
       }>
     >("/student/courses", {}, token);
   }
@@ -660,6 +661,27 @@ class ApiClient {
       createdAt?: string;
       updatedAt?: string;
     }>("/student/profile", {}, token);
+  }
+
+  async getCertificates(token: string, userId: string) {
+    return this.makeAuthenticatedRequest<{
+      certificates: Array<{
+        id: string;
+        userId: string;
+        courseId: string;
+        studentDid: string;
+        issuerDid: string;
+        vcJson: any;
+        vcHash: string;
+        nftAddress: string | null;
+        createdAt: any;
+        course: {
+          id: string;
+          title: string;
+          description: string;
+        };
+      }>;
+    }>(`/certificates/student/${userId}`, {}, token);
   }
 }
 
