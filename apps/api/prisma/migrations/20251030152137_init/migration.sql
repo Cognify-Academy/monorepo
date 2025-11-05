@@ -1,14 +1,30 @@
 -- CreateEnum
-CREATE TYPE "Role" AS ENUM ('INSTRUCTOR', 'STUDENT', 'ADMIN');
+DO $$ BEGIN
+    CREATE TYPE "Role" AS ENUM ('INSTRUCTOR', 'STUDENT', 'ADMIN');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- CreateEnum
-CREATE TYPE "Audience" AS ENUM ('BEGINNERS', 'INTERMEDIATE', 'ADVANCED');
+DO $$ BEGIN
+    CREATE TYPE "Audience" AS ENUM ('BEGINNERS', 'INTERMEDIATE', 'ADVANCED');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- CreateEnum
-CREATE TYPE "ContactStatus" AS ENUM ('PENDING', 'IN_PROGRESS', 'COMPLETED', 'ARCHIVED');
+DO $$ BEGIN
+    CREATE TYPE "ContactStatus" AS ENUM ('PENDING', 'IN_PROGRESS', 'COMPLETED', 'ARCHIVED');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- CreateEnum
-CREATE TYPE "Column" AS ENUM ('BACKLOG', 'TODO', 'IN_PROGRESS', 'COMPLETE');
+DO $$ BEGIN
+    CREATE TYPE "Column" AS ENUM ('BACKLOG', 'TODO', 'IN_PROGRESS', 'COMPLETE');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- CreateTable
 CREATE TABLE "users" (
