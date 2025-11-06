@@ -39,6 +39,9 @@ const mockFindUniqueLesson = mock(() => ({
   content: {},
   createdAt: new Date("2025-03-17T15:52:12.689Z"),
   updatedAt: new Date("2025-03-17T15:52:12.689Z"),
+  section: {
+    courseId: "course-123",
+  },
 }));
 
 const mockUpsertLessonProgress = mock(() => ({
@@ -146,9 +149,17 @@ const mockFindUniqueEnrollment = mock(() => ({
 
 const mockCountLessonProgress = mock(() => 0);
 const mockCountLesson = mock(() => 0);
+const mockUpdateEnrollment = mock(() => ({
+  id: "enrollment-123",
+  userId: "user-123",
+  courseId: "course-123",
+  completed: true,
+  createdAt: new Date("2025-03-17T15:52:12.689Z"),
+}));
 
 prisma.course.findUnique = mockFindUniqueCourse as any;
 prisma.enrollment.findUnique = mockFindUniqueEnrollment as any;
+prisma.enrollment.update = mockUpdateEnrollment as any;
 prisma.user.findUnique = mockFindUniqueUser as any;
 prisma.lesson.findUnique = mockFindUniqueLesson as any;
 prisma.lessonProgress.upsert = mockUpsertLessonProgress as any;
@@ -168,6 +179,7 @@ afterEach(() => {
   mockFindManyCourses.mockClear();
   mockCountLessonProgress.mockClear();
   mockCountLesson.mockClear();
+  mockUpdateEnrollment.mockClear();
 });
 
 describe("Students", () => {
@@ -379,6 +391,10 @@ describe("Students", () => {
 
   describe("recordLessonProgress", () => {
     test("should record lesson progress successfully", async () => {
+      // Mock course progress less than 100% (not completed)
+      mockCountLessonProgress.mockImplementationOnce(() => 1);
+      mockCountLesson.mockImplementationOnce(() => 2);
+
       const result = await recordLessonProgress({
         userId: "user-123",
         lessonId: "lesson-123",
@@ -397,6 +413,13 @@ describe("Students", () => {
 
       expect(mockFindUniqueLesson).toHaveBeenCalledWith({
         where: { id: "lesson-123" },
+        include: {
+          section: {
+            select: {
+              courseId: true,
+            },
+          },
+        },
       });
 
       expect(mockFindUniqueUser).toHaveBeenCalledWith({
@@ -422,6 +445,98 @@ describe("Students", () => {
           completedAt: expect.any(Date),
         },
       });
+
+      // Verify getStudentCourseProgress was called
+      expect(mockCountLessonProgress).toHaveBeenCalledWith({
+        where: {
+          userId: "user-123",
+          completed: true,
+          lesson: {
+            section: {
+              courseId: "course-123",
+            },
+          },
+        },
+      });
+
+      expect(mockCountLesson).toHaveBeenCalledWith({
+        where: {
+          section: {
+            courseId: "course-123",
+          },
+        },
+      });
+
+      // Enrollment should not be updated when progress is less than 100%
+      expect(mockUpdateEnrollment).not.toHaveBeenCalled();
+    });
+
+    test("should mark course as completed when progress reaches 100%", async () => {
+      // Mock course progress at 100% (2 completed out of 2 total)
+      mockCountLessonProgress.mockImplementationOnce(() => 2);
+      mockCountLesson.mockImplementationOnce(() => 2);
+
+      const result = await recordLessonProgress({
+        userId: "user-123",
+        lessonId: "lesson-123",
+        completed: true,
+      });
+
+      expect(result).toEqual({
+        id: "progress-123",
+        userId: "user-123",
+        lessonId: "lesson-123",
+        completed: true,
+        completedAt: "2025-03-17T15:52:12.689Z",
+        createdAt: "2025-03-17T15:52:12.689Z",
+        updatedAt: "2025-03-17T15:52:12.689Z",
+      });
+
+      // Verify lesson was fetched with section
+      expect(mockFindUniqueLesson).toHaveBeenCalledWith({
+        where: { id: "lesson-123" },
+        include: {
+          section: {
+            select: {
+              courseId: true,
+            },
+          },
+        },
+      });
+
+      // Verify getStudentCourseProgress was called
+      expect(mockCountLessonProgress).toHaveBeenCalledWith({
+        where: {
+          userId: "user-123",
+          completed: true,
+          lesson: {
+            section: {
+              courseId: "course-123",
+            },
+          },
+        },
+      });
+
+      expect(mockCountLesson).toHaveBeenCalledWith({
+        where: {
+          section: {
+            courseId: "course-123",
+          },
+        },
+      });
+
+      // Verify enrollment was updated to completed
+      expect(mockUpdateEnrollment).toHaveBeenCalledWith({
+        where: {
+          userId_courseId: {
+            userId: "user-123",
+            courseId: "course-123",
+          },
+        },
+        data: {
+          completed: true,
+        },
+      });
     });
 
     test("should handle lesson not found", async () => {
@@ -437,6 +552,13 @@ describe("Students", () => {
 
       expect(mockFindUniqueLesson).toHaveBeenCalledWith({
         where: { id: "nonexistent-lesson" },
+        include: {
+          section: {
+            select: {
+              courseId: true,
+            },
+          },
+        },
       });
     });
 
@@ -457,6 +579,10 @@ describe("Students", () => {
     });
 
     test("should handle completed: false", async () => {
+      // Mock course progress less than 100%
+      mockCountLessonProgress.mockImplementationOnce(() => 0);
+      mockCountLesson.mockImplementationOnce(() => 2);
+
       mockUpsertLessonProgress.mockImplementationOnce(() => ({
         id: "progress-123",
         userId: "user-123",
@@ -495,6 +621,13 @@ describe("Students", () => {
           completedAt: null,
         },
       });
+
+      // Verify course progress is still checked even when marking as incomplete
+      expect(mockCountLessonProgress).toHaveBeenCalled();
+      expect(mockCountLesson).toHaveBeenCalled();
+
+      // Enrollment should not be updated when progress is less than 100%
+      expect(mockUpdateEnrollment).not.toHaveBeenCalled();
     });
 
     test("should handle database errors", async () => {
@@ -510,6 +643,27 @@ describe("Students", () => {
           completed: true,
         }),
       ).rejects.toThrow("Database connection failed");
+    });
+
+    test("should handle enrollment update errors gracefully", async () => {
+      // Mock course progress at 100%
+      mockCountLessonProgress.mockImplementationOnce(() => 2);
+      mockCountLesson.mockImplementationOnce(() => 2);
+
+      // Mock enrollment update to throw an error
+      const enrollmentError = new Error("Enrollment not found");
+      mockUpdateEnrollment.mockImplementationOnce(() => {
+        throw enrollmentError;
+      });
+
+      // The function should still throw the error
+      await expect(
+        recordLessonProgress({
+          userId: "user-123",
+          lessonId: "lesson-123",
+          completed: true,
+        }),
+      ).rejects.toThrow("Enrollment not found");
     });
   });
 

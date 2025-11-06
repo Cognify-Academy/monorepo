@@ -17,6 +17,7 @@ export interface EnrollmentWithRelations {
   userId: string;
   courseId: string;
   createdAt: Date;
+  completed: boolean;
   user: {
     id: string;
     name: string;

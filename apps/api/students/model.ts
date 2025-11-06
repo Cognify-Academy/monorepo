@@ -98,6 +98,13 @@ export async function recordLessonProgress({
   try {
     const lesson = await prisma.lesson.findUnique({
       where: { id: lessonId },
+      include: {
+        section: {
+          select: {
+            courseId: true,
+          },
+        },
+      },
     });
 
     if (!lesson) {
@@ -135,6 +142,30 @@ export async function recordLessonProgress({
     console.debug(
       `Lesson progress recorded successfully for user: ${userId}, lesson: ${lessonId}`,
     );
+
+    const courseId = lesson.section.courseId;
+    const courseProgress = await getStudentCourseProgress({
+      userId,
+      courseId,
+    });
+
+    if (courseProgress.percentComplete === 100) {
+      await prisma.enrollment.update({
+        where: {
+          userId_courseId: {
+            userId,
+            courseId,
+          },
+        },
+        data: {
+          completed: true,
+        },
+      });
+
+      console.debug(
+        `Course ${courseId} marked as completed for user: ${userId}`,
+      );
+    }
 
     return {
       ...progress,
