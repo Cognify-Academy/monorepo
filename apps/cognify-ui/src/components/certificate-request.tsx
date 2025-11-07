@@ -42,7 +42,7 @@ interface CertificateRequestProps {
   onSuccess?: (certificateData: any) => void;
 }
 
-export function CertificateRequestV2({
+export function CertificateRequest({
   courseId,
   courseTitle,
   existingCertificate,

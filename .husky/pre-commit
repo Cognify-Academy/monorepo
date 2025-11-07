@@ -1,3 +1,2 @@
-bun run lint
-bun run --cwd apps/cognify-ui lint
+bun run --cwd apps lint
 bun test apps/api apps/cognify-ui/src/__tests__

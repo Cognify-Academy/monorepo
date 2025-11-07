@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/auth";
 import { apiClient } from "@/lib/api";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { CertificateRequestV2 } from "./certificate-request";
+import { CertificateRequest } from "./certificate-request";
 
 interface EnrolledCourse {
   id: string;
@@ -351,7 +351,7 @@ export function EnrolledCourses({
                 {/* Show certificate request or link when course is completed */}
                 {course.completed && (
                   <div className="mt-4">
-                    <CertificateRequestV2
+                    <CertificateRequest
                       courseId={course.id}
                       courseTitle={course.title}
                       existingCertificate={certificates.get(course.id)}
