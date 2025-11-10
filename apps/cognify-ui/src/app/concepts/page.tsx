@@ -4,8 +4,8 @@ import { ConceptGraphViewer } from "@/components/concept-graph-viewer";
 import Footer from "@/components/footer";
 import { Navbar } from "@/components/navbar";
 import { useAuth } from "@/contexts/auth";
-import { apiClient } from "@/lib/api";
-import { useCallback, useEffect, useState } from "react";
+import { useConceptsFromCompletedLessons } from "@/lib/api-hooks";
+import { useMemo } from "react";
 
 interface Concept {
   id: string;
@@ -37,34 +37,43 @@ interface Concept {
 }
 
 export default function MyConceptsPage() {
-  const { isAuthenticated, accessToken, isLoading: authLoading } = useAuth();
-  const [concepts, setConcepts] = useState<Concept[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
 
-  const fetchConcepts = useCallback(async () => {
-    if (!accessToken) return;
+  // Use React Query hook for concepts from completed lessons
+  const {
+    data: conceptsData,
+    isLoading,
+    error: queryError,
+  } = useConceptsFromCompletedLessons();
 
-    setIsLoading(true);
-    setError(null);
+  // Transform concepts data
+  const concepts = useMemo<Concept[]>(() => {
+    if (!conceptsData?.concepts) return [];
+    // Map ConceptWithRelations to Concept format
+    return conceptsData.concepts.map((concept) => ({
+      id: concept.id,
+      name: concept.name,
+      slug: concept.slug,
+      description: concept.description,
+      importance: concept.importance,
+      createdAt: concept.createdAt,
+      updatedAt: concept.updatedAt,
+      conceptSource: (Array.isArray(concept.conceptSource)
+        ? concept.conceptSource
+        : []) as Concept["conceptSource"],
+      conceptTarget: (Array.isArray(concept.conceptTarget)
+        ? concept.conceptTarget
+        : []) as Concept["conceptTarget"],
+      completedLessons: (Array.isArray(concept.completedLessons)
+        ? concept.completedLessons
+        : []) as Concept["completedLessons"],
+    }));
+  }, [conceptsData]);
 
-    try {
-      const response =
-        await apiClient.getConceptsFromCompletedLessons(accessToken);
-      setConcepts(response.concepts);
-    } catch (error) {
-      console.error("Failed to fetch concepts:", error);
-      setError("Failed to load concepts. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [accessToken]);
-
-  useEffect(() => {
-    if (isAuthenticated && accessToken && !authLoading) {
-      fetchConcepts();
-    }
-  }, [isAuthenticated, accessToken, authLoading, fetchConcepts]);
+  const error = queryError
+    ? (queryError as Error).message ||
+      "Failed to load concepts. Please try again."
+    : null;
 
   if (authLoading) {
     return (

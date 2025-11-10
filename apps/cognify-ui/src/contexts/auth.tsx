@@ -1,6 +1,8 @@
 "use client";
 
-import { apiClient, ApiError } from "@/lib/api";
+import { ApiError, apiClient as newApiClient } from "@/lib/api-client";
+import { setupApiClient } from "@/lib/api-integration";
+import { useRouter } from "next/navigation";
 import React, {
   createContext,
   useCallback,
@@ -20,7 +22,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  isInitialized: boolean; // Add flag to track initialization state
+  isInitialized: boolean;
   isAuthenticated: boolean;
   login: (handle: string, password: string) => Promise<void>;
   signup: (
@@ -33,7 +35,7 @@ interface AuthContextType {
   error: string | null;
   clearError: () => void;
   token: string | null;
-  accessToken: string | null; // Alias for backwards compatibility
+  accessToken: string | null;
   getAccessToken: () => Promise<string | null>;
   hasRole: (role: string) => boolean;
 }
@@ -41,9 +43,9 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(() => {
-    // Initialize from localStorage if available
     if (typeof window !== "undefined") {
       return localStorage.getItem("accessToken");
     }
@@ -52,11 +54,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const refreshPromiseRef = React.useRef<Promise<string | null> | null>(null);
 
   const clearError = () => setError(null);
 
-  // Sync token to localStorage whenever it changes
   React.useEffect(() => {
     if (token) {
       localStorage.setItem("accessToken", token);
@@ -65,7 +65,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [token]);
 
-  // Decode JWT token to extract user info and check expiration
   const decodeToken = (token: string): User | null => {
     try {
       const parts = token.split(".");
@@ -73,11 +72,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const payload = JSON.parse(atob(parts[1]));
 
-      // Check if token is expired
       if (payload.exp) {
         const now = Math.floor(Date.now() / 1000);
         if (payload.exp < now) {
-          // Token is expired
           return null;
         }
       }
@@ -101,79 +98,79 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [user?.roles],
   );
 
-  // Get current access token or refresh if needed
-  const getAccessToken = useCallback(async (): Promise<string | null> => {
-    // If we have a valid token, return it
-    if (token) {
-      return token;
-    }
-
-    // If already refreshing, wait for that promise
-    if (refreshPromiseRef.current) {
-      return refreshPromiseRef.current;
-    }
-
-    // Start a new refresh
-    refreshPromiseRef.current = (async () => {
-      try {
-        const response = await apiClient.refresh();
-        if (response?.token) {
-          setToken(response.token);
-          setUser(decodeToken(response.token));
-          return response.token;
-        }
-      } catch {
-        // Refresh failed
-        return null;
-      } finally {
-        refreshPromiseRef.current = null;
+  const refreshToken = useCallback(async (): Promise<string | null> => {
+    try {
+      const response = await newApiClient.post<{ token: string }>(
+        "/auth/refresh",
+        {},
+        { skipAuth: true },
+      );
+      if (response?.token) {
+        setToken(response.token);
+        setUser(decodeToken(response.token));
+        return response.token;
       }
       return null;
-    })();
-
-    return refreshPromiseRef.current;
-  }, [token]);
-
-  // Initialize user from stored token or refresh
-  useEffect(() => {
-    const init = async () => {
-      // If we have a stored token, decode it first
-      if (token) {
-        const decoded = decodeToken(token);
-        if (decoded) {
-          // Token is valid and not expired
-          setUser(decoded);
-          setIsInitialized(true);
-          return;
-        }
-        // Token exists but is invalid or expired, clear it
-        setToken(null);
+    } catch {
+      setUser(null);
+      setToken(null);
+      if (typeof window !== "undefined") {
         localStorage.removeItem("accessToken");
       }
+      return null;
+    }
+  }, []);
 
-      // No valid token, try to refresh using refresh token (httpOnly cookie)
-      try {
-        const response = await apiClient.refresh();
-        if (response?.token) {
-          setToken(response.token);
-          setUser(decodeToken(response.token));
+  const getAccessToken = useCallback(async (): Promise<string | null> => {
+    return token;
+  }, [token]);
+
+  useEffect(() => {
+    setupApiClient(
+      async () => token,
+      refreshToken,
+      () => {
+        setUser(null);
+        setToken(null);
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("accessToken");
+          router.push("/login");
         }
-      } catch {
-        // Not logged in, that's ok - suppress error
-        // 401 is expected when user is not logged in
-      } finally {
-        setIsInitialized(true);
+      },
+    );
+  }, [token, refreshToken, router]);
+
+  useEffect(() => {
+    const storedToken =
+      typeof window !== "undefined"
+        ? localStorage.getItem("accessToken")
+        : null;
+
+    if (storedToken) {
+      const decoded = decodeToken(storedToken);
+      if (decoded) {
+        setToken(storedToken);
+        setUser(decoded);
+      } else {
+        setToken(null);
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("accessToken");
+        }
       }
-    };
-    init();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }
+
+    setIsInitialized(true);
   }, []);
 
   const login = async (handle: string, password: string) => {
     try {
       setError(null);
       setIsLoading(true);
-      const response = await apiClient.login(handle, password);
+      const response = await newApiClient.post<{ token: string }>(
+        "/auth/login",
+        { handle, password },
+        { skipAuth: true },
+      );
 
       if (response?.token) {
         setToken(response.token);
@@ -200,7 +197,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setError(null);
       setIsLoading(true);
-      const response = await apiClient.signup(name, username, email, password);
+      const response = await newApiClient.post<{ token: string }>(
+        "/auth/signup",
+        { name, username, email, password },
+        { skipAuth: true },
+      );
 
       if (response?.token) {
         setToken(response.token);
@@ -218,13 +219,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      await apiClient.logout();
+      await newApiClient.post<{ message: string }>("/auth/logout");
     } catch (error) {
       console.error("Logout error:", error);
     } finally {
       setUser(null);
       setToken(null);
       if (typeof window !== "undefined") {
+        localStorage.removeItem("accessToken");
         window.location.href = "/";
       }
     }
@@ -241,7 +243,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     error,
     clearError,
     token,
-    accessToken: token, // Alias for backwards compatibility
+    accessToken: token,
     getAccessToken,
     hasRole,
   };

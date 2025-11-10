@@ -1,8 +1,7 @@
 "use client";
 
 import { useAuth } from "@/contexts/auth";
-import { apiClient } from "@/lib/api";
-import { useEffect, useState } from "react";
+import { useLessonProgress, useRecordLessonProgress } from "@/lib/api-hooks";
 
 interface LessonCompletionProps {
   lessonId: string;
@@ -13,72 +12,53 @@ export function LessonCompletion({
   lessonId,
   initialCompleted = false,
 }: LessonCompletionProps) {
-  const { accessToken, isAuthenticated } = useAuth();
-  const [isCompleted, setIsCompleted] = useState(initialCompleted);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { isAuthenticated } = useAuth();
 
-  useEffect(() => {
-    const fetchProgress = async () => {
-      if (!isAuthenticated || !accessToken) {
-        setIsInitialLoading(false);
-        return;
-      }
+  // Use React Query hooks for lesson progress
+  const { data: progressData, isLoading: isInitialLoading } = useLessonProgress(
+    lessonId,
+    isAuthenticated,
+  );
 
-      try {
-        const response = await apiClient.getLessonProgress(
-          lessonId,
-          accessToken,
-        );
-        setIsCompleted(response.progress?.completed || false);
-      } catch (err) {
-        console.error("Error fetching lesson progress:", err);
-      } finally {
-        setIsInitialLoading(false);
-      }
-    };
+  const recordProgress = useRecordLessonProgress();
 
-    fetchProgress();
-  }, [lessonId, isAuthenticated, accessToken]);
+  // Determine completion status from API or initial prop
+  const isCompleted = progressData?.progress?.completed ?? initialCompleted;
+
+  const isLoading = recordProgress.isPending;
+  const error = recordProgress.error
+    ? (recordProgress.error as Error).message ||
+      "Failed to update lesson progress. Please try again."
+    : null;
 
   const handleMarkAsComplete = async () => {
-    if (!isAuthenticated || !accessToken) {
-      setError("You must be logged in to mark lessons as complete");
+    if (!isAuthenticated) {
       return;
     }
 
-    setIsLoading(true);
-    setError(null);
-
     try {
-      await apiClient.recordLessonProgress(lessonId, true, accessToken);
-      setIsCompleted(true);
+      await recordProgress.mutateAsync({
+        lessonId,
+        completed: true,
+      });
     } catch (err) {
-      setError("Failed to mark lesson as complete. Please try again.");
+      // Error is handled by React Query
       console.error("Error marking lesson as complete:", err);
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const handleMarkAsIncomplete = async () => {
-    if (!isAuthenticated || !accessToken) {
-      setError("You must be logged in to update lesson progress");
+    if (!isAuthenticated) {
       return;
     }
 
-    setIsLoading(true);
-    setError(null);
-
     try {
-      await apiClient.recordLessonProgress(lessonId, false, accessToken);
-      setIsCompleted(false);
+      await recordProgress.mutateAsync({
+        lessonId,
+        completed: false,
+      });
     } catch (err) {
-      setError("Failed to update lesson progress. Please try again.");
       console.error("Error updating lesson progress:", err);
-    } finally {
-      setIsLoading(false);
     }
   };
 

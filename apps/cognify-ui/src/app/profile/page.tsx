@@ -3,47 +3,26 @@
 import Footer from "@/components/footer";
 import { Navbar } from "@/components/navbar";
 import { useAuth } from "@/contexts/auth";
-import { apiClient } from "@/lib/api";
+import { useProfile } from "@/lib/api-hooks";
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
-
-interface ProfileData {
-  id?: string;
-  email?: string;
-  username?: string;
-  name?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function ProfilePage() {
-  const { isAuthenticated, accessToken, isLoading: authLoading } = useAuth();
-  const [profile, setProfile] = useState<ProfileData | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchProfile = useCallback(async () => {
-    if (!accessToken) return;
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response = await apiClient.getProfile(accessToken);
-      setProfile(response);
-    } catch (error) {
-      console.error("Failed to fetch profile:", error);
-      setError("Failed to load profile. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [accessToken]);
+  const { isAuthenticated, isInitialized } = useAuth();
+  const router = useRouter();
+  const { data: profile, isLoading, error: profileError } = useProfile();
 
   useEffect(() => {
-    if (isAuthenticated && accessToken && !authLoading) {
-      fetchProfile();
+    if (isInitialized && !isAuthenticated) {
+      router.push("/");
     }
-  }, [isAuthenticated, accessToken, authLoading, fetchProfile]);
+  }, [isInitialized, isAuthenticated, router]);
+
+  const error = profileError
+    ? (profileError as Error).message ||
+      "Failed to load profile. Please try again."
+    : null;
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return "N/A";
@@ -54,30 +33,8 @@ export default function ProfilePage() {
     });
   };
 
-  if (authLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <div className="mx-auto h-32 w-32 animate-spin rounded-full border-b-2 border-blue-600"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Please log in to view your profile
-          </h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
-            You need to be logged in to see your profile.
-          </p>
-        </div>
-      </div>
-    );
+  if (!isAuthenticated || !isInitialized) {
+    return null;
   }
 
   return (

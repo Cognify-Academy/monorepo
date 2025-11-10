@@ -1,24 +1,62 @@
-import { CourseCard } from "@/components/course-card";
-import { AuthProvider } from "@/contexts/auth";
 import { render, screen } from "@testing-library/react";
-import { createMockCourse } from "../../mocks/test-utils";
+import { describe, it, expect, beforeEach, mock } from "bun:test";
+
+// ---- Mock Next.js navigation (must be before any imports that use it) ----
+mock.module("next/navigation", () => {
+  const mockPush = () => {};
+  const mockReplace = () => {};
+  const mockPrefetch = () => {};
+  const mockBack = () => {};
+  const mockForward = () => {};
+  const mockRefresh = () => {};
+
+  return {
+    useRouter: () => ({
+      push: mockPush,
+      replace: mockReplace,
+      prefetch: mockPrefetch,
+      back: mockBack,
+      forward: mockForward,
+      refresh: mockRefresh,
+    }),
+    usePathname: () => "/",
+    useSearchParams: () => new URLSearchParams(),
+    useParams: () => ({}),
+  };
+});
 
 // Mock the API module
-global.mock("@/lib/api", () => ({
-  apiClient: {
-    refresh: global.fn().mockResolvedValue({ token: "mock-token" }),
-    login: global.fn().mockResolvedValue({ token: "mock-token" }),
-    logout: global.fn().mockResolvedValue({ message: "Logged out" }),
-  },
-  ApiError: class ApiError extends Error {
-    constructor(
-      message: string,
-      public status: number,
-    ) {
+const mockPost = mock(() => Promise.resolve({ token: null }));
+const mockGet = mock(() => Promise.resolve(null));
+
+mock.module("@/lib/api-client", () => {
+  class ApiError extends Error {
+    status?: number;
+    constructor(message: string, status?: number) {
       super(message);
+      this.name = "ApiError";
+      this.status = status;
     }
-  },
-}));
+  }
+
+  class ApiClient {
+    post = mockPost;
+    get = mockGet;
+    put = mock(() => Promise.resolve(null));
+    patch = mock(() => Promise.resolve(null));
+    delete = mock(() => Promise.resolve(null));
+    setTokenProvider = mock(() => {});
+    setTokenRefresher = mock(() => {});
+    setOnAuthError = mock(() => {});
+  }
+
+  const apiClient = new ApiClient();
+  return { apiClient, ApiError };
+});
+
+import { CourseCard } from "@/components/course-card";
+import { AuthProvider } from "@/contexts/auth";
+import { createMockCourse } from "../../mocks/test-utils";
 
 describe("Course Enrollment Integration", () => {
   const mockCourse = createMockCourse({

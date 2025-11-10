@@ -222,11 +222,15 @@ describe("buildVC", () => {
     );
   });
 
-  it("should include nftAddress in credentialSubject", () => {
+  it("should include nftAddress in credentialSubject when provided", () => {
+    const nftAddress = "BQMaPMguesjd4MRtRNEBqQEocLzoEs5W68hLYpGmpDkT";
+    const vc = buildVC({ ...mockParams, nftAddress });
+    expect(vc.credentialSubject.nftAddress).toBe(nftAddress);
+  });
+
+  it("should set nftAddress to null when not provided", () => {
     const vc = buildVC(mockParams);
-    expect(vc.credentialSubject.nftAddress).toBe(
-      `did:sol:${mockParams.studentWallet}`,
-    );
+    expect(vc.credentialSubject.nftAddress).toBeNull();
   });
 
   it("should create different VCs for different students", () => {

@@ -2,9 +2,9 @@
 
 import { Button } from "@/components/button";
 import { useAuth } from "@/contexts/auth";
-import { checkEnrollmentStatus, enrollInCourse } from "@/services/courses";
+import { useEnrollInCourse, useStudentCourses } from "@/lib/api-hooks";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 
 interface EnrollmentButtonProps {
   courseIdentifier: string;
@@ -18,61 +18,44 @@ export function EnrollmentButton({
   courseName,
   courseId,
 }: EnrollmentButtonProps) {
-  const { isAuthenticated, accessToken } = useAuth();
-  const [isEnrolling, setIsEnrolling] = useState(false);
-  const [isEnrolled, setIsEnrolled] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [enrollmentStatus, setEnrollmentStatus] = useState<
-    "idle" | "enrolled" | "failed"
-  >("idle");
-  const [errorMessage, setErrorMessage] = useState("");
+  const { isAuthenticated } = useAuth();
 
-  useEffect(() => {
-    const checkEnrollment = async () => {
-      if (isAuthenticated && accessToken) {
-        try {
-          const enrolled = await checkEnrollmentStatus(courseId, accessToken);
-          setIsEnrolled(enrolled);
-        } catch (error) {
-          console.error("Failed to check enrollment status:", error);
-        } finally {
-          setIsLoading(false);
-        }
-      } else {
-        setIsLoading(false);
-      }
-    };
+  // Use React Query hooks
+  const { data: enrolledCourses, isLoading: isLoadingEnrollment } =
+    useStudentCourses();
 
-    checkEnrollment();
-  }, [isAuthenticated, accessToken, courseId]);
+  const enrollInCourse = useEnrollInCourse();
+
+  // Check if user is enrolled
+  const isEnrolled = useMemo(() => {
+    if (!enrolledCourses) return false;
+    return enrolledCourses.some((course) => course.id === courseId);
+  }, [enrolledCourses, courseId]);
 
   const handleEnroll = async () => {
-    setIsEnrolling(true);
-    setErrorMessage("");
+    if (!isAuthenticated) {
+      return;
+    }
 
     try {
-      if (!isAuthenticated || !accessToken) {
-        setEnrollmentStatus("failed");
-        setErrorMessage("You must be logged in to enroll.");
-        return;
-      }
-
-      const result = await enrollInCourse(courseIdentifier, accessToken);
-      if (result.success) {
-        setEnrollmentStatus("enrolled");
-        setIsEnrolled(true);
-      } else {
-        setEnrollmentStatus("failed");
-        setErrorMessage(result.message);
-      }
+      await enrollInCourse.mutateAsync(courseIdentifier);
     } catch (error) {
       console.error("Enrollment error:", error);
-      setEnrollmentStatus("failed");
-      setErrorMessage("Failed to enroll in course. Please try again.");
-    } finally {
-      setIsEnrolling(false);
+      // Error is handled by React Query
     }
   };
+
+  const isEnrolling = enrollInCourse.isPending;
+  const isLoading = isLoadingEnrollment;
+  const enrollmentStatus = isEnrolled
+    ? "enrolled"
+    : enrollInCourse.isError
+      ? "failed"
+      : "idle";
+  const errorMessage = enrollInCourse.error
+    ? (enrollInCourse.error as Error).message ||
+      "Failed to enroll in course. Please try again."
+    : "";
 
   if (!isAuthenticated) {
     return (

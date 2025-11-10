@@ -1,9 +1,9 @@
 "use client";
 
 import { useAuth } from "@/contexts/auth";
-import { apiClient } from "@/lib/api";
+import { useInstructorCourses } from "@/lib/api-hooks";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 
 interface InstructorCourse {
   id: string;
@@ -83,40 +83,26 @@ export function InstructorCourses({
   subtitle = "Manage your published and draft courses",
   className = "",
 }: InstructorCoursesProps) {
-  const { isAuthenticated, accessToken, hasRole } = useAuth();
-  const [courses, setCourses] = useState<TransformedInstructorCourse[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { isAuthenticated, hasRole } = useAuth();
 
-  useEffect(() => {
-    const fetchInstructorCourses = async () => {
-      if (!isAuthenticated || !accessToken || !hasRole("INSTRUCTOR")) {
-        setCourses([]);
-        setIsLoading(false);
-        return;
-      }
+  // Use React Query hook for instructor courses
+  const {
+    data: instructorCoursesData,
+    isLoading,
+    error: queryError,
+  } = useInstructorCourses();
 
-      try {
-        setIsLoading(true);
-        setError(null);
+  // Transform courses data
+  const courses = useMemo<TransformedInstructorCourse[]>(() => {
+    if (!instructorCoursesData) return [];
+    return instructorCoursesData.map((course, index) =>
+      transformInstructorCourse(course, index),
+    );
+  }, [instructorCoursesData]);
 
-        const instructorCourses =
-          await apiClient.getInstructorCourses(accessToken);
-        const transformedCourses = instructorCourses.map((course, index) =>
-          transformInstructorCourse(course, index),
-        );
-
-        setCourses(transformedCourses);
-      } catch (error) {
-        console.error("Failed to fetch instructor courses:", error);
-        setError("Failed to load instructor courses");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchInstructorCourses();
-  }, [isAuthenticated, accessToken, hasRole]);
+  const error = queryError
+    ? (queryError as Error).message || "Failed to load instructor courses"
+    : null;
 
   if (!isAuthenticated) {
     return (

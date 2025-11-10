@@ -1,9 +1,8 @@
 "use client";
 
-import { useAuth } from "@/contexts/auth";
-import { apiClient, ApiError } from "@/lib/api";
+import { useInstructorCourses, useStudentCourses } from "@/lib/api-hooks";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useMemo } from "react";
 
 interface Course {
   id: string;
@@ -81,78 +80,39 @@ export function MyActiveCourses({
   courses,
   context = "student",
 }: MyActiveCoursesProps) {
-  const { isAuthenticated, accessToken } = useAuth();
-  const [dynamicCourses, setDynamicCourses] = useState<Course[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const hasFetched = useRef(false);
+  // Use React Query hooks based on context
+  const {
+    data: instructorCoursesData,
+    isLoading: instructorLoading,
+    error: instructorError,
+  } = useInstructorCourses();
 
-  const fetchInstructorCourses = useCallback(async () => {
-    if (!accessToken) {
-      return;
-    }
+  const {
+    data: studentCoursesData,
+    isLoading: studentLoading,
+    error: studentError,
+  } = useStudentCourses();
 
-    setIsLoading(true);
-    setError(null);
+  // Select the appropriate data and loading state based on context
+  const rawCoursesData =
+    context === "instructor" ? instructorCoursesData : studentCoursesData;
+  const isLoading =
+    context === "instructor" ? instructorLoading : studentLoading;
+  const queryError = context === "instructor" ? instructorError : studentError;
 
-    try {
-      const instructorCourses =
-        await apiClient.getInstructorCourses(accessToken);
-      const transformedCourses = instructorCourses.map((course, index) =>
-        transformInstructorCourse(course, index),
-      );
-      setDynamicCourses(transformedCourses);
-    } catch (error) {
-      console.error("Failed to fetch instructor courses:", error);
-      if (error instanceof ApiError && error.status === 401) {
-        setError("You don't have permission to access instructor courses.");
-      } else {
-        setError("Failed to load courses. Please try again.");
-      }
-      setDynamicCourses([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [accessToken]);
+  // Transform courses data
+  const dynamicCourses = useMemo(() => {
+    if (!rawCoursesData) return [];
+    return rawCoursesData.map((course, index) =>
+      transformInstructorCourse(course, index),
+    );
+  }, [rawCoursesData]);
 
-  const fetchStudentCourses = useCallback(async () => {
-    if (!accessToken) {
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const enrolledCourses = await apiClient.getStudentCourses(accessToken);
-      const transformedCourses = enrolledCourses.map((course, index) =>
-        transformInstructorCourse(course, index),
-      );
-      setDynamicCourses(transformedCourses);
-    } catch (error) {
-      console.error("Failed to fetch student courses:", error);
-      if (error instanceof ApiError && error.status === 401) {
-        setError("You don't have permission to access student courses.");
-      } else {
-        setError("Failed to load courses. Please try again.");
-      }
-      setDynamicCourses([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [accessToken]);
-
-  useEffect(() => {
-    if (isAuthenticated && accessToken && !hasFetched.current) {
-      hasFetched.current = true;
-      if (context === "instructor") {
-        fetchInstructorCourses();
-      } else {
-        fetchStudentCourses();
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [context, isAuthenticated, accessToken]);
+  // Handle errors
+  const error = queryError
+    ? (queryError as Error).message ||
+      "Failed to load courses. Please try again."
+    : null;
 
   const getProgressPercentage = (completed: number, total: number) => {
     return Math.round((completed / total) * 100);

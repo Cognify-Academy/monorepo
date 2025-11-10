@@ -1,7 +1,7 @@
 "use client";
 
-import { apiClient } from "@/lib/api";
-import { useEffect, useState } from "react";
+import { useCourses } from "@/lib/api-hooks";
+import { useMemo } from "react";
 
 interface ComingSoonCourse {
   id: string;
@@ -72,32 +72,20 @@ export function ComingSoonCourses({
   subtitle = "Exciting new courses in development",
   className = "",
 }: ComingSoonCoursesProps) {
-  const [courses, setCourses] = useState<ComingSoonCourse[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Use React Query hook for courses
+  const { data: allCoursesData, isLoading, error: queryError } = useCourses();
 
-  useEffect(() => {
-    const fetchComingSoonCourses = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
+  // Filter and transform courses data
+  const courses = useMemo<ComingSoonCourse[]>(() => {
+    if (!allCoursesData) return [];
+    return allCoursesData
+      .filter((course) => !course.published)
+      .map((course, index) => transformComingSoonCourse(course, index));
+  }, [allCoursesData]);
 
-        const allCourses = await apiClient.getCourses();
-        const comingSoonCourses = allCourses
-          .filter((course) => !course.published)
-          .map((course, index) => transformComingSoonCourse(course, index));
-
-        setCourses(comingSoonCourses);
-      } catch (error) {
-        console.error("Failed to fetch coming soon courses:", error);
-        setError("Failed to load coming soon courses");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchComingSoonCourses();
-  }, []);
+  const error = queryError
+    ? (queryError as Error).message || "Failed to load coming soon courses"
+    : null;
 
   if (isLoading) {
     return (

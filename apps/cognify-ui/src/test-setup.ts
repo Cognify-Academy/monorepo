@@ -36,6 +36,33 @@ afterEach(() => {
   return factory();
 };
 
+// Mock next/navigation module using Bun's mock.module API
+// This must be done before any components that use useRouter are imported
+if (typeof Bun !== "undefined" && (Bun as any).mock) {
+  (Bun as any).mock.module("next/navigation", () => {
+    const mockPush = () => {};
+    const mockReplace = () => {};
+    const mockPrefetch = () => {};
+    const mockBack = () => {};
+    const mockForward = () => {};
+    const mockRefresh = () => {};
+
+    return {
+      useRouter: () => ({
+        push: mockPush,
+        replace: mockReplace,
+        prefetch: mockPrefetch,
+        back: mockBack,
+        forward: mockForward,
+        refresh: mockRefresh,
+      }),
+      usePathname: () => "/",
+      useSearchParams: () => new URLSearchParams(),
+      useParams: () => ({}),
+    };
+  });
+}
+
 // Mock functions for testing
 (global as any).fn = (implementation?: any) => {
   const calls: any[] = [];
@@ -151,13 +178,25 @@ afterEach(() => {
   };
 };
 
-// Mock localStorage
-(global as any).localStorage = {
-  getItem: () => null,
-  setItem: () => {},
-  removeItem: () => {},
-  clear: () => {},
-};
+// Mock localStorage with actual storage
+const localStorageMock = (() => {
+  let store: Record<string, string> = {};
+
+  return {
+    getItem: (key: string) => store[key] || null,
+    setItem: (key: string, value: string) => {
+      store[key] = value.toString();
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      store = {};
+    },
+  };
+})();
+
+(global as any).localStorage = localStorageMock;
 
 // Mock sessionStorage
 (global as any).sessionStorage = {

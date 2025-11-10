@@ -1,4 +1,4 @@
-import { apiClient } from "@/lib/api";
+import { apiClient } from "@/lib/api-client";
 
 export interface Course {
   id: string;
@@ -46,7 +46,7 @@ export interface CourseDetail extends Omit<Course, "instructors"> {
 
 export async function getCourses(): Promise<Course[]> {
   try {
-    return await apiClient.getCourses();
+    return await apiClient.get<Course[]>("/courses", { skipAuth: true });
   } catch (error) {
     console.error("Failed to fetch courses:", error);
     return [];
@@ -55,10 +55,12 @@ export async function getCourses(): Promise<Course[]> {
 
 export async function getCourse(
   identifier: string,
-  token?: string,
 ): Promise<CourseDetail | null> {
   try {
-    const course = await apiClient.getCourse(identifier, token);
+    // Public courses don't require auth, but authenticated users get more data
+    const course = await apiClient.get<CourseDetail>(`/courses/${identifier}`, {
+      skipAuth: true,
+    });
     return course;
   } catch (error) {
     console.error(`Failed to fetch course ${identifier}:`, error);
@@ -109,10 +111,12 @@ export function getLessonFromCourse(
 
 export async function enrollInCourse(
   identifier: string,
-  token: string,
 ): Promise<{ success: boolean; message: string }> {
   try {
-    const result = await apiClient.enrollInCourse(identifier, token);
+    const result = await apiClient.post<{ message: string }>(
+      `/courses/${identifier}/students`,
+      {},
+    );
     return {
       success: true,
       message: result.message,
@@ -128,10 +132,22 @@ export async function enrollInCourse(
 
 export async function checkEnrollmentStatus(
   courseId: string,
-  token: string,
 ): Promise<boolean> {
   try {
-    const enrolledCourses = await apiClient.getStudentCourses(token);
+    const enrolledCourses = await apiClient.get<
+      Array<{
+        id: string;
+        title: string;
+        slug: string;
+        description: string;
+        published: boolean;
+        createdAt: string;
+        updatedAt: string;
+        userId: string;
+        instructors: Array<{ id: string }>;
+        conceptIds: string[];
+      }>
+    >("/student/courses");
     return enrolledCourses.some((course) => course.id === courseId);
   } catch (error) {
     console.error(

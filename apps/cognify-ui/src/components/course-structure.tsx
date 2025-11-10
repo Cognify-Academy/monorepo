@@ -1,8 +1,20 @@
 "use client";
 
 import { useAuth } from "@/contexts/auth";
-import { apiClient } from "@/lib/api";
-import { useEffect, useRef, useState } from "react";
+import {
+  useCreateLesson,
+  useCreateMedia,
+  useCreateSection,
+  useDeleteLesson,
+  useDeleteMedia,
+  useDeleteSection,
+  useReorderLessons,
+  useReorderSections,
+  useUpdateLesson,
+  useUpdateMedia,
+  useUpdateSection,
+} from "@/lib/api-hooks";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "./button";
 import { ConceptSelector, type ConceptType } from "./concept-selector";
 import { TextInput } from "./input";
@@ -58,7 +70,20 @@ export function CourseStructure({
   availableConcepts,
   disabled = false,
 }: CourseStructureProps) {
-  const { accessToken } = useAuth();
+  const { isAuthenticated } = useAuth();
+
+  // React Query mutation hooks
+  const createSection = useCreateSection();
+  const updateSection = useUpdateSection();
+  const deleteSection = useDeleteSection();
+  const reorderSections = useReorderSections();
+  const createLesson = useCreateLesson();
+  const updateLesson = useUpdateLesson();
+  const deleteLesson = useDeleteLesson();
+  const reorderLessons = useReorderLessons();
+  const createMedia = useCreateMedia();
+  const updateMedia = useUpdateMedia();
+  const deleteMedia = useDeleteMedia();
 
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(),
@@ -74,10 +99,26 @@ export function CourseStructure({
     sectionId: string;
     beforeLessonId?: string;
   } | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [savingLessons, setSavingLessons] = useState<Set<string>>(new Set());
+
+  // Debounce timers for section and lesson updates
+  const sectionUpdateTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
+
+  // Combined loading state from all mutations
+  const isLoading =
+    createSection.isPending ||
+    updateSection.isPending ||
+    deleteSection.isPending ||
+    reorderSections.isPending ||
+    createLesson.isPending ||
+    updateLesson.isPending ||
+    deleteLesson.isPending ||
+    reorderLessons.isPending ||
+    createMedia.isPending ||
+    updateMedia.isPending ||
+    deleteMedia.isPending;
 
   const showError = (message: string) => {
     console.log("🚨 Error:", message);
@@ -104,22 +145,20 @@ export function CourseStructure({
   };
 
   const addSection = async () => {
-    if (!accessToken) {
+    if (!isAuthenticated) {
       showError("Authentication required");
       return;
     }
 
-    setIsLoading(true);
     try {
-      const newSection = await apiClient.createSection(
+      const newSection = await createSection.mutateAsync({
         courseId,
-        {
+        data: {
           title: "",
           description: "",
           conceptIds: [],
         },
-        accessToken,
-      );
+      });
 
       console.log("New section created:", newSection);
 
@@ -135,20 +174,40 @@ export function CourseStructure({
     } catch (error: unknown) {
       console.error("Failed to create section:", error);
       showError("Failed to create section");
-    } finally {
-      setIsLoading(false);
     }
   };
 
-  const updateSection = async (
+  // Debounced save function for sections
+  const saveSectionToAPI = useCallback(
+    async (sectionId: string) => {
+      if (!isAuthenticated) return;
+
+      const section = sections.find((s) => s.id === sectionId);
+      if (!section) return;
+
+      try {
+        await updateSection.mutateAsync({
+          courseId,
+          sectionId,
+          data: {
+            title: section.title,
+            description: section.description,
+            conceptIds: section.conceptIds || [],
+          },
+        });
+        showSuccess("Section saved successfully");
+      } catch (error: unknown) {
+        console.error("Failed to update section:", error);
+        showError("Failed to update section");
+      }
+    },
+    [isAuthenticated, sections, courseId, updateSection],
+  );
+
+  const handleUpdateSection = (
     sectionId: string,
     updates: Partial<Section>,
   ) => {
-    if (!accessToken) {
-      showError("Authentication required");
-      return;
-    }
-
     const section = sections.find((s) => s.id === sectionId);
     if (!section) {
       console.error(
@@ -160,43 +219,47 @@ export function CourseStructure({
       return;
     }
 
+    // Update local state immediately for responsive UI
     const updatedSections = sections.map((s) =>
       s.id === sectionId ? { ...s, ...updates } : s,
     );
     onSectionsChange(updatedSections);
 
-    const updatedSection = updatedSections.find((s) => s.id === sectionId);
-    if (!updatedSection) return;
-
-    try {
-      await apiClient.updateSection(
-        courseId,
-        sectionId,
-        {
-          title: updatedSection.title,
-          description: updatedSection.description,
-          conceptIds: updatedSection.conceptIds || [],
-        },
-        accessToken,
-      );
-      showSuccess("Section saved successfully");
-    } catch (error: unknown) {
-      console.error("Failed to update section:", error);
-      showError("Failed to update section");
-
-      onSectionsChange(sections);
+    // Clear existing timer for this section
+    const existingTimer = sectionUpdateTimersRef.current.get(sectionId);
+    if (existingTimer) {
+      clearTimeout(existingTimer);
     }
+
+    // Set new timer to save after user stops typing (500ms delay)
+    const timer = setTimeout(() => {
+      sectionUpdateTimersRef.current.delete(sectionId);
+      saveSectionToAPI(sectionId);
+    }, 500);
+
+    sectionUpdateTimersRef.current.set(sectionId, timer);
   };
 
-  const deleteSection = async (sectionId: string) => {
-    if (!accessToken) {
+  // Cleanup timers on unmount
+  useEffect(() => {
+    const timersRef = sectionUpdateTimersRef.current;
+    return () => {
+      timersRef.forEach((timer) => clearTimeout(timer));
+      timersRef.clear();
+    };
+  }, []);
+
+  const handleDeleteSection = async (sectionId: string) => {
+    if (!isAuthenticated) {
       showError("Authentication required");
       return;
     }
 
-    setIsLoading(true);
     try {
-      await apiClient.deleteSection(courseId, sectionId, accessToken);
+      await deleteSection.mutateAsync({
+        courseId,
+        sectionId,
+      });
       const updatedSections = sections.filter((s) => s.id !== sectionId);
       onSectionsChange(updatedSections);
       const newExpanded = new Set(expandedSections);
@@ -205,18 +268,15 @@ export function CourseStructure({
     } catch (error: unknown) {
       console.error("Failed to delete section:", error);
       showError("Failed to delete section");
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const addLesson = async (sectionId: string) => {
-    if (!accessToken) {
+    if (!isAuthenticated) {
       showError("Authentication required");
       return;
     }
 
-    setIsLoading(true);
     try {
       // Generate a unique default title since Lesson.title has a unique constraint
       const section = sections.find((s) => s.id === sectionId);
@@ -224,17 +284,16 @@ export function CourseStructure({
       const timestamp = Date.now();
       const uniqueTitle = `New Lesson ${lessonCount + 1} - ${timestamp}`;
 
-      const newLessonData = await apiClient.createLesson(
+      const newLessonData = await createLesson.mutateAsync({
         courseId,
         sectionId,
-        {
+        data: {
           title: uniqueTitle,
           description: "",
           content: "",
           conceptIds: [],
         },
-        accessToken,
-      );
+      });
 
       const newLesson: Lesson = {
         ...newLessonData,
@@ -254,12 +313,10 @@ export function CourseStructure({
     } catch (error: unknown) {
       console.error("Failed to create lesson:", error);
       showError("Failed to create lesson");
-    } finally {
-      setIsLoading(false);
     }
   };
 
-  const updateLesson = (
+  const handleUpdateLesson = (
     sectionId: string,
     lessonId: string,
     updates: Partial<Lesson>,
@@ -279,7 +336,7 @@ export function CourseStructure({
   };
 
   const saveLesson = async (sectionId: string, lessonId: string) => {
-    if (!accessToken) {
+    if (!isAuthenticated) {
       showError("Authentication required");
       return;
     }
@@ -294,18 +351,17 @@ export function CourseStructure({
     setSavingLessons((prev) => new Set([...prev, lessonId]));
 
     try {
-      await apiClient.updateLesson(
+      await updateLesson.mutateAsync({
         courseId,
         sectionId,
         lessonId,
-        {
+        data: {
           title: lesson.title,
           description: lesson.description,
           content: lesson.content,
           conceptIds: lesson.conceptIds || [],
         },
-        accessToken,
-      );
+      });
       showSuccess("Lesson saved successfully");
     } catch {
       showError("Failed to save lesson");
@@ -318,15 +374,18 @@ export function CourseStructure({
     }
   };
 
-  const deleteLesson = async (sectionId: string, lessonId: string) => {
-    if (!accessToken) {
+  const handleDeleteLesson = async (sectionId: string, lessonId: string) => {
+    if (!isAuthenticated) {
       showError("Authentication required");
       return;
     }
 
-    setIsLoading(true);
     try {
-      await apiClient.deleteLesson(courseId, sectionId, lessonId, accessToken);
+      await deleteLesson.mutateAsync({
+        courseId,
+        sectionId,
+        lessonId,
+      });
       const updatedSections = sections.map((section) => {
         if (section.id === sectionId) {
           return {
@@ -339,8 +398,6 @@ export function CourseStructure({
       onSectionsChange(updatedSections);
     } catch {
       showError("Failed to delete lesson");
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -367,7 +424,7 @@ export function CourseStructure({
     e.preventDefault();
     setDragOverSection(null);
 
-    if (!draggedItem || !accessToken) return;
+    if (!draggedItem || !isAuthenticated) return;
 
     if (draggedItem.type === "section") {
       const draggedIndex = draggedItem.index;
@@ -396,11 +453,10 @@ export function CourseStructure({
         });
 
         if (sectionsToReorder.length > 0) {
-          await apiClient.reorderSections(
+          await reorderSections.mutateAsync({
             courseId,
-            sectionsToReorder.map((s) => ({ id: s.id, order: s.order })),
-            accessToken,
-          );
+            order: sectionsToReorder.map((s) => ({ id: s.id, order: s.order })),
+          });
           console.log("Section reorder API call successful");
           showSuccess("Sections reordered successfully");
         }
@@ -480,7 +536,7 @@ export function CourseStructure({
     if (
       !currentDraggedItem ||
       currentDraggedItem.type !== "lesson" ||
-      !accessToken ||
+      !isAuthenticated ||
       !currentDraggedItem.sectionId
     ) {
       return;
@@ -512,7 +568,7 @@ export function CourseStructure({
     draggedLessonId: string,
     beforeLessonId?: string,
   ) => {
-    if (!accessToken) return;
+    if (!isAuthenticated) return;
 
     try {
       const section = sections.find((s) => s.id === sectionId);
@@ -559,7 +615,10 @@ export function CourseStructure({
         order: index,
       }));
 
-      await apiClient.reorderLessons(courseId, orderingData, accessToken);
+      await reorderLessons.mutateAsync({
+        courseId,
+        ordering: orderingData,
+      });
       showSuccess("Lessons reordered successfully");
     } catch (error: unknown) {
       console.error("Failed to reorder lessons:", error);
@@ -574,7 +633,7 @@ export function CourseStructure({
     targetSectionId: string,
     beforeLessonId?: string,
   ) => {
-    if (!accessToken) return;
+    if (!isAuthenticated) return;
 
     try {
       const sourceSection = sections.find((s) => s.id === sourceSectionId);
@@ -631,7 +690,10 @@ export function CourseStructure({
         order: index,
       }));
 
-      await apiClient.reorderLessons(courseId, orderingData, accessToken);
+      await reorderLessons.mutateAsync({
+        courseId,
+        ordering: orderingData,
+      });
       showSuccess("Lesson moved successfully");
     } catch (error: unknown) {
       console.error("Failed to move lesson:", error);
@@ -711,14 +773,16 @@ export function CourseStructure({
             availableConcepts={availableConcepts}
             isExpanded={expandedSections.has(section.id)}
             onToggle={() => toggleSection(section.id)}
-            onUpdate={(updates) => updateSection(section.id, updates)}
-            onDelete={() => deleteSection(section.id)}
+            onUpdate={(updates) => handleUpdateSection(section.id, updates)}
+            onDelete={() => handleDeleteSection(section.id)}
             onAddLesson={() => addLesson(section.id)}
             onUpdateLesson={(lessonId, updates) =>
-              updateLesson(section.id, lessonId, updates)
+              handleUpdateLesson(section.id, lessonId, updates)
             }
             onSaveLesson={(lessonId) => saveLesson(section.id, lessonId)}
-            onDeleteLesson={(lessonId) => deleteLesson(section.id, lessonId)}
+            onDeleteLesson={(lessonId) =>
+              handleDeleteLesson(section.id, lessonId)
+            }
             disabled={disabled || isLoading}
             savingLessonsSet={savingLessons}
             onDragStart={(e) => handleSectionDragStart(e, section.id)}
@@ -1046,21 +1110,23 @@ function LessonEditor({
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMediaDialogOpen, setIsMediaDialogOpen] = useState(false);
   const [editingMedia, setEditingMedia] = useState<Media | null>(null);
-  const { accessToken } = useAuth();
+  const { isAuthenticated } = useAuth();
+
+  // React Query mutation hooks for media
+  const createMediaMutation = useCreateMedia();
+  const updateMediaMutation = useUpdateMedia();
+  const deleteMediaMutation = useDeleteMedia();
 
   const handleAddMedia = async (newMedia: Omit<Media, "id">) => {
-    if (!accessToken) return;
+    if (!isAuthenticated) return;
     try {
-      const createdMedia = await apiClient.createMedia(
-        {
-          title: newMedia.title,
-          description: newMedia.description,
-          mediaType: newMedia.mediaType,
-          lessonId: lesson.id,
-          url: newMedia.url || "",
-        },
-        accessToken,
-      );
+      const createdMedia = await createMediaMutation.mutateAsync({
+        title: newMedia.title,
+        description: newMedia.description,
+        mediaType: newMedia.mediaType,
+        lessonId: lesson.id,
+        url: newMedia.url || "",
+      });
       onUpdate({ media: [...(lesson.media || []), createdMedia] });
     } catch (error) {
       console.error("Failed to create media:", error);
@@ -1068,19 +1134,18 @@ function LessonEditor({
   };
 
   const handleUpdateMedia = async (updatedMedia: Omit<Media, "id">) => {
-    if (!accessToken || !editingMedia) return;
+    if (!isAuthenticated || !editingMedia) return;
     try {
-      const returnedMedia = await apiClient.updateMedia(
-        {
+      const returnedMedia = await updateMediaMutation.mutateAsync({
+        mediaId: editingMedia.id,
+        data: {
           title: updatedMedia.title,
           lessonId: lesson.id,
-          mediaId: editingMedia.id,
           description: updatedMedia.description,
           mediaType: updatedMedia.mediaType,
           url: updatedMedia.url || "",
         },
-        accessToken,
-      );
+      });
       const newMediaList = (lesson.media || []).map((item) =>
         item.id === editingMedia.id ? returnedMedia : item,
       );
@@ -1091,9 +1156,9 @@ function LessonEditor({
   };
 
   const handleDeleteMedia = async (mediaId: string) => {
-    if (!accessToken) return;
+    if (!isAuthenticated) return;
     try {
-      await apiClient.deleteMedia(mediaId, accessToken);
+      await deleteMediaMutation.mutateAsync(mediaId);
       const newMediaList = (lesson.media || []).filter(
         (item) => item.id !== mediaId,
       );

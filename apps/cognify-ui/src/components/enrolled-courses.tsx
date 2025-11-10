@@ -1,9 +1,9 @@
 "use client";
 
 import { useAuth } from "@/contexts/auth";
-import { apiClient } from "@/lib/api";
+import { useCertificates, useStudentCourses } from "@/lib/api-hooks";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { CertificateRequest } from "./certificate-request";
 
 interface EnrolledCourse {
@@ -100,73 +100,60 @@ export function EnrolledCourses({
   subtitle = "Continue your learning journey",
   className = "",
 }: EnrolledCoursesProps) {
-  const { isAuthenticated, accessToken, user } = useAuth();
-  const [courses, setCourses] = useState<EnrolledCourse[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [certificates, setCertificates] = useState<
-    Map<string, { nftAddress: string | null; vcHash: string }>
-  >(new Map());
+  const { isAuthenticated, user } = useAuth();
 
-  useEffect(() => {
-    const fetchEnrolledCourses = async () => {
-      if (!isAuthenticated || !accessToken || !user) {
-        setCourses([]);
-        setIsLoading(false);
-        return;
-      }
+  // Use React Query hooks for data fetching
+  const {
+    data: enrolledData,
+    isLoading: coursesLoading,
+    error: coursesError,
+  } = useStudentCourses();
 
-      try {
-        setIsLoading(true);
-        setError(null);
+  const {
+    data: certificatesData,
+    isLoading: certificatesLoading,
+    refetch: refetchCertificates,
+  } = useCertificates(user?.id || "", !!user?.id);
 
-        // Fetch courses and certificates in parallel
-        const [enrolledData, certificatesData] = await Promise.all([
-          apiClient.getStudentCourses(accessToken),
-          apiClient.getCertificates(accessToken, user.id).catch(() => ({
-            certificates: [],
-          })),
-        ]);
+  // Transform courses data
+  const courses = useMemo(() => {
+    if (!enrolledData) return [];
+    return enrolledData.map((course, index) =>
+      transformEnrolledCourse(
+        {
+          id: course.id,
+          title: course.title,
+          slug: course.slug,
+          description: course.description,
+          conceptIds: course.conceptIds,
+          completed: course.completed,
+        },
+        index,
+      ),
+    );
+  }, [enrolledData]);
 
-        // Create a map of courseId -> certificate info
-        const certificateMap = new Map<
-          string,
-          { nftAddress: string | null; vcHash: string }
-        >();
-        certificatesData.certificates.forEach((cert) => {
-          certificateMap.set(cert.courseId, {
-            nftAddress: cert.nftAddress,
-            vcHash: cert.vcHash,
-          });
+  // Create certificate map
+  const certificates = useMemo(() => {
+    const certificateMap = new Map<
+      string,
+      { nftAddress: string | null; vcHash: string }
+    >();
+    if (certificatesData?.certificates) {
+      certificatesData.certificates.forEach((cert) => {
+        certificateMap.set(cert.courseId, {
+          nftAddress: cert.nftAddress,
+          vcHash: cert.vcHash,
         });
+      });
+    }
+    return certificateMap;
+  }, [certificatesData]);
 
-        setCertificates(certificateMap);
-
-        const transformedCourses = enrolledData.map((course, index) =>
-          transformEnrolledCourse(
-            {
-              id: course.id,
-              title: course.title,
-              slug: course.slug,
-              description: course.description,
-              conceptIds: course.conceptIds,
-              completed: course.completed,
-            },
-            index,
-          ),
-        );
-
-        setCourses(transformedCourses);
-      } catch (error) {
-        console.error("Failed to fetch enrolled courses:", error);
-        setError("Failed to load enrolled courses");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchEnrolledCourses();
-  }, [isAuthenticated, accessToken, user]);
+  const isLoading = coursesLoading || certificatesLoading;
+  const error = coursesError
+    ? (coursesError as Error).message || "Failed to load enrolled courses"
+    : null;
 
   if (!isAuthenticated) {
     return (
@@ -358,24 +345,7 @@ export function EnrolledCourses({
                       onSuccess={(data) => {
                         console.log("Certificate issued:", data);
                         // Refresh certificates after successful issuance
-                        if (user && accessToken) {
-                          apiClient
-                            .getCertificates(accessToken, user.id)
-                            .then((data) => {
-                              const certificateMap = new Map<
-                                string,
-                                { nftAddress: string | null; vcHash: string }
-                              >();
-                              data.certificates.forEach((cert) => {
-                                certificateMap.set(cert.courseId, {
-                                  nftAddress: cert.nftAddress,
-                                  vcHash: cert.vcHash,
-                                });
-                              });
-                              setCertificates(certificateMap);
-                            })
-                            .catch(console.error);
-                        }
+                        refetchCertificates();
                       }}
                     />
                   </div>

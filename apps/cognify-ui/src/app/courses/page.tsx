@@ -4,11 +4,14 @@ import Footer from "@/components/footer";
 import { Navbar } from "@/components/navbar";
 import ReadyToLearn from "@/components/ready-to-learn";
 import { useAuth } from "@/contexts/auth";
-import { apiClient } from "@/lib/api";
-import { enrollInCourse, getCourses } from "@/services/courses";
+import {
+  useCourses,
+  useEnrollInCourse,
+  useStudentCourses,
+} from "@/lib/api-hooks";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 
 interface Course {
   id: string;
@@ -19,77 +22,67 @@ interface Course {
 }
 
 export default function PublicCoursesPage() {
-  const { isAuthenticated, accessToken } = useAuth();
+  const { isAuthenticated } = useAuth();
   const router = useRouter();
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [enrolledCourses, setEnrolledCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [enrolling, setEnrolling] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const loadCourses = async () => {
-      try {
-        setLoading(true);
-        const coursesData = await getCourses();
-        setCourses(coursesData);
+  // Use React Query hooks
+  const {
+    data: coursesData,
+    isLoading: coursesLoading,
+    error: coursesError,
+  } = useCourses();
 
-        if (isAuthenticated && accessToken) {
-          try {
-            const enrolledData = await apiClient.getStudentCourses(accessToken);
-            setEnrolledCourses(enrolledData);
-          } catch (error) {
-            console.error("Failed to load enrolled courses:", error);
-          }
-        }
-      } catch (error) {
-        console.error("Failed to load courses:", error);
-        setError("Failed to load courses");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const {
+    data: enrolledCoursesData,
+    isLoading: enrolledLoading,
+  } = useStudentCourses();
 
-    loadCourses();
-  }, [isAuthenticated, accessToken]);
+  const enrollInCourse = useEnrollInCourse();
+
+  // Transform courses data
+  const courses = useMemo<Course[]>(() => {
+    return coursesData || [];
+  }, [coursesData]);
+
+  // Transform enrolled courses data
+  const enrolledCourses = useMemo<Course[]>(() => {
+    return enrolledCoursesData || [];
+  }, [enrolledCoursesData]);
 
   const isEnrolledInCourse = (courseId: string) => {
     return enrolledCourses.some((course) => course.id === courseId);
   };
 
   const handleEnroll = async (courseId: string) => {
-    if (!isAuthenticated || !accessToken) {
+    if (!isAuthenticated) {
       router.push("/signup");
       return;
     }
 
+    const course = courses.find((c) => c.id === courseId);
+    if (!course) {
+      return;
+    }
+
     try {
-      setEnrolling(courseId);
-      setError(null);
-
-      const course = courses.find((c) => c.id === courseId);
-      if (!course) {
-        throw new Error("Course not found");
-      }
-
-      const result = await enrollInCourse(course.slug, accessToken);
-      if (!result.success) {
-        throw new Error(result.message);
-      }
-
-      const enrolledData = await apiClient.getStudentCourses(accessToken);
-      setEnrolledCourses(enrolledData);
-
+      await enrollInCourse.mutateAsync(course.slug);
+      // Redirect to the course page after successful enrollment
       router.push(`/courses/${course.slug}`);
     } catch (error: unknown) {
       console.error("Enrollment failed:", error);
-      setError(
-        error instanceof Error ? error.message : "Failed to enroll in course",
-      );
-    } finally {
-      setEnrolling(null);
+      // Error is handled by React Query
     }
   };
+
+  const loading = coursesLoading || enrolledLoading;
+  const enrolling = enrollInCourse.isPending && enrollInCourse.variables
+    ? enrollInCourse.variables
+    : null;
+  const error = coursesError
+    ? (coursesError as Error).message || "Failed to load courses"
+    : enrollInCourse.error
+      ? (enrollInCourse.error as Error).message || "Failed to enroll in course"
+      : null;
 
   if (loading) {
     return (
@@ -196,10 +189,10 @@ export default function PublicCoursesPage() {
                     ) : (
                       <button
                         onClick={() => handleEnroll(course.id)}
-                        disabled={enrolling === course.id}
+                        disabled={enrolling === course.slug}
                         className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400 dark:bg-blue-500 dark:hover:bg-blue-600 dark:disabled:bg-blue-400"
                       >
-                        {enrolling === course.id
+                        {enrolling === course.slug
                           ? "Enrolling..."
                           : "Enroll Now"}
                       </button>

@@ -1,5 +1,6 @@
 import { AuthProvider } from "@/contexts/auth";
 import { SolanaWalletProvider } from "@/contexts/solana-wallet";
+import { QueryProvider } from "@/providers/query-provider";
 import { clsx } from "clsx";
 import { GeistMono } from "geist/font/mono";
 import localFont from "next/font/local";
@@ -25,11 +26,13 @@ export default function RootLayout({ children }: { children: any }) {
       )}
     >
       <body className="bg-white dark:bg-gray-950">
-        <AuthProvider>
-          <SolanaWalletProvider>
-            <div className="isolate bg-white dark:bg-gray-950">{children}</div>
-          </SolanaWalletProvider>
-        </AuthProvider>
+        <QueryProvider>
+          <AuthProvider>
+            <SolanaWalletProvider>
+              <div className="isolate bg-white dark:bg-gray-950">{children}</div>
+            </SolanaWalletProvider>
+          </AuthProvider>
+        </QueryProvider>
       </body>
     </html>
   );

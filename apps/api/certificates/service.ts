@@ -36,6 +36,7 @@ export async function issueCertificate({
     courseId,
     courseTitle: course.title,
     txSignature: txSignature,
+    nftAddress: nftAddress || undefined,
   });
 
   const proof = signVC(vcJson);

@@ -43,6 +43,7 @@ export const buildVC = (params: {
   courseId: string;
   courseTitle: string;
   txSignature: string;
+  nftAddress?: string;
 }) => ({
   "@context": ["https://www.w3.org/2018/credentials/v1"],
   type: ["VerifiableCredential", "CourseCompletionCertificate"],
@@ -55,6 +56,6 @@ export const buildVC = (params: {
     courseTitle: params.courseTitle,
     completionDate: new Date().toISOString(),
     transactionSignature: params.txSignature,
-    nftAddress: `did:sol:${params.studentWallet}`,
+    nftAddress: params.nftAddress || null,
   },
 });

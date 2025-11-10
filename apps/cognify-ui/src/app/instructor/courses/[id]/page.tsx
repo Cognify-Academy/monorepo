@@ -9,9 +9,13 @@ import {
 } from "@/components/course-structure";
 import { Navbar } from "@/components/navbar";
 import { useAuth } from "@/contexts/auth";
-import { apiClient } from "@/lib/api";
+import {
+  useConcepts,
+  useInstructorCourse,
+  useUpdateCourse,
+} from "@/lib/api-hooks";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface CourseData {
   id: string;
@@ -26,97 +30,114 @@ interface CourseData {
 }
 
 export default function EditCoursePage({ params }: { params: { id: string } }) {
-  const { isAuthenticated, hasRole, token, isInitialized } = useAuth();
+  const { isAuthenticated, hasRole, isInitialized } = useAuth();
   const router = useRouter();
-  const [course, setCourse] = useState<CourseData | null>(null);
-  const [concepts, setConcepts] = useState<ConceptType[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  // Fetch course data
+  // Use React Query hooks for data fetching
+  const {
+    data: courseData,
+    isLoading: courseLoading,
+    error: courseError,
+  } = useInstructorCourse(params.id, isAuthenticated && hasRole("INSTRUCTOR"));
+
+  const {
+    data: conceptsData,
+    isLoading: conceptsLoading,
+  } = useConcepts();
+
+  const updateCourse = useUpdateCourse();
+
+  // Check auth and redirect if not authorized
   useEffect(() => {
-    // Wait for auth to initialize before checking
-    if (!isInitialized) {
-      return;
-    }
+    if (!isInitialized) return;
 
-    // Check auth and redirect if not authorized
     if (!isAuthenticated || !hasRole("INSTRUCTOR")) {
       router.push("/");
-      return;
     }
+  }, [isInitialized, isAuthenticated, hasRole, router]);
 
-    const fetchData = async () => {
-      if (!token) {
-        return;
-      }
+  // Transform course data
+  const transformedCourse = useMemo<CourseData | null>(() => {
+    if (!courseData) return null;
 
-      setIsLoading(true);
-      try {
-        const [courseData, conceptsData] = await Promise.all([
-          apiClient.getInstructorCourse(params.id, token),
-          apiClient.getConcepts(),
-        ]);
-
-        const transformedCourse: CourseData = {
-          ...courseData,
-          sections: courseData.sections.map((section) => ({
-            ...section,
-            conceptIds: section.conceptIds || [],
-            lessons: section.lessons.map((lesson) => ({
-              ...lesson,
-              conceptIds: lesson.conceptIds || [],
-              media: (lesson.media || []) as Media[],
-            })),
-          })),
-        };
-
-        setCourse(transformedCourse);
-        setConcepts(conceptsData);
-      } catch (error) {
-        console.error("Failed to fetch course data:", error);
-        setError("Failed to load course data. Please try again.");
-      } finally {
-        setIsLoading(false);
-      }
+    return {
+      ...courseData,
+      sections: courseData.sections.map((section) => ({
+        ...section,
+        conceptIds: section.conceptIds || [],
+        lessons: section.lessons.map((lesson) => ({
+          ...lesson,
+          conceptIds: lesson.conceptIds || [],
+          media: (lesson.media || []) as Media[],
+        })),
+      })),
     };
+  }, [courseData]);
 
-    fetchData();
-  }, [isInitialized, token, isAuthenticated, hasRole, params.id, router]);
+  // Maintain local state for sections to prevent refetches from overwriting user input
+  const [localSections, setLocalSections] = useState<Section[] | null>(null);
+
+  // Update local sections when course data changes (initial load or when sections actually change)
+  useEffect(() => {
+    if (transformedCourse?.sections) {
+      // Only update if local sections haven't been set yet (initial load)
+      // or if the sections have actually changed (e.g., new section added, section deleted)
+      // This prevents overwriting user input while they're typing
+      if (localSections === null) {
+        setLocalSections(transformedCourse.sections);
+      } else {
+        // Only update if the number of sections changed (new section added/deleted)
+        // or if section IDs changed (sections reordered)
+        const localSectionIds = localSections.map((s) => s.id).sort().join(",");
+        const newSectionIds = transformedCourse.sections
+          .map((s) => s.id)
+          .sort()
+          .join(",");
+        if (localSectionIds !== newSectionIds) {
+          setLocalSections(transformedCourse.sections);
+        }
+      }
+    }
+  }, [transformedCourse?.sections, localSections]);
+
+  // Use local sections if available, otherwise use transformed course sections
+  const course = useMemo<CourseData | null>(() => {
+    if (!transformedCourse) return null;
+
+    return {
+      ...transformedCourse,
+      sections: localSections || transformedCourse.sections,
+    };
+  }, [transformedCourse, localSections]);
+
+  // Transform concepts data
+  const concepts = useMemo<ConceptType[]>(() => {
+    return conceptsData || [];
+  }, [conceptsData]);
 
   const handleCourseSubmit = async (data: CourseFormData) => {
-    if (!token) {
-      setError("Authentication required. Please log in again.");
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
     try {
-      const updatedCourse = await apiClient.updateCourse(
-        params.id,
+      await updateCourse.mutateAsync({
+        id: params.id,
         data,
-        token,
-      );
-      setCourse((prev) => (prev ? { ...prev, ...updatedCourse } : null));
+      });
     } catch (error: unknown) {
       console.error("Failed to update course:", error);
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Failed to update course. Please try again.",
-      );
-    } finally {
-      setIsLoading(false);
+      // Error is handled by React Query
     }
   };
 
   const handleSectionsChange = (sections: Section[]) => {
-    if (course) {
-      setCourse({ ...course, sections });
-    }
+    // Update local state immediately to prevent refetches from overwriting user input
+    setLocalSections(sections);
   };
+
+  const isLoading = courseLoading || conceptsLoading || updateCourse.isPending;
+  const error = courseError
+    ? (courseError as Error).message || "Failed to load course data. Please try again."
+    : updateCourse.error
+      ? (updateCourse.error as Error).message || "Failed to update course. Please try again."
+      : null;
 
   // Show loading while initializing or loading course data
   if (!isInitialized || (isLoading && !course)) {

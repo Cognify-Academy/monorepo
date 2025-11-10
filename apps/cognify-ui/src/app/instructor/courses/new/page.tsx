@@ -5,73 +5,56 @@ import { CourseForm, type CourseFormData } from "@/components/course-form";
 import Footer from "@/components/footer";
 import { Navbar } from "@/components/navbar";
 import { useAuth } from "@/contexts/auth";
-import { apiClient } from "@/lib/api";
+import { useConcepts, useCreateCourse } from "@/lib/api-hooks";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo } from "react";
 
 export default function NewCoursePage() {
   const {
     isAuthenticated,
     hasRole,
     isLoading: authLoading,
-    accessToken,
   } = useAuth();
   const router = useRouter();
-  const [concepts, setConcepts] = useState<ConceptType[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [conceptsLoading, setConceptsLoading] = useState(true);
 
+  // Use React Query hooks
+  const {
+    data: conceptsData,
+    isLoading: conceptsLoading,
+    error: conceptsError,
+  } = useConcepts();
+
+  const createCourse = useCreateCourse();
+
+  // Check auth and redirect if not authorized
   useEffect(() => {
     if (!authLoading && (!isAuthenticated || !hasRole("INSTRUCTOR"))) {
       router.push("/");
     }
   }, [isAuthenticated, hasRole, authLoading, router]);
 
-  // Fetch concepts
-  useEffect(() => {
-    const fetchConcepts = async () => {
-      try {
-        setConceptsLoading(true);
-        const fetchedConcepts = await apiClient.getConcepts();
-        setConcepts(fetchedConcepts);
-      } catch (error) {
-        console.error("Failed to fetch concepts:", error);
-        setError("Failed to load concepts. Please try again.");
-      } finally {
-        setConceptsLoading(false);
-      }
-    };
-
-    if (isAuthenticated && hasRole("INSTRUCTOR")) {
-      fetchConcepts();
-    }
-  }, [isAuthenticated, hasRole]);
+  // Transform concepts data
+  const concepts = useMemo<ConceptType[]>(() => {
+    return conceptsData || [];
+  }, [conceptsData]);
 
   const handleSubmit = async (data: CourseFormData) => {
-    if (!accessToken) {
-      setError("Authentication required. Please log in again.");
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
     try {
-      const createdCourse = await apiClient.createCourse(data, accessToken);
+      const createdCourse = await createCourse.mutateAsync(data);
       // Redirect to the course edit page
       router.push(`/instructor/courses/${createdCourse.id}`);
     } catch (error: unknown) {
       console.error("Failed to create course:", error);
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Failed to create course. Please try again.",
-      );
-    } finally {
-      setIsLoading(false);
+      // Error is handled by React Query
     }
   };
+
+  const isLoading = createCourse.isPending;
+  const error = conceptsError
+    ? (conceptsError as Error).message || "Failed to load concepts. Please try again."
+    : createCourse.error
+      ? (createCourse.error as Error).message || "Failed to create course. Please try again."
+      : null;
 
   if (authLoading) {
     return (
