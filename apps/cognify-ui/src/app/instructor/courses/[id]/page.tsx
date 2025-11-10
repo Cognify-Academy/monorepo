@@ -65,7 +65,7 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
       sections: courseData.sections.map((section) => ({
         ...section,
         conceptIds: section.conceptIds || [],
-        lessons: section.lessons.map((lesson) => ({
+        lessons: (section.lessons || []).map((lesson) => ({
           ...lesson,
           conceptIds: lesson.conceptIds || [],
           media: (lesson.media || []) as Media[],

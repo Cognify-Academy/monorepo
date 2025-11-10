@@ -66,12 +66,6 @@ mock.module("@/lib/api-client", () => {
 });
 
 import { AuthProvider, useAuth } from "../auth";
-import { apiClient } from "@/lib/api-client";
-
-const mockedApi = apiClient as unknown as {
-  post: ReturnType<typeof mock>;
-  get: ReturnType<typeof mock>;
-};
 
 // ---- Helpers ----
 function base64Url(input: string) {
