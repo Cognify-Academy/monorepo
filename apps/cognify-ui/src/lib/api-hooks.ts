@@ -69,10 +69,23 @@ export function useCourse(identifier: string, enabled: boolean = true) {
   });
 }
 
-export function useStudentCourses() {
+export function useCoursePreview(identifier: string, enabled: boolean = true) {
+  return useQuery({
+    queryKey: ["course", "preview", identifier],
+    queryFn: () =>
+      apiClient.get<CoursePreview>(`/courses/${identifier}/preview`, {
+        skipAuth: true,
+      }),
+    enabled: enabled && !!identifier,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useStudentCourses(enabled: boolean = true) {
   return useQuery({
     queryKey: ["student", "courses"],
     queryFn: () => apiClient.get<EnrolledCourse[]>("/student/courses"),
+    enabled,
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
 }
@@ -479,6 +492,17 @@ type Course = {
 
 type CourseDetail = Course & {
   sections: Section[];
+};
+
+type CoursePreview = Course & {
+  sections: Array<{
+    id: string;
+    title: string;
+    description: string;
+    order: number;
+    conceptIds: string[];
+    lessonCount: number;
+  }>;
 };
 
 type EnrolledCourse = Course & {

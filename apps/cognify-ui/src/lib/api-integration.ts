@@ -3,8 +3,8 @@
  * Call this in your app initialization
  */
 
+import type { OnAuthError, TokenProvider, TokenRefresher } from "./api-client";
 import { apiClient } from "./api-client";
-import type { TokenProvider, TokenRefresher, OnAuthError } from "./api-client";
 
 export function setupApiClient(
   tokenProvider: TokenProvider,
@@ -15,4 +15,3 @@ export function setupApiClient(
   apiClient.setTokenRefresher(tokenRefresher);
   apiClient.setOnAuthError(onAuthError);
 }
-

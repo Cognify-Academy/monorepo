@@ -1,5 +1,5 @@
 import { Elysia, NotFoundError, t } from "elysia";
-import { getCourse, getCourses, enrolStudent } from "./model";
+import { getCourse, getCourses, getCoursePreview, enrolStudent } from "./model";
 import AuthService from "../auth/service";
 
 export default new Elysia({ prefix: "/courses" })
@@ -38,6 +38,54 @@ export default new Elysia({ prefix: "/courses" })
             conceptIds: t.Array(t.String()),
           }),
         ),
+      },
+    },
+  )
+  .get(
+    "/:identifier/preview",
+    async ({ params }) => {
+      const course = await getCoursePreview(params.identifier);
+
+      if (!course) {
+        throw new NotFoundError("Course not found");
+      }
+
+      return {
+        ...course,
+        createdAt: course.createdAt.toISOString(),
+        updatedAt: course.updatedAt.toISOString(),
+      };
+    },
+    {
+      detail: { tags: ["Courses"], description: "Get course preview with sections" },
+      params: t.Object({
+        identifier: t.String({ description: "The course ID or slug" }),
+      }),
+      response: {
+        200: t.Object({
+          id: t.String(),
+          title: t.String(),
+          slug: t.String(),
+          description: t.String(),
+          published: t.Boolean(),
+          createdAt: t.String(),
+          updatedAt: t.String(),
+          userId: t.String(),
+          conceptIds: t.Array(t.String()),
+          sections: t.Array(
+            t.Object({
+              id: t.String(),
+              title: t.String(),
+              description: t.String(),
+              order: t.Number(),
+              conceptIds: t.Array(t.String()),
+              lessonCount: t.Number(),
+            }),
+          ),
+        }),
+        404: t.Object({
+          error: t.String(),
+        }),
       },
     },
   )

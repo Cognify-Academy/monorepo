@@ -107,7 +107,7 @@ export function EnrolledCourses({
     data: enrolledData,
     isLoading: coursesLoading,
     error: coursesError,
-  } = useStudentCourses();
+  } = useStudentCourses(isAuthenticated);
 
   const {
     data: certificatesData,

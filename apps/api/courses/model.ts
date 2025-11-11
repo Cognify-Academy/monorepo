@@ -135,6 +135,72 @@ export async function getCourse(
   };
 }
 
+export async function getCoursePreview(identifier: string) {
+  console.debug(`Fetching course preview with identifier: ${identifier}`);
+  const course = await prisma.course.findFirst({
+    where: {
+      OR: [{ id: identifier }, { slug: identifier }],
+      published: true, // Only show published courses in preview
+    },
+    include: {
+      conceptCourses: {
+        select: { conceptId: true },
+      },
+      instructors: true,
+      sections: {
+        orderBy: { order: "asc" },
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          order: true,
+          ConceptSection: {
+            select: {
+              concept: {
+                select: { id: true },
+              },
+            },
+          },
+          _count: {
+            select: {
+              lessons: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!course) {
+    console.debug(`Course not found for identifier: ${identifier}`);
+    return null;
+  }
+
+  console.debug(`Found course preview: ${course.title} (${course.id})`);
+  console.debug(
+    `Transforming course preview data with ${course.sections.length} sections`,
+  );
+
+  const { conceptCourses, sections, ...rest } = course;
+  const courseConceptIds = conceptCourses.map((cc) => cc.conceptId);
+
+  const transformedSections = sections.map((section) => {
+    const sectionConceptIds = section.ConceptSection.map((cs) => cs.concept.id);
+    const { ConceptSection, ...sectionRest } = section;
+    return {
+      ...sectionRest,
+      conceptIds: sectionConceptIds,
+      lessonCount: section._count.lessons,
+    };
+  });
+
+  return {
+    ...rest,
+    conceptIds: courseConceptIds,
+    sections: transformedSections,
+  };
+}
+
 export async function enrolStudent({
   identifier,
   userId,

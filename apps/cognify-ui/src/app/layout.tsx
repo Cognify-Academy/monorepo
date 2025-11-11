@@ -29,7 +29,9 @@ export default function RootLayout({ children }: { children: any }) {
         <QueryProvider>
           <AuthProvider>
             <SolanaWalletProvider>
-              <div className="isolate bg-white dark:bg-gray-950">{children}</div>
+              <div className="isolate bg-white dark:bg-gray-950">
+                {children}
+              </div>
             </SolanaWalletProvider>
           </AuthProvider>
         </QueryProvider>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useAuth } from "@/contexts/auth";
 import { useInstructorCourses, useStudentCourses } from "@/lib/api-hooks";
 import Link from "next/link";
 import { useMemo } from "react";
@@ -80,6 +81,8 @@ export function MyActiveCourses({
   courses,
   context = "student",
 }: MyActiveCoursesProps) {
+  const { isAuthenticated } = useAuth();
+
   // Use React Query hooks based on context
   const {
     data: instructorCoursesData,
@@ -91,7 +94,7 @@ export function MyActiveCourses({
     data: studentCoursesData,
     isLoading: studentLoading,
     error: studentError,
-  } = useStudentCourses();
+  } = useStudentCourses(isAuthenticated && context === "student");
 
   // Select the appropriate data and loading state based on context
   const rawCoursesData =

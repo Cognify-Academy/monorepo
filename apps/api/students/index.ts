@@ -66,7 +66,9 @@ export default new Elysia({ prefix: "/student" })
         security: [{ bearerAuth: [] }],
       },
       headers: t.Object({
-        authorization: t.String({ description: "Authorization token" }),
+        authorization: t.Optional(
+          t.String({ description: "Authorization token" }),
+        ),
       }),
       response: {
         200: t.Array(
@@ -149,9 +151,6 @@ export default new Elysia({ prefix: "/student" })
         tags: ["Students"],
         security: [{ bearerAuth: [] }],
       },
-      headers: t.Object({
-        authorization: t.String({ description: "Authorization token" }),
-      }),
       body: t.Object({
         lessonId: t.String({ description: "The lesson ID" }),
         completed: t.Boolean({
@@ -217,9 +216,6 @@ export default new Elysia({ prefix: "/student" })
         tags: ["Students"],
         security: [{ bearerAuth: [] }],
       },
-      headers: t.Object({
-        authorization: t.String({ description: "Authorization token" }),
-      }),
       params: t.Object({
         lessonId: t.String({ description: "The lesson ID" }),
       }),
@@ -278,9 +274,6 @@ export default new Elysia({ prefix: "/student" })
         tags: ["Students"],
         security: [{ bearerAuth: [] }],
       },
-      headers: t.Object({
-        authorization: t.String({ description: "Authorization token" }),
-      }),
       query: t.Object({
         courseId: t.Optional(t.String({ description: "Filter by course ID" })),
       }),
@@ -363,9 +356,6 @@ export default new Elysia({ prefix: "/student" })
         tags: ["Students"],
         security: [{ bearerAuth: [] }],
       },
-      headers: t.Object({
-        authorization: t.String({ description: "Authorization token" }),
-      }),
       response: {
         200: t.Object({
           concepts: t.Array(

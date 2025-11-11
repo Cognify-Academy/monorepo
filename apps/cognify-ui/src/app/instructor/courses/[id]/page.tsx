@@ -40,10 +40,7 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
     error: courseError,
   } = useInstructorCourse(params.id, isAuthenticated && hasRole("INSTRUCTOR"));
 
-  const {
-    data: conceptsData,
-    isLoading: conceptsLoading,
-  } = useConcepts();
+  const { data: conceptsData, isLoading: conceptsLoading } = useConcepts();
 
   const updateCourse = useUpdateCourse();
 
@@ -88,7 +85,10 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
       } else {
         // Only update if the number of sections changed (new section added/deleted)
         // or if section IDs changed (sections reordered)
-        const localSectionIds = localSections.map((s) => s.id).sort().join(",");
+        const localSectionIds = localSections
+          .map((s) => s.id)
+          .sort()
+          .join(",");
         const newSectionIds = transformedCourse.sections
           .map((s) => s.id)
           .sort()
@@ -134,9 +134,11 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
 
   const isLoading = courseLoading || conceptsLoading || updateCourse.isPending;
   const error = courseError
-    ? (courseError as Error).message || "Failed to load course data. Please try again."
+    ? (courseError as Error).message ||
+      "Failed to load course data. Please try again."
     : updateCourse.error
-      ? (updateCourse.error as Error).message || "Failed to update course. Please try again."
+      ? (updateCourse.error as Error).message ||
+        "Failed to update course. Please try again."
       : null;
 
   // Show loading while initializing or loading course data

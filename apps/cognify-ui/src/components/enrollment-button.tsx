@@ -22,7 +22,7 @@ export function EnrollmentButton({
 
   // Use React Query hooks
   const { data: enrolledCourses, isLoading: isLoadingEnrollment } =
-    useStudentCourses();
+    useStudentCourses(isAuthenticated);
 
   const enrollInCourse = useEnrollInCourse();
 

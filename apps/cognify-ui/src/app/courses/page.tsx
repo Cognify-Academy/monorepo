@@ -32,10 +32,8 @@ export default function PublicCoursesPage() {
     error: coursesError,
   } = useCourses();
 
-  const {
-    data: enrolledCoursesData,
-    isLoading: enrolledLoading,
-  } = useStudentCourses();
+  const { data: enrolledCoursesData, isLoading: enrolledLoading } =
+    useStudentCourses(isAuthenticated);
 
   const enrollInCourse = useEnrollInCourse();
 
@@ -75,9 +73,10 @@ export default function PublicCoursesPage() {
   };
 
   const loading = coursesLoading || enrolledLoading;
-  const enrolling = enrollInCourse.isPending && enrollInCourse.variables
-    ? enrollInCourse.variables
-    : null;
+  const enrolling =
+    enrollInCourse.isPending && enrollInCourse.variables
+      ? enrollInCourse.variables
+      : null;
   const error = coursesError
     ? (coursesError as Error).message || "Failed to load courses"
     : enrollInCourse.error
@@ -151,13 +150,28 @@ export default function PublicCoursesPage() {
         ) : (
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
             {courses.map((course) => (
-              <div
+              <Link
                 key={course.id}
-                className={`rounded-lg border p-6 shadow-sm transition-shadow hover:shadow-md ${
+                href={
+                  course.published ? `/courses/preview/${course.slug}` : "#"
+                }
+                className={`block rounded-lg border p-6 shadow-sm transition-shadow hover:shadow-md ${
                   course.published
-                    ? "border-gray-100 bg-white dark:border-gray-700 dark:bg-gray-800"
-                    : "border-yellow-200 bg-yellow-50 dark:border-yellow-700 dark:bg-yellow-900/20"
+                    ? "cursor-pointer border-gray-100 bg-white dark:border-gray-700 dark:bg-gray-800"
+                    : "cursor-default border-yellow-200 bg-yellow-50 dark:border-yellow-700 dark:bg-yellow-900/20"
                 }`}
+                onClick={(e) => {
+                  // Prevent navigation if clicking on buttons or nested links, or if course is not published
+                  const target = e.target as HTMLElement;
+                  const isButton = target.closest("button");
+                  const isNestedLink =
+                    target.closest("a") &&
+                    target.closest("a") !== e.currentTarget;
+
+                  if (!course.published || isButton || isNestedLink) {
+                    e.preventDefault();
+                  }
+                }}
               >
                 <div className="mb-3 flex items-start justify-between">
                   <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -183,12 +197,17 @@ export default function PublicCoursesPage() {
                       <Link
                         href={`/courses/${course.slug}`}
                         className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+                        onClick={(e) => e.stopPropagation()}
                       >
                         Resume Course
                       </Link>
                     ) : (
                       <button
-                        onClick={() => handleEnroll(course.id)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleEnroll(course.id);
+                        }}
                         disabled={enrolling === course.slug}
                         className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400 dark:bg-blue-500 dark:hover:bg-blue-600 dark:disabled:bg-blue-400"
                       >
@@ -203,7 +222,7 @@ export default function PublicCoursesPage() {
                     </span>
                   )}
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}

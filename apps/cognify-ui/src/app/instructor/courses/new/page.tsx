@@ -10,11 +10,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
 
 export default function NewCoursePage() {
-  const {
-    isAuthenticated,
-    hasRole,
-    isLoading: authLoading,
-  } = useAuth();
+  const { isAuthenticated, hasRole, isLoading: authLoading } = useAuth();
   const router = useRouter();
 
   // Use React Query hooks
@@ -51,9 +47,11 @@ export default function NewCoursePage() {
 
   const isLoading = createCourse.isPending;
   const error = conceptsError
-    ? (conceptsError as Error).message || "Failed to load concepts. Please try again."
+    ? (conceptsError as Error).message ||
+      "Failed to load concepts. Please try again."
     : createCourse.error
-      ? (createCourse.error as Error).message || "Failed to create course. Please try again."
+      ? (createCourse.error as Error).message ||
+        "Failed to create course. Please try again."
       : null;
 
   if (authLoading) {

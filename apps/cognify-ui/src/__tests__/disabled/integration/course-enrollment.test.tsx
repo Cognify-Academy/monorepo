@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { describe, it, expect, beforeEach, mock } from "bun:test";
+import { beforeEach, describe, expect, it, mock } from "bun:test";
 
 // ---- Mock Next.js navigation (must be before any imports that use it) ----
 mock.module("next/navigation", () => {
