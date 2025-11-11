@@ -27,19 +27,13 @@ dotenv.config();
 const PORT = process.env.PORT || 3333;
 const HOST = process.env.HOST || "localhost";
 
-const getAllowedOrigins = (): string[] => {
-  const origins = [
-    "https://www.cognify.academy",
-    "https://cognify.academy",
-    "https://monorepo-production-6b5d.up.railway.app",
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-  ];
-
-  const envOrigins =
-    process.env["ALLOWED_ORIGINS"]?.split(",").map((o) => o.trim()) || [];
-  return [...origins, ...envOrigins];
-};
+const getAllowedOrigins = (): string[] => [
+  "https://www.cognify.academy",
+  "https://cognify.academy",
+  "https://monorepo-production-6b5d.up.railway.app",
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+];
 
 const publicApp = new Elysia().get(
   "/.well-known/did.json",
@@ -52,38 +46,6 @@ const publicApp = new Elysia().get(
 const apiApp = new Elysia({ prefix: "/api/v1" })
   .use(requestIdMiddleware)
   .use(requestLogger)
-  .use(
-    cors({
-      origin: (request) => {
-        const origin = request.headers.get("origin");
-        if (!origin) return true; // Non-browser requests (Postman, curl)
-
-        const allowedOrigins = getAllowedOrigins();
-        const normalizedOrigin = origin.toLowerCase().replace(/\/$/, "");
-        const normalizedAllowed = allowedOrigins.map((o) =>
-          o.toLowerCase().replace(/\/$/, ""),
-        );
-
-        return normalizedAllowed.includes(normalizedOrigin)
-          ? (origin as any)
-          : false;
-      },
-      credentials: true,
-      allowedHeaders: [
-        "Content-Type",
-        "Authorization",
-        "X-Requested-With",
-        "Accept",
-        "Origin",
-        "Access-Control-Request-Method",
-        "Access-Control-Request-Headers",
-        "Cookie",
-        "X-Request-ID",
-      ],
-      methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-      exposeHeaders: ["Set-Cookie", "X-Request-ID"],
-    }),
-  )
   .use(errorHandler)
   .use(generalRateLimiter)
   .use(
@@ -120,6 +82,24 @@ const apiApp = new Elysia({ prefix: "/api/v1" })
         },
       },
       autoDarkMode: true,
+    }),
+  )
+  .use(
+    cors({
+      origin: getAllowedOrigins(),
+      credentials: true,
+      allowedHeaders: [
+        "Content-Type",
+        "Authorization",
+        "X-Requested-With",
+        "Accept",
+        "Origin",
+        "Access-Control-Request-Method",
+        "Access-Control-Request-Headers",
+        "Cookie",
+      ],
+      methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+      exposeHeaders: ["Set-Cookie"],
     }),
   )
   .get("/", () => ({ message: "Cognify Academy API is running!" }))
