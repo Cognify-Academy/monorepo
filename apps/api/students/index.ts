@@ -340,7 +340,10 @@ export default new Elysia({ prefix: "/student" })
       };
     }) => {
       if (!hasRole("STUDENT") || !user?.id) {
-        throw new Error("Forbidden - User must have STUDENT role");
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
       }
 
       const concepts = await getConceptsFromCompletedLessons({
