@@ -44,6 +44,7 @@ export const errorHandler = new Elysia({ name: "error-handler" })
     if (error instanceof AppError) {
       set.status = error.statusCode;
       set.headers = {
+        ...set.headers, // Preserve existing headers (including CORS)
         "Content-Type": "application/json",
       };
       return {
@@ -59,6 +60,7 @@ export const errorHandler = new Elysia({ name: "error-handler" })
     if (isError(error) && error.name === "ZodError") {
       set.status = 400;
       set.headers = {
+        ...set.headers, // Preserve existing headers (including CORS)
         "Content-Type": "application/json",
       };
       return {
@@ -74,6 +76,7 @@ export const errorHandler = new Elysia({ name: "error-handler" })
     if (isError(error) && error.name === "PrismaClientKnownRequestError") {
       set.status = 400;
       set.headers = {
+        ...set.headers, // Preserve existing headers (including CORS)
         "Content-Type": "application/json",
       };
       return {
@@ -88,6 +91,7 @@ export const errorHandler = new Elysia({ name: "error-handler" })
     if (isError(error) && error.name === "PrismaClientValidationError") {
       set.status = 400;
       set.headers = {
+        ...set.headers, // Preserve existing headers (including CORS)
         "Content-Type": "application/json",
       };
       return {
@@ -102,6 +106,7 @@ export const errorHandler = new Elysia({ name: "error-handler" })
     if (isError(error) && error.name === "JsonWebTokenError") {
       set.status = 401;
       set.headers = {
+        ...set.headers, // Preserve existing headers (including CORS)
         "Content-Type": "application/json",
       };
       return {
@@ -116,6 +121,7 @@ export const errorHandler = new Elysia({ name: "error-handler" })
     if (isError(error) && error.name === "TokenExpiredError") {
       set.status = 401;
       set.headers = {
+        ...set.headers, // Preserve existing headers (including CORS)
         "Content-Type": "application/json",
       };
       return {
@@ -130,6 +136,7 @@ export const errorHandler = new Elysia({ name: "error-handler" })
     if (isError(error) && error.message.includes("rate limit")) {
       set.status = 429;
       set.headers = {
+        ...set.headers, // Preserve existing headers (including CORS)
         "Content-Type": "application/json",
       };
       return {
@@ -143,6 +150,7 @@ export const errorHandler = new Elysia({ name: "error-handler" })
 
     set.status = 500;
     set.headers = {
+      ...set.headers, // Preserve existing headers (including CORS)
       "Content-Type": "application/json",
     };
     return {

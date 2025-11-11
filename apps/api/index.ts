@@ -52,19 +52,21 @@ const publicApp = new Elysia().get(
 const apiApp = new Elysia({ prefix: "/api/v1" })
   .use(requestIdMiddleware)
   .use(requestLogger)
-
   .use(
     cors({
-      origin: (request): boolean | void => {
+      origin: (request) => {
         const origin = request.headers.get("origin");
+        if (!origin) return true; // Non-browser requests (Postman, curl)
+
         const allowedOrigins = getAllowedOrigins();
+        const normalizedOrigin = origin.toLowerCase().replace(/\/$/, "");
+        const normalizedAllowed = allowedOrigins.map((o) =>
+          o.toLowerCase().replace(/\/$/, ""),
+        );
 
-        // For requests with no origin (e.g., Postman, curl), allow
-        if (!origin) {
-          return true;
-        }
-
-        return allowedOrigins.includes(origin) ? (origin as any) : false;
+        return normalizedAllowed.includes(normalizedOrigin)
+          ? (origin as any)
+          : false;
       },
       credentials: true,
       allowedHeaders: [
