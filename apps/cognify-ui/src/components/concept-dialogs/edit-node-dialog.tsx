@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { apiClient } from "@/lib/api-client";
 import { type Node } from "@xyflow/react";
 import { useEffect, useState } from "react";
 
@@ -50,24 +51,12 @@ export function EditNodeDialog({
 
   const handleSave = async () => {
     if (node) {
-      const token = localStorage.getItem("token");
-      const apiUrl =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333/api/v1";
-
       try {
-        const result = await fetch(`${apiUrl}/concepts/${node.id}/`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ name, description, importance }),
+        await apiClient.patch(`/concepts/${node.id}`, {
+          name,
+          description,
+          importance,
         });
-
-        if (!result.ok) {
-          alert("Failed to save node");
-          return;
-        }
 
         onSave({
           ...node,

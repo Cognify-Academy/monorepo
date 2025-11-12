@@ -535,9 +535,25 @@ type Concept = {
 };
 
 type ConceptWithRelations = Concept & {
-  conceptSource: unknown[];
-  conceptTarget: unknown[];
-  completedLessons: unknown[];
+  conceptSource: Array<{
+    id: string;
+    conceptSourceId: string;
+    conceptTargetId: string;
+    description: string;
+    weighting?: number;
+  }>;
+  conceptTarget: Array<{
+    id: string;
+    conceptSourceId: string;
+    conceptTargetId: string;
+    description: string;
+    weighting?: number;
+  }>;
+  completedLessons: Array<{
+    lessonId: string;
+    lessonTitle: string;
+    completedAt?: string | null;
+  }>;
 };
 
 type Profile = {

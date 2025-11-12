@@ -150,26 +150,21 @@ export default function PublicCoursesPage() {
         ) : (
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
             {courses.map((course) => (
-              <Link
+              <div
                 key={course.id}
-                href={
-                  course.published ? `/courses/preview/${course.slug}` : "#"
-                }
                 className={`block rounded-lg border p-6 shadow-sm transition-shadow hover:shadow-md ${
                   course.published
                     ? "cursor-pointer border-gray-100 bg-white dark:border-gray-700 dark:bg-gray-800"
                     : "cursor-default border-yellow-200 bg-yellow-50 dark:border-yellow-700 dark:bg-yellow-900/20"
                 }`}
                 onClick={(e) => {
-                  // Prevent navigation if clicking on buttons or nested links, or if course is not published
+                  // Only navigate if clicking on the card itself, not on buttons or links
                   const target = e.target as HTMLElement;
                   const isButton = target.closest("button");
-                  const isNestedLink =
-                    target.closest("a") &&
-                    target.closest("a") !== e.currentTarget;
+                  const isLink = target.closest("a");
 
-                  if (!course.published || isButton || isNestedLink) {
-                    e.preventDefault();
+                  if (course.published && !isButton && !isLink) {
+                    router.push(`/courses/preview/${course.slug}`);
                   }
                 }}
               >
@@ -204,7 +199,6 @@ export default function PublicCoursesPage() {
                     ) : (
                       <button
                         onClick={(e) => {
-                          e.preventDefault();
                           e.stopPropagation();
                           handleEnroll(course.id);
                         }}
@@ -222,7 +216,7 @@ export default function PublicCoursesPage() {
                     </span>
                   )}
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         )}

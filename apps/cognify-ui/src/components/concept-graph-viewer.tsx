@@ -44,7 +44,7 @@ interface Concept {
   completedLessons: Array<{
     lessonId: string;
     lessonTitle: string;
-    completedAt?: string;
+    completedAt?: string | null;
   }>;
 }
 
